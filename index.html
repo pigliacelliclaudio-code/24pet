@@ -1,0 +1,2404 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard 24Pet</title>
+    <!-- Materialize CSS & Icone -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- Chart.js per i grafici -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        body { background-color: #f4f6f8; }
+        
+        /* Colori Branding 24Pet */
+        .nav-custom { background-color: #4a004a !important; } 
+        .btn-custom { background-color: #b50084 !important; } 
+        .btn-custom:hover { background-color: #8c0066 !important; }
+        .text-fucsia { color: #b50084 !important; }
+        .text-prugna { color: #4a004a !important; }
+
+        /* Stile del Menu Laterale */
+        .collection { border: none; background: transparent; }
+        .collection a.collection-item { color: #333 !important; font-weight: 500; cursor: pointer; border: none; margin-bottom: 5px; border-radius: 8px;}
+        .collection a.collection-item i.material-icons { color: #555 !important; } 
+        
+        .collection a.collection-item.active { background-color: #4a004a !important; color: white !important; border-radius: 8px;}
+        .collection a.collection-item.active i.material-icons { color: white !important; }
+        
+        .collection a.collection-item:hover:not(.active) { background-color: #faebf7 !important; color: #b50084 !important; }
+        .collection a.collection-item:hover:not(.active) i.material-icons { color: #b50084 !important; }
+
+        /* Stile Checkbox e Radio */
+        [type="checkbox"].filled-in:checked+span:not(.lever):after { border: 2px solid #b50084; background-color: #b50084; }
+        [type="radio"].with-gap:checked+span:after, [type="radio"].with-gap:checked+span:before { border: 2px solid #b50084; }
+        [type="radio"].with-gap:checked+span:after { background-color: #b50084; }
+
+        .card { border-radius: 12px; }
+        .nav-wrapper { padding: 0 20px; }
+        
+        /* Stile Logo Header */
+        .header-logo { height: 45px; vertical-align: middle; margin-right: 12px; background-color: rgba(255,255,255,0.9); border-radius: 12px; padding: 2px; }
+        
+        /* Gestione visualizzazione pagine */
+        .page-content { display: none; }
+        .page-content.active { display: block; animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .kpi-card { padding: 20px; border-radius: 12px; color: white; }
+
+        /* Indicatore Cloud */
+        .sync-status { float: right; color: white; display: flex; align-items: center; height: 100%; font-size: 0.9em; opacity: 0.8;}
+        .sync-status i { margin-right: 5px; }
+        
+        /* Stili Top Performer */
+        .top-performer h5 { font-size: 1.3rem; margin: 10px 0 5px 0; }
+        .top-performer h6 { margin: 0; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        .badge { margin-left: 0 !important; }
+        .input-catalogo { height: 2rem !important; margin: 0 !important; font-size: 0.9em !important; width: 70px !important; text-align: center; background: #fff !important; border: 1px solid #ccc !important; border-radius: 4px !important; }
+
+        /* Sidenav Custom per le scelte veloci */
+        .sidenav-custom { width: 350px; background-color: #fdfdfd; }
+        .sidenav-custom .collection-item { transition: all 0.2s; color: #333; border-radius: 6px; margin-bottom: 5px; border: 1px solid #eee; }
+        .sidenav-custom .collection-item:hover { background-color: #faebf7; transform: translateX(5px); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+
+        /* Pulsantini Data Rapida */
+        .btn-data-rapida { display: inline-block; cursor: pointer; border-radius: 4px; padding: 2px 10px; font-size: 0.75em; font-weight: bold; box-shadow: 0 1px 3px rgba(0,0,0,0.15); transition: transform 0.1s, opacity 0.2s; }
+        .btn-data-rapida:active { transform: scale(0.95); }
+        .btn-data-ieri { background-color: #eee; color: #333; margin-right: 6px; }
+        .btn-data-oggi { background-color: #b50084; color: white; }
+        .btn-data-ieri:hover { background-color: #e0e0e0; }
+        .btn-data-oggi:hover { background-color: #8c0066; }
+
+        /* STILI STAMPA COMPATTI */
+        .print-only { display: none; }
+        .print-box-break { -webkit-box-decoration-break: clone; box-decoration-break: clone; page-break-inside: auto; }
+
+        @media print {
+            body { background-color: white !important; }
+            .no-print { display: none !important; }
+            .print-only { display: block !important; position: relative !important; width: 100% !important; padding: 0 !important; }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="no-print">
+    <nav class="nav-custom">
+        <div class="nav-wrapper">
+            <a href="#" class="brand-logo" style="display: flex; align-items: center; height: 100%;">
+                
+                <span style="font-weight: 300;">Dashboard</span>&nbsp;<strong>24Pet</strong>
+            </a>
+            <div class="sync-status" id="cloudSyncInfo">
+                <i class="material-icons" aria-hidden="true">storage</i> <span>Anteprima locale</span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container" style="margin-top: 30px; width: 95%; max-width: 1400px;">
+        <div class="row">
+            
+            <!-- MENU LATERALE -->
+            <div class="col s12 m3 l2">
+                <div class="collection">
+                    <a class="collection-item active" onclick="showPage('dashboard-home', this)"><i class="material-icons left">dashboard</i> Home Statistiche</a>
+                    <a class="collection-item" onclick="showPage('catalogo-prodotti', this)"><i class="material-icons left">storefront</i> Catalogo Prodotti</a>
+                    <a class="collection-item" onclick="showPage('gestione-clienti', this)"><i class="material-icons left">people</i> Rubrica Clienti</a>
+                    <a class="collection-item" onclick="showPage('nuovo-ordine', this)"><i class="material-icons left">add_shopping_cart</i> Nuovo Ordine</a>
+                    <a class="collection-item" onclick="showPage('lista-ordini', this)"><i class="material-icons left">list</i> Elenco Ordini</a>
+                    <a class="collection-item" onclick="showPage('riepilogo-cliente', this)"><i class="material-icons left">person_search</i> Scheda Cliente</a>
+                </div>
+            </div>
+
+            <!-- CONTENUTO -->
+            <div class="col s12 m9 l10">
+                
+                <!-- PAGINA: DASHBOARD HOME -->
+                <div id="dashboard-home" class="page-content active">
+                    
+                    <div class="row valign-wrapper" style="margin-bottom: 0;">
+                        <div class="col s12 m8">
+                            <h4 class="text-prugna" style="font-weight: bold; margin-top: 0;"><i class="material-icons left" style="font-size: 1.2em;">dashboard</i>Panoramica Statistiche</h4>
+                        </div>
+                        <div class="input-field col s12 m4" style="margin-top: 0;">
+                            <select id="dashboardAnno" onchange="aggiornaStatistiche()">
+                                <option value="Tutti" selected>Tutti gli anni</option>
+                            </select>
+                            <label>Filtra Statistiche per Anno</label>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col s12 m4">
+                            <div class="kpi-card nav-custom hoverable">
+                                <h5 style="margin-top: 0; font-size: 1.3em;">Fatturato Totale (+ iva)</h5>
+                                <h2 style="margin: 10px 0; font-weight: bold;" id="kpi-fatturato">€ 0.00</h2>
+                            </div>
+                        </div>
+                        <div class="col s12 m4">
+                            <div class="kpi-card hoverable" style="background-color: #8c0066;">
+                                <h5 style="margin-top: 0; font-size: 1.3em;">Ordini Registrati</h5>
+                                <h2 style="margin: 10px 0; font-weight: bold;" id="kpi-ordini">0</h2>
+                            </div>
+                        </div>
+                        <div class="col s12 m4">
+                            <div class="kpi-card hoverable" style="background-color: #2e7d32;">
+                                <h5 style="margin-top: 0; font-size: 1.3em;">Utile Netto Reale (+ iva)</h5>
+                                <h2 style="margin: 10px 0; font-weight: bold;" id="kpi-utile">€ 0.00</h2>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col s12">
+                            <h5 class="text-prugna" style="font-weight: bold; margin: 10px 0 20px 10px;"><i class="material-icons left">star</i> Classifiche & Top Performer</h5>
+                        </div>
+                        <div class="col s12 m6 l3">
+                            <div class="card-panel center-align hoverable top-performer" style="border-radius: 12px; padding: 15px;">
+                                <i class="material-icons text-fucsia" style="font-size: 2.5rem;">emoji_events</i>
+                                <h6 class="grey-text text-darken-1">Urna Più Venduta</h6>
+                                <h5 class="text-prugna" style="font-weight: bold;" id="top-modello">-</h5>
+                            </div>
+                        </div>
+                        <div class="col s12 m6 l3">
+                            <div class="card-panel center-align hoverable top-performer" style="border-radius: 12px; padding: 15px;">
+                                <i class="material-icons text-fucsia" style="font-size: 2.5rem;">palette</i>
+                                <h6 class="grey-text text-darken-1">Colore Preferito</h6>
+                                <h5 class="text-prugna" style="font-weight: bold;" id="top-colore">-</h5>
+                            </div>
+                        </div>
+                        <div class="col s12 m6 l3">
+                            <div class="card-panel center-align hoverable top-performer" style="border-radius: 12px; padding: 15px;">
+                                <i class="material-icons text-fucsia" style="font-size: 2.5rem;">straighten</i>
+                                <h6 class="grey-text text-darken-1">Misura Più Scelta</h6>
+                                <h5 class="text-prugna" style="font-weight: bold;" id="top-misura">-</h5>
+                            </div>
+                        </div>
+                        <div class="col s12 m6 l3">
+                            <div class="card-panel center-align hoverable top-performer" style="border-radius: 12px; padding: 15px;">
+                                <i class="material-icons text-fucsia" style="font-size: 2.5rem;">workspace_premium</i>
+                                <h6 class="grey-text text-darken-1">Miglior Cliente</h6>
+                                <h5 class="text-prugna" style="font-weight: bold;" id="top-cliente">-</h5>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col s12 m6">
+                            <div class="card">
+                                <div class="card-content">
+                                    <span class="card-title text-prugna" style="font-weight: bold;">Modelli più venduti</span>
+                                    <canvas id="chartModelli" style="max-height: 250px;"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col s12 m6">
+                            <div class="card">
+                                <div class="card-content">
+                                    <span class="card-title text-prugna" style="font-weight: bold;">Incassi: Aziende vs Rivenditori</span>
+                                    <canvas id="chartClienti" style="max-height: 250px;"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col s12 m6">
+                            <div class="card hoverable">
+                                <div class="card-content">
+                                    <span class="card-title text-prugna" style="font-weight: bold;">Ripartizione: Costi vs Utile Reale</span>
+                                    <canvas id="chartCostiUtile" style="max-height: 250px;"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col s12 m6">
+                            <div class="card hoverable">
+                                <div class="card-content">
+                                    <span class="card-title text-prugna" style="font-weight: bold;">Stato Fatturato: Pagato vs Sospeso</span>
+                                    <canvas id="chartPagamenti" style="max-height: 250px;"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PAGINA: CATALOGO PRODOTTI MODIFICABILE -->
+                <div id="catalogo-prodotti" class="page-content">
+                    <div class="row" style="margin-bottom: 0;">
+                        <div class="col s12 m8">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                <h4 class="text-prugna" style="font-weight: bold; margin: 0;"><i class="material-icons left" style="font-size: 1.2em;">storefront</i>Catalogo Prodotti</h4>
+                                <button class="btn waves-effect waves-light btn-custom" style="border-radius: 8px;" onclick="aggiungiNuovoModello()">
+                                    <i class="material-icons left">add</i> Nuovo Modello
+                                </button>
+                            </div>
+                            <p class="grey-text">Crea nuovi modelli o usa la matita su una scheda esistente per modificarne le misure e i prezzi.</p>
+                        </div>
+                        <div class="input-field col s12 m4" style="margin-top: 20px;">
+                            <select id="catalogoAnno" onchange="renderCatalogo()">
+                                <option value="Tutti" selected>Tutti gli anni</option>
+                            </select>
+                            <label>Filtra vendite per Anno</label>
+                        </div>
+                    </div>
+                    <div id="catalogo-container"></div>
+                </div>
+
+                <!-- PAGINA: RUBRICA CLIENTI -->
+                <div id="gestione-clienti" class="page-content">
+                    <div class="card">
+                        <div class="card-content">
+                            <span class="card-title text-prugna" id="titoloFormCliente"><i class="material-icons left">person_add</i>Aggiungi Nuovo Cliente in Rubrica</span>
+                            <form id="clientForm" style="margin-top: 20px;">
+                                <div class="row">
+                                    <div class="input-field col s12 m8">
+                                        <input id="nuovoNomeCliente" type="text" required>
+                                        <label for="nuovoNomeCliente">Nome e Cognome o Ragione Sociale *</label>
+                                    </div>
+                                    <div class="input-field col s12 m4">
+                                        <select id="nuovoTipoCliente" required>
+                                            <option value="Azienda" selected>Azienda</option>
+                                            <option value="Rivenditore">Rivenditore</option>
+                                        </select>
+                                        <label>Tipo di Cliente *</label>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="input-field col s12 m6">
+                                        <i class="material-icons prefix" style="color: #9e9e9e;">business</i>
+                                        <input id="indirizzoSede" type="text">
+                                        <label for="indirizzoSede">Indirizzo Sede Centrale</label>
+                                    </div>
+                                    <div class="input-field col s12 m6">
+                                        <i class="material-icons prefix" style="color: #9e9e9e;">local_shipping</i>
+                                        <input id="indirizzoSpedizione" type="text">
+                                        <label for="indirizzoSpedizione">Indirizzo di Spedizione (se diverso)</label>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="input-field col s12 m3">
+                                        <i class="material-icons prefix" style="color: #9e9e9e;">phone</i>
+                                        <input id="telefono" type="text">
+                                        <label for="telefono">Telefono Fisso</label>
+                                    </div>
+                                    <div class="input-field col s12 m3">
+                                        <i class="material-icons prefix" style="color: #9e9e9e;">smartphone</i>
+                                        <input id="cellulare" type="text">
+                                        <label for="cellulare">Cellulare</label>
+                                    </div>
+                                    <div class="input-field col s12 m3">
+                                        <i class="material-icons prefix" style="color: #9e9e9e;">email</i>
+                                        <input id="email" type="email">
+                                        <label for="email">Email</label>
+                                    </div>
+                                    <div class="input-field col s12 m3">
+                                        <i class="material-icons prefix" style="color: #9e9e9e;">person_outline</i>
+                                        <input id="referenteSpedizione" type="text">
+                                        <label for="referenteSpedizione">Referente Spedizione</label>
+                                    </div>
+                                </div>
+
+                                <!-- SEZIONE DATI FATTURAZIONE -->
+                                <div class="row" style="background-color: #f5f5f5; padding: 15px; border-radius: 8px;">
+                                    <div class="col s12"><span class="text-prugna" style="font-weight: bold; font-size: 1.1em; display:block; margin-bottom: 10px;"><i class="material-icons left">receipt</i>Dati per Fatturazione</span></div>
+                                    <div class="input-field col s12 m3">
+                                        <input id="partitaIva" type="text">
+                                        <label for="partitaIva">Partita IVA</label>
+                                    </div>
+                                    <div class="input-field col s12 m3">
+                                        <input id="codiceFiscale" type="text">
+                                        <label for="codiceFiscale">Codice Fiscale</label>
+                                    </div>
+                                    <div class="input-field col s12 m3">
+                                        <input id="codiceUnivoco" type="text">
+                                        <label for="codiceUnivoco">Codice Univoco (SDI)</label>
+                                    </div>
+                                    <div class="input-field col s12 m3">
+                                        <input id="pec" type="email">
+                                        <label for="pec">Indirizzo PEC</label>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col s12 right-align">
+                                        <span class="grey-text left" style="font-size: 0.85em; margin-top: 15px;">* Campi obbligatori</span>
+                                        <button class="btn waves-effect waves-light btn-custom" type="submit" id="btnSalvaCliente" style="border-radius: 8px;">
+                                            Salva in Rubrica <i class="material-icons right">save</i>
+                                        </button>
+                                        <button class="btn waves-effect waves-light grey" type="button" id="btnAnnullaModifica" style="border-radius: 8px; margin-right: 10px; display: none;" onclick="annullaModificaCliente()">
+                                            Annulla
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-content">
+                            <span class="card-title text-prugna"><i class="material-icons left">contacts</i>Elenco Clienti Salvati</span>
+                            <table class="highlight responsive-table" style="margin-top: 15px; font-size: 0.9em;">
+                                <thead>
+                                    <tr>
+                                        <th>Cod.</th>
+                                        <th>Nome Cliente</th>
+                                        <th>Tipo</th>
+                                        <th>Spedizione</th>
+                                        <th>Referente</th>
+                                        <th>Contatti</th>
+                                        <th>Azioni</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="clientsTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PAGINA: NUOVO ORDINE MULTIPLO -->
+                <div id="nuovo-ordine" class="page-content">
+                    <div class="card">
+                        <div class="card-content">
+                            <span class="card-title text-prugna" id="titoloFormOrdine"><i class="material-icons left">add_shopping_cart</i>Componi Ordine Multiplo</span>
+                            
+                            <form id="orderForm" onsubmit="salvaOrdineCompleto(event)">
+                                
+                                <!-- SELEZIONE CLIENTE E DATA -->
+                                <div class="row" style="margin-top: 20px;">
+                                    <div class="col s12 m4">
+                                        <span style="font-size: 0.85rem; color: #9e9e9e;">Seleziona Cliente *</span>
+                                        <div class="card-panel hoverable" style="padding: 10px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; border: 1px solid #b50084; margin-top: 5px; box-shadow: none;" onclick="apriSidebarClienti('clienteSearchDisplay')">
+                                            <div style="display: flex; align-items: center;">
+                                                <i class="material-icons text-fucsia" style="margin-right: 10px;">person_search</i>
+                                                <span id="clienteSearchDisplay" style="font-weight: bold; color: #4a004a;">Clicca per cercare in rubrica...</span>
+                                            </div>
+                                            <i class="material-icons grey-text">keyboard_arrow_right</i>
+                                        </div>
+                                        <input type="hidden" id="clienteSearch" value="" required>
+                                    </div>
+
+                                    <div class="input-field col s12 m4">
+                                        <i class="material-icons prefix text-fucsia">date_range</i>
+                                        <input id="data" type="date" required style="margin-bottom: 5px; border-bottom: none !important; box-shadow: none !important;">
+                                        <label for="data" class="active">Data Ordine</label>
+                                        <div style="padding-left: 3rem; margin-top: -5px;">
+                                            <span class="btn-data-rapida btn-data-ieri" onclick="impostaDataRapida(-1)">Ieri</span>
+                                            <span class="btn-data-rapida btn-data-oggi" onclick="impostaDataRapida(0)">Oggi</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="input-field col s12 m4">
+                                        <input id="tipoClienteAuto" type="text" readonly style="color: #8c0066; font-weight: bold; border-bottom: none;">
+                                        <label for="tipoClienteAuto" class="active">Scontistica / Tipologia</label>
+                                    </div>
+                                </div>
+
+                                <!-- SELEZIONE PRODOTTI E COLORI -->
+                                <div class="card-panel" style="background-color: #f9f9f9; border-radius: 8px; border: 1px dashed #ccc;">
+                                    <span style="font-size: 1.1em; font-weight: bold; color: #4a004a;"><i class="material-icons left">add_circle_outline</i>Componi e Aggiungi Articoli</span>
+                                    
+                                    <div class="row" style="margin-top: 15px;">
+                                        
+                                        <!-- SCELTA MODELLO -->
+                                        <div class="col s12 m4">
+                                            <span style="font-size: 0.85rem; color: #9e9e9e;">Modello Urna *</span>
+                                            <div class="card-panel hoverable" style="padding: 10px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; border: 1px solid #b50084; margin-top: 5px; box-shadow: none;" onclick="apriSidebarModelli()">
+                                                <div id="modelloDisplay" style="display: flex; align-items: center;">
+                                                    <span style="font-weight: bold; color: #4a004a;">Clicca per scegliere...</span>
+                                                </div>
+                                                <i class="material-icons grey-text">keyboard_arrow_right</i>
+                                            </div>
+                                            <input type="hidden" id="modello" value="">
+                                        </div>
+                                        
+                                        <!-- SCELTA DIMENSIONE -->
+                                        <div class="col s12 m4" style="margin-top: 5px;">
+                                            <span style="font-size: 0.85rem; color: #9e9e9e;">Misura Scelta *</span>
+                                            <div id="dimensioneContainer" style="display: flex; gap: 15px; margin-top: 10px; flex-wrap: wrap;">
+                                                <span class="grey-text" style="font-size:0.9em; font-style:italic;">Seleziona prima il modello...</span>
+                                            </div>
+                                        </div>
+
+                                        <!-- INFO PREZZO BASE -->
+                                        <div class="col s12 m4">
+                                            <span style="font-size: 0.85rem; color: #9e9e9e;">Prezzo Unitario Base</span>
+                                            <div style="font-size: 1.5em; font-weight: bold; color: #4a004a; margin-top: 5px;" id="prezzoUnitarioDisplay">€ 0.00</div>
+                                            <div style="font-size: 0.8em; color: #888; margin-top: 2px;" id="skuProdottoDisplay">Scegli modello...</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- APRE COLORI E QUANTITA' -->
+                                    <div class="row" style="margin-bottom: 0;">
+                                        <div class="col s12 center-align" style="margin-top: 10px;">
+                                            <button type="button" class="btn blue darken-1 waves-effect waves-light hoverable" style="border-radius: 8px; width: 100%; height: 50px; font-size: 1.1em; font-weight:bold;" onclick="apriSidenavColori()">
+                                                <i class="material-icons left">palette</i> Scegli Colori, Quantità e Aggiungi
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- CARRELLO -->
+                                <table class="highlight responsive-table" style="border: 1px solid #eee;">
+                                    <thead style="background-color: #f4f6f8;">
+                                        <tr>
+                                            <th>Articolo in Ordine</th>
+                                            <th>Colore</th>
+                                            <th>Q.tà</th>
+                                            <th>Prezzo Listino Cad.</th>
+                                            <th>Totale Riga (Listino)</th>
+                                            <th>Rimuovi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="bodyCarrello">
+                                        <tr><td colspan="6" class="center-align grey-text">Il carrello è vuoto. Aggiungi i prodotti qui sopra.</td></tr>
+                                    </tbody>
+                                </table>
+                                
+                                <!-- CONTENITORE SUBTOTALI CARRELLO -->
+                                <div id="subtotaliCarrelloContainer" style="display: none; margin-bottom: 20px;"></div>
+
+                                <div class="row" style="background-color: #fce4ec; border-radius: 8px; padding: 10px 0; margin-bottom: 10px; margin-top:20px;">
+                                    <div class="input-field col s12 m3">
+                                        <i class="material-icons prefix" style="color: #0288d1;">inventory_2</i>
+                                        <input id="costoImballaggio" type="number" step="0.01" value="0.00" required>
+                                        <label for="costoImballaggio">Spese Imballaggio (€)</label>
+                                    </div>
+                                    <div class="input-field col s12 m3">
+                                        <i class="material-icons prefix" style="color: #d32f2f;">local_shipping</i>
+                                        <input id="costoSpedizione" type="number" step="0.01" value="0.00" required>
+                                        <label for="costoSpedizione">Spese Spedizione (€)</label>
+                                    </div>
+                                    <div class="input-field col s12 m3">
+                                        <i class="material-icons prefix" style="color: #4a004a;">receipt_long</i>
+                                        <select id="spedizioneACarico">
+                                            <option value="Nostro" selected>A carico NOSTRO</option>
+                                            <option value="Cliente">A carico CLIENTE (Addebitata)</option>
+                                        </select>
+                                        <label>Fatturazione Spedizione</label>
+                                    </div>
+                                    <div class="input-field col s12 m3">
+                                        <i class="material-icons prefix" style="color: #ff9800;">money_off</i>
+                                        <input id="scontoExtraPerc" type="number" step="0.1" min="0" max="100" value="0">
+                                        <label for="scontoExtraPerc">Sconto Extra (%)</label>
+                                    </div>
+                                </div>
+
+                                <div class="row" style="margin-bottom: 5px;">
+                                    <div class="col s12">
+                                        <div id="riepilogoScontoContenitore" class="center-align" style="font-size: 1.1em; color: #d32f2f; display:none; background-color: #ffebee; padding: 8px; border-radius: 8px;">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="input-field col s12">
+                                        <input id="importo" type="number" step="0.01" readonly class="text-fucsia" style="font-weight: bold; font-size: 1.5em; text-align: center; border-bottom: none;">
+                                        <label for="importo" class="active">Fattura Totale per il Cliente (€) (+ iva)</label>
+                                        <div style="text-align: center; margin-top: 5px;">
+                                            <span class="helper-text" style="color: #2e7d32; font-weight: bold; font-size: 1.1em;" id="labelUtile"></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col s12 m6">
+                                        <p>
+                                            <label>
+                                                <input type="checkbox" id="pagato" class="filled-in" />
+                                                <span>Il cliente ha pagato?</span>
+                                            </label>
+                                        </p>
+                                    </div>
+                                    <div class="col s12 m6">
+                                        <p>
+                                            <label>
+                                                <input type="checkbox" id="evaso" class="filled-in" />
+                                                <span>L'ordine è evaso/spedito?</span>
+                                            </label>
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <div class="row" style="margin-top: 15px;">
+                                    <div class="col s12 center-align">
+                                        <button class="btn waves-effect waves-light grey" type="button" id="btnAnnullaModificaOrdine" style="border-radius: 8px; margin-right: 15px; display: none; height: 60px; line-height: 60px; font-size: 1.1em;" onclick="annullaModificaOrdine()">
+                                            Annulla
+                                        </button>
+                                        <button class="btn waves-effect waves-light btn-custom" type="submit" id="btnSalvaOrdine" style="border-radius: 8px; width: 60%; height: 60px; font-size: 1.2em; font-weight: bold;">
+                                            Conferma e Salva Intero Ordine
+                                            <i class="material-icons right">save</i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PAGINA: LISTA ORDINI CON NUOVO BOTTONE RICEVUTA -->
+                <div id="lista-ordini" class="page-content">
+                    <div class="card">
+                        <div class="card-content">
+                            <span class="card-title text-prugna" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                                <span style="display: flex; align-items: center;"><i class="material-icons left">list</i>Tutti gli Ordini</span>
+                                <button class="btn waves-effect waves-light orange darken-3 hoverable" onclick="stampaSchedaProduzione()" style="border-radius: 8px; margin-top: 10px; font-weight: bold;">
+                                    <i class="material-icons left">print</i> Stampa Ordini NON EVASI
+                                </button>
+                            </span>
+                            
+                            <table class="highlight responsive-table" style="margin-top: 15px;">
+                                <thead style="background-color: #f4f6f8;">
+                                    <tr>
+                                        <th>Ordine</th>
+                                        <th>Dettaglio Articoli e Parziali</th>
+                                        <th>Finanze (+ iva)</th>
+                                        <th>Stato</th>
+                                        <th>Azioni</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PAGINA: RIEPILOGO / SCHEDA CLIENTE -->
+                <div id="riepilogo-cliente" class="page-content">
+                    <div class="card">
+                        <div class="card-content">
+                            <span class="card-title text-prugna"><i class="material-icons left">person_search</i>Cerca Scheda Cliente</span>
+                            
+                            <div class="row">
+                                <div class="col s12 m6">
+                                    <span style="font-size: 0.85rem; color: #9e9e9e;">Seleziona Cliente</span>
+                                    <div class="card-panel hoverable" style="padding: 10px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; border: 1px solid #b50084; margin-top: 5px; box-shadow: none;" onclick="apriSidebarClienti('searchClienteInputDisplay')">
+                                        <div style="display: flex; align-items: center;">
+                                            <i class="material-icons text-fucsia" style="margin-right: 10px;">person_search</i>
+                                            <span id="searchClienteInputDisplay" style="font-weight: bold; color: #4a004a;">Clicca per cercare in rubrica...</span>
+                                        </div>
+                                        <i class="material-icons grey-text">keyboard_arrow_right</i>
+                                    </div>
+                                    <input type="hidden" id="searchClienteInput">
+                                </div>
+
+                                <div class="input-field col s12 m6">
+                                    <i class="material-icons prefix text-fucsia">date_range</i>
+                                    <select id="searchAnno" onchange="searchClient(null)">
+                                        <option value="Tutti" selected>Tutti gli anni</option>
+                                    </select>
+                                    <label>Filtra per Anno</label>
+                                </div>
+                            </div>
+                            
+                            <div id="risultatiRicerca" style="display: none; margin-top: 20px;">
+                                <hr style="border: 0; border-top: 1px solid #eee; margin-bottom: 20px;">
+                                
+                                <h4 class="text-prugna" style="font-weight: 900; margin-bottom: 0;">
+                                    <span id="resCodice" style="color: #b50084; font-size: 0.6em; vertical-align: middle;"></span> 
+                                    <span id="resNome"></span> 
+                                    <span id="resTipo" style="font-size: 0.5em; background: #eee; padding: 4px 8px; border-radius: 4px; vertical-align: middle; font-weight: normal; margin-left: 10px;"></span>
+                                </h4>
+
+                                <!-- KPI DEL CLIENTE -->
+                                <div class="row" style="margin-top: 20px;">
+                                    <div class="col s12 m6 l3">
+                                        <div class="card-panel white-text center hoverable nav-custom" style="border-radius: 12px; background-color: #8c0066 !important;">
+                                            <i class="material-icons medium">shopping_cart</i>
+                                            <h3 id="resOrdini" style="margin: 10px 0;">0</h3>
+                                            <h6>Ordini Totali</h6>
+                                        </div>
+                                    </div>
+                                    <div class="col s12 m6 l3">
+                                        <div class="card-panel white-text center hoverable nav-custom" style="border-radius: 12px;">
+                                            <i class="material-icons medium">euro_symbol</i>
+                                            <h3 id="resSpesa" style="margin: 10px 0;">0.00</h3>
+                                            <h6>Fatturato Generato (+ iva)</h6>
+                                        </div>
+                                    </div>
+                                    <div class="col s12 m6 l3">
+                                        <div class="card-panel white-text center hoverable" style="border-radius: 12px; background-color: #2e7d32;">
+                                            <i class="material-icons medium">trending_up</i>
+                                            <h3 id="resUtile" style="margin: 10px 0;">0.00</h3>
+                                            <h6>Guadagno Netto (+ iva)</h6>
+                                        </div>
+                                    </div>
+                                    <div class="col s12 m6 l3">
+                                        <div class="card-panel orange darken-2 white-text center hoverable" style="border-radius: 12px;">
+                                            <i class="material-icons medium">warning</i>
+                                            <h3 id="resDaPagare" style="margin: 10px 0;">0.00</h3>
+                                            <h6>Ancora da Saldare (+ iva)</h6>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col s12">
+                                        <div class="card" style="background-color: #f9f9f9; border: 1px solid #ddd;">
+                                            <div class="card-content">
+                                                <span class="card-title" style="font-size: 1.2em; font-weight: bold; color: #4a004a;"><i class="material-icons left">assignment_ind</i>Dati Anagrafici e Fatturazione</span>
+                                                <div class="row" style="margin-top: 15px; margin-bottom: 0;">
+                                                    <div class="col s12 m4">
+                                                        <p><strong>Sede Centrale:</strong> <span id="schedaIndirizzo">-</span></p>
+                                                        <p style="margin-top: 10px;"><strong>Indir. Spedizione:</strong> <span id="schedaSpedizione">-</span></p>
+                                                        <p style="margin-top: 10px;"><strong>Referente Sped.:</strong> <span id="schedaReferente">-</span></p>
+                                                    </div>
+                                                    <div class="col s12 m4">
+                                                        <p><strong>Telefono:</strong> <span id="schedaTelefono">-</span></p>
+                                                        <p style="margin-top: 10px;"><strong>Cellulare:</strong> <span id="schedaCellulare">-</span></p>
+                                                        <p style="margin-top: 10px;"><strong>Email:</strong> <span id="schedaEmail">-</span></p>
+                                                    </div>
+                                                    <div class="col s12 m4">
+                                                        <p><strong>P. IVA:</strong> <span id="schedaPiva">-</span></p>
+                                                        <p style="margin-top: 10px;"><strong>C.F.:</strong> <span id="schedaCf">-</span></p>
+                                                        <p style="margin-top: 10px;"><strong>SDI / PEC:</strong> <span id="schedaSdiPec">-</span></p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col s12">
+                                        <span class="card-title" style="font-size: 1.2em; font-weight: bold; color: #4a004a; margin-top: 20px; display: block;"><i class="material-icons left">history</i>Storico Ordini Cliente</span>
+                                        <table class="highlight responsive-table" style="margin-top: 15px;">
+                                            <thead style="background-color: #f4f6f8;">
+                                                <tr>
+                                                    <th>Ordine</th>
+                                                    <th>Dettaglio Articoli e Parziali</th>
+                                                    <th>Finanze (+ iva)</th>
+                                                    <th>Stato</th>
+                                                    <th>Azioni</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="clientOrdersTableBody"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SEZIONE STAMPA -->
+<div id="print-section" class="print-only"></div>
+
+<!-- COMPONENTE: SIDEBAR DESTRA CLIENTI -->
+<div id="slide-out-clienti" class="sidenav sidenav-custom" style="padding: 0; display: flex; flex-direction: column; overflow: hidden;">
+    <div style="padding: 20px; background: white; border-bottom: 1px solid #eee; box-shadow: 0 2px 5px rgba(0,0,0,0.05); z-index: 10; flex-shrink: 0;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h5 class="text-prugna" style="font-weight: bold; margin: 0;"><i class="material-icons left">people</i> Rubrica Rapida</h5>
+            <i class="material-icons grey-text" style="cursor: pointer; padding: 5px;" onclick="chiudiSidebar('slide-out-clienti')" title="Chiudi">close</i>
+        </div>
+        <div class="input-field" style="margin-top: 0; margin-bottom: 0;">
+            <i class="material-icons prefix">search</i>
+            <input type="text" id="filtroSidebar" onkeyup="filtraSidebarClienti()">
+            <label for="filtroSidebar">Cerca cliente...</label>
+        </div>
+    </div>
+    <div id="listaClientiSidebar" class="collection" style="flex: 1; overflow-y: auto; margin: 0; padding: 10px 20px 40px 20px; border: none; background: #fff;">
+        <!-- Popolata dinamicamente dal JS -->
+    </div>
+</div>
+
+<!-- COMPONENTE: SIDEBAR DESTRA MODELLI -->
+<div id="slide-out-modelli" class="sidenav sidenav-custom" style="padding: 0; display: flex; flex-direction: column; overflow: hidden;">
+    <div style="padding: 20px; background: white; border-bottom: 1px solid #eee; box-shadow: 0 2px 5px rgba(0,0,0,0.05); z-index: 10; flex-shrink: 0;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h5 class="text-prugna" style="font-weight: bold; margin: 0;"><i class="material-icons left">inventory_2</i> Scegli Modello</h5>
+            <i class="material-icons grey-text" style="cursor: pointer; padding: 5px;" onclick="chiudiSidebar('slide-out-modelli')" title="Chiudi">close</i>
+        </div>
+    </div>
+    <div id="listaModelliSidebar" class="collection" style="flex: 1; overflow-y: auto; margin: 0; padding: 10px 20px 40px 20px; border: none; background: #fff;">
+        <!-- Popolata dinamicamente dal JS -->
+    </div>
+</div>
+
+<!-- COMPONENTE: SIDEBAR DESTRA COLORI E QUANTITA' -->
+<div id="slide-out-colori" class="sidenav sidenav-custom" style="padding: 0; display: flex; flex-direction: column; overflow: hidden;">
+    <!-- HEADER FISSO IN ALTO -->
+    <div style="padding: 20px; background: white; border-bottom: 1px solid #eee; box-shadow: 0 2px 5px rgba(0,0,0,0.05); z-index: 10; flex-shrink: 0;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h5 class="text-prugna" style="font-weight: bold; margin: 0;"><i class="material-icons left">palette</i> Quantità Colori</h5>
+            <i class="material-icons grey-text" style="cursor: pointer; padding: 5px;" onclick="chiudiSidebar('slide-out-colori')" title="Chiudi">close</i>
+        </div>
+        <button class="btn blue darken-1 waves-effect waves-light hoverable" style="width: 100%; border-radius: 8px; font-weight: bold; height: 45px;" onclick="aggiungiColoriAlCarrello()">
+            <i class="material-icons left">add_shopping_cart</i> AGGIUNGI AL CARRELLO
+        </button>
+    </div>
+    <div id="listaColoriSidebar" style="flex: 1; overflow-y: auto; padding: 10px 20px 40px 20px; background: #fff;">
+        <!-- Popolata dinamicamente dal JS con le righe [+] e [-] -->
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+<script>
+    let chartModelliInstance = null;
+    let chartClientiInstance = null;
+    let chartCostiUtileInstance = null; 
+    let chartPagamentiInstance = null;
+    
+    let targetInputForClient = '';
+
+    // === FUNZIONE PER PULSANTI RAPIDI DELLA DATA ===
+    function impostaDataRapida(offsetGiorni) {
+        let d = new Date();
+        d.setDate(d.getDate() + offsetGiorni);
+        let dataIso = d.getFullYear() + "-" + 
+                      String(d.getMonth() + 1).padStart(2, '0') + "-" + 
+                      String(d.getDate()).padStart(2, '0');
+        
+        let dataInput = document.getElementById('data');
+        if (dataInput) {
+            dataInput.value = dataIso;
+            M.updateTextFields();
+        }
+    }
+
+    // === MINIATURE SVG ===
+    const iconeProdotti = {
+        "Cuore": `<svg width="28" height="28" viewBox="0 0 24 24" fill="#b50084"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`,
+        "Ottagonale": `<svg width="28" height="28" viewBox="0 0 24 24" fill="#b50084"><polygon points="7.86,2 16.14,2 22,7.86 22,16.14 16.14,22 7.86,22 2,16.14 2,7.86"/></svg>`,
+        "Sfera": `<svg width="28" height="28" viewBox="0 0 24 24" fill="#b50084"><circle cx="12" cy="12" r="10"/><path d="M12 6a1.5 1.5 0 100 3 1.5 1.5 0 000-3zm-2.5 3.5a1.2 1.2 0 100 2.4 1.2 1.2 0 000-2.4zm5 0a1.2 1.2 0 100 2.4 1.2 1.2 0 000-2.4z" fill="#fff"/></svg>`,
+        "Quadro": `<svg width="28" height="28" viewBox="0 0 24 24" fill="#b50084"><rect x="3" y="3" width="18" height="18" rx="3"/><rect x="6" y="6" width="12" height="12" fill="#fff"/><circle cx="12" cy="12" r="2" fill="#b50084"/></svg>`,
+        "Cubo": `<svg width="28" height="28" viewBox="0 0 24 24" fill="#b50084"><path d="M12 2L2 7l10 5 10-5-10-5zm-10 7v9l10 5V14L2 9zm12 5v9l10-5V9l-10 5z"/></svg>`,
+        "Cane": `<svg width="28" height="28" viewBox="0 0 24 24" fill="#b50084"><path d="M18 12c-1.5 0-2.5-.5-3.5-1.5-1.5 1.5-3.5 2-5 1.5-1.5-.5-2.5-2-2.5-3.5 0-2 1.5-3.5 3.5-3.5 1.5 0 3 1 4 2 1-.5 2-.5 3 0 1 .5 1.5 1.5 1.5 2.5 0 1.5-.5 2.5-1 2.5zM4 18c0-3 3-5 7-5s7 2 7 5c0 1.5-1 2-2 2H6c-1 0-2-.5-2-2z"/></svg>`,
+        "Gatto": `<svg width="28" height="28" viewBox="0 0 24 24" fill="#b50084"><path d="M12 12c-2.5 0-4-1.5-4-3.5 0-1 .5-2 1.5-2.5L8 3l3.5 1.5c.5 0 1-.5 1.5-.5s1 .5 1.5.5L18 3l-1.5 3c1 .5 1.5 1.5 1.5 2.5 0 2-1.5 3.5-4 3.5zm-7 6c0-2.5 3-4.5 7-4.5s7 2 7 4.5c0 1.5-1 2-2 2H7c-1 0-2-.5-2-2z"/></svg>`,
+        "Quadro con calco": `<svg width="28" height="28" viewBox="0 0 24 24" fill="#b50084"><rect x="2" y="6" width="20" height="12" rx="2"/><rect x="4" y="8" width="7" height="8" fill="#fff"/><rect x="13" y="8" width="7" height="8" fill="#fff"/><circle cx="7.5" cy="12" r="1.5" fill="#b50084"/><circle cx="16.5" cy="12" r="1.5" fill="#b50084"/></svg>`,
+        "Default": `<svg width="28" height="28" viewBox="0 0 24 24" fill="#b50084"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z"/></svg>`
+    };
+
+    // LISTA COMPLETA DEI COLORI
+    const listaColori = [
+        { nome: "Bianco", code: "B2" }, { nome: "Grigio", code: "G2" }, { nome: "Giallo sole", code: "G1" },
+        { nome: "Arancione radioso", code: "A1" }, { nome: "Rosso passione", code: "R1" }, { nome: "Rosso terra", code: "R2" },
+        { nome: "Marrone biscotto", code: "M1" }, { nome: "Verde prato", code: "V1" }, { nome: "Azzurro cielo", code: "A2" },
+        { nome: "Blu oceano", code: "B1" }, { nome: "Fucsia vivace", code: "F1" }, { nome: "Amaranto vellutato", code: "A3" },
+        { nome: "Lilla carezza", code: "L1" }, { nome: "Viola mistero", code: "V2" }, { nome: "Nero elegante", code: "N1" },
+        { nome: "Caffellatte", code: "C1" }, { nome: "Terracotta", code: "T1" }
+    ];
+
+    // === MAPPA COLORI HEX ===
+    const mappaColoriHex = {
+        "Bianco": "#FFFFFF", "Grigio": "#9E9E9E", "Giallo sole": "#F4D03F", "Arancione radioso": "#E67E22", "Rosso passione": "#E74C3C", "Rosso terra": "#922B21",
+        "Marrone biscotto": "#C68E58", "Verde prato": "#58D68D", "Azzurro cielo": "#5DADE2", "Blu oceano": "#2874A6",
+        "Fucsia vivace": "#E91E63", "Amaranto vellutato": "#7B241C", "Lilla carezza": "#C39BD3", "Viola mistero": "#4A235A",
+        "Nero elegante": "#17202A", "Caffellatte": "#D4C4B7", "Terracotta": "#CC4E2C"
+    };
+
+    const catalogoPrezziDefault = {
+        "Cuore": { "Piccolo": { sku: "URN-CUO-PIC", costo: 7.00, prezzo: 20.00 }, "Medio": { sku: "URN-CUO-MED", costo: 9.00, prezzo: 25.00 }, "Grande": { sku: "URN-CUO-GRA", costo: 11.00, prezzo: 30.00 } },
+        "Ottagonale": { "Piccolo": { sku: "URN-OTT-PIC", costo: 3.50, prezzo: 10.00 }, "Medio": { sku: "URN-OTT-MED", costo: 5.50, prezzo: 15.00 }, "Grande": { sku: "URN-OTT-GRA", costo: 7.50, prezzo: 20.00 } },
+        "Sfera": { "Piccolo": { sku: "URN-SFE-PIC", costo: 5.50, prezzo: 15.00 }, "Medio": { sku: "URN-SFE-MED", costo: 7.50, prezzo: 20.00 }, "Grande": { sku: "URN-SFE-GRA", costo: 9.50, prezzo: 25.00 } },
+        "Quadro": { "Piccolo": { sku: "URN-QDR-PIC", costo: 9.00, prezzo: 25.00 }, "Medio": { sku: "URN-QDR-MED", costo: 13.00, prezzo: 35.00 }, "Grande": { sku: "URN-QDR-GRA", costo: 17.00, prezzo: 45.00 } },
+        "Cubo": { "Medio": { sku: "URN-CUB-MED", costo: 11.00, prezzo: 30.00 }, "Grande": { sku: "URN-CUB-GRA", costo: 15.00, prezzo: 40.00 } },
+        "Cane": { "Piccolo": { sku: "URN-CAN-PIC", costo: 13.00, prezzo: 35.00 }, "Grande": { sku: "URN-CAN-GRA", costo: 19.00, prezzo: 50.00 } },
+        "Gatto": { "Piccolo": { sku: "URN-GAT-PIC", costo: 11.00, prezzo: 30.00 } },
+        "Quadro con calco": { "Unica": { sku: "URN-QDC-UNI", costo: 15.00, prezzo: 40.00 } }
+    };
+    let catalogoPrezzi = JSON.parse(localStorage.getItem('24pet_preview_catalogo')) || catalogoPrezziDefault;
+    let orders = JSON.parse(localStorage.getItem('24pet_preview_orders')) || [];
+    let clients = JSON.parse(localStorage.getItem('24pet_preview_clients')) || [];
+    let clientInModifica = null; 
+    let idOrdineInModifica = null;
+    let carrelloCorrente = [];
+
+    // === INIZIALIZZAZIONE AL CARICAMENTO ===
+    document.addEventListener('DOMContentLoaded', function() {
+        M.AutoInit();
+        const sidenavs = document.querySelectorAll('.sidenav');
+        sidenavs.forEach(element => M.Sidenav.getInstance(element)?.destroy());
+        M.Sidenav.init(sidenavs, { edge: 'right' });
+        
+        let dataChanged = false;
+        if(!catalogoPrezzi["Quadro con calco"]) {
+            catalogoPrezzi["Quadro con calco"] = { "Unica": { sku: "URN-QDC-UNI", costo: 15.00, prezzo: 40.00 } };
+            dataChanged = true;
+        }
+
+        renderCatalogo();
+        aggiornaSelectModelli();     
+        inizializzaSidebarColori();  
+        impostaDataRapida(0); 
+
+        clients.forEach((c, index) => {
+            if(!c.codice) { c.codice = 'C-' + String(index + 1).padStart(3, '0'); dataChanged = true; }
+        });
+
+        if(dataChanged) {
+            localStorage.setItem('24pet_preview_catalogo', JSON.stringify(catalogoPrezzi));
+            localStorage.setItem('24pet_preview_clients', JSON.stringify(clients));
+            localStorage.setItem('24pet_preview_orders', JSON.stringify(orders));
+
+        }
+
+        aggiornaRubrica();
+        loadOrders();
+
+        
+        document.getElementById('costoImballaggio').addEventListener('input', aggiornaUICarrello);
+        document.getElementById('costoSpedizione').addEventListener('input', aggiornaUICarrello);
+        document.getElementById('spedizioneACarico').addEventListener('change', aggiornaUICarrello);
+        document.getElementById('scontoExtraPerc').addEventListener('input', aggiornaUICarrello);
+    });
+
+    // === GESTIONE CAMBIO PAGINA ===
+    function showPage(pageId, element) {
+        let links = document.querySelectorAll('.collection-item');
+        links.forEach(l => l.classList.remove('active'));
+        element.classList.add('active');
+        
+        let pages = document.querySelectorAll('.page-content');
+        pages.forEach(p => p.classList.remove('active'));
+        
+        let target = document.getElementById(pageId);
+        target.classList.add('active');
+    }
+
+    // === SIDEBAR DESTRA (Gestione Universale) ===
+    function apriSidebarModelli() { 
+        let elem = document.getElementById('slide-out-modelli');
+        let inst = M.Sidenav.getInstance(elem);
+        if(!inst) { inst = M.Sidenav.init(elem, {edge: 'right'}); }
+        inst.open(); 
+    }
+    
+    function chiudiSidebar(id) {
+        let elem = document.getElementById(id);
+        let instance = M.Sidenav.getInstance(elem);
+        if(instance) { instance.close(); }
+    }
+
+    function apriSidebarClienti(targetId) {
+        targetInputForClient = targetId;
+        document.getElementById('filtroSidebar').value = '';
+        filtraSidebarClienti(); 
+        
+        let elem = document.getElementById('slide-out-clienti');
+        let inst = M.Sidenav.getInstance(elem);
+        if(!inst) { inst = M.Sidenav.init(elem, {edge: 'right'}); }
+        inst.open();
+    }
+
+    function filtraSidebarClienti() {
+        let input = document.getElementById('filtroSidebar').value.toLowerCase();
+        let items = document.querySelectorAll('#listaClientiSidebar a.collection-item');
+        items.forEach(item => {
+            let nome = item.getAttribute('data-nome').toLowerCase();
+            let codice = item.getAttribute('data-codice').toLowerCase();
+            if (nome.includes(input) || codice.includes(input)) {
+                item.style.display = '';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    }
+
+    function selezionaClienteDaLista(elem) {
+        let codice = elem.getAttribute('data-codice');
+        let nome = elem.getAttribute('data-nome');
+        let tipo = elem.getAttribute('data-tipo');
+        let textValue = `[${codice}] ${nome}` + (tipo === 'Rivenditore' ? ' (Rivenditore)' : '');
+
+        let targetElem = document.getElementById(targetInputForClient);
+        if (targetElem) {
+            targetElem.innerText = textValue;
+            targetElem.style.color = '#000';
+
+            if (targetInputForClient === 'clienteSearchDisplay') {
+                document.getElementById('clienteSearch').value = textValue;
+                document.getElementById('tipoClienteAuto').value = tipo;
+                M.updateTextFields();
+                aggiornaUICarrello();
+            } else if (targetInputForClient === 'searchClienteInputDisplay') {
+                document.getElementById('searchClienteInput').value = textValue;
+                searchClient(codice); 
+            }
+        }
+        chiudiSidebar('slide-out-clienti');
+    }
+
+    // === POPOLA SIDEBAR MODELLI ===
+    function aggiornaSelectModelli() {
+        const contenitore = document.getElementById('listaModelliSidebar');
+        let html = '';
+        for (let modello in catalogoPrezzi) {
+            let svgStr = iconeProdotti[modello] || iconeProdotti["Default"];
+            let safeModello = modello.replace(/"/g, '&quot;');
+            html += `
+                <a href="#!" class="collection-item" style="color: #333; border-radius: 4px; margin-bottom: 5px; border: 1px solid #eee; display: flex; align-items: center;" onclick="selezionaModelloDaSidebar('${safeModello}')">
+                    <div style="width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; margin-right: 15px; background-color: #faebf7; border-radius: 4px;">
+                        ${svgStr.replace('width="28"', 'width="20"').replace('height="28"', 'height="20"')}
+                    </div>
+                    <span style="font-weight:bold; font-size: 1.1em;">${modello}</span>
+                </a>
+            `;
+        }
+        contenitore.innerHTML = html;
+    }
+
+    function selezionaModelloDaSidebar(modello) {
+        document.getElementById('modello').value = modello;
+        let svgStr = iconeProdotti[modello] || iconeProdotti["Default"];
+        
+        // Aggiorna il finto bottone 
+        document.getElementById('modelloDisplay').innerHTML = `
+            <div style="display:flex; align-items:center;">
+                <div style="width:24px; height:24px; display:flex; align-items:center; justify-content:center; margin-right:10px; background-color:#faebf7; border-radius:4px;">
+                    ${svgStr.replace('width="28"', 'width="18"').replace('height="28"', 'height="18"')}
+                </div>
+                <span style="font-weight:bold; color:#4a004a;">${modello}</span>
+            </div>
+        `;
+
+        // Genera i Radio button delle dimensioni
+        const dimensioneContainer = document.getElementById('dimensioneContainer');
+        dimensioneContainer.innerHTML = '';
+        
+        if(catalogoPrezzi[modello]) {
+            const grandezzeDisponibili = Object.keys(catalogoPrezzi[modello]);
+            grandezzeDisponibili.forEach((dim, index) => {
+                let checked = index === 0 ? 'checked' : ''; 
+                dimensioneContainer.innerHTML += `
+                    <label style="margin-right: 15px; cursor: pointer;">
+                        <input name="dimensioneRadio" class="with-gap" type="radio" value="${dim}" onchange="autoCompilaDatiBase()" ${checked}/>
+                        <span style="padding-left: 25px; color: #333;">${dim}</span>
+                    </label>
+                `;
+            });
+            autoCompilaDatiBase(); 
+        }
+        
+        chiudiSidebar('slide-out-modelli');
+    }
+
+    // === POPOLA E GESTISCE SIDEBAR COLORI MULTIPLA CON QUANTITA' ===
+    function apriSidenavColori() {
+        const modello = document.getElementById('modello').value;
+        const radioDim = document.querySelector('input[name="dimensioneRadio"]:checked');
+        if(!modello || !radioDim) {
+            M.toast({html: 'Devi prima selezionare il Modello e la Misura!', classes: 'red rounded'});
+            return;
+        }
+        // Resetta le quantità ogni volta che apri la finestra
+        listaColori.forEach(c => {
+            let input = document.getElementById('qty_' + c.code);
+            if (input) input.value = 0;
+        });
+        
+        let elem = document.getElementById('slide-out-colori');
+        let inst = M.Sidenav.getInstance(elem);
+        if(!inst) { inst = M.Sidenav.init(elem, {edge: 'right'}); }
+        inst.open();
+    }
+
+    function inizializzaSidebarColori() {
+        const contenitore = document.getElementById('listaColoriSidebar');
+        let html = '';
+        listaColori.forEach(c => {
+            let hex = mappaColoriHex[c.nome] || '#ccc';
+            let borderStyle = (c.nome === "Bianco") ? "border: 1px solid #ccc;" : "border: 1px solid transparent;";
+            
+            html += `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 5px; border-bottom: 1px solid #eee;">
+                    <div style="display: flex; align-items: center;">
+                        <span style="display:inline-block; width:22px; height:22px; border-radius:50%; background-color:${hex}; margin-right:12px; ${borderStyle}"></span>
+                        <span style="font-weight: 600; color: #333;">${c.code} - ${c.nome}</span>
+                    </div>
+                    <div style="display: flex; align-items: center; background: #f4f6f8; border-radius: 6px; border: 1px solid #ccc; overflow: hidden;">
+                        <button type="button" style="border:none; background:#e0e0e0; padding: 10px 15px; cursor:pointer;" onclick="modificaQtyColore('${c.code}', -1)"><b>-</b></button>
+                        <input type="number" id="qty_${c.code}" value="0" min="0" style="width: 40px; height: 35px; border: none; margin: 0; text-align: center; font-weight: bold; background: transparent;" readonly>
+                        <button type="button" style="border:none; background:#b50084; color:white; padding: 10px 15px; cursor:pointer;" onclick="modificaQtyColore('${c.code}', 1)"><b>+</b></button>
+                    </div>
+                </div>
+            `;
+        });
+        contenitore.innerHTML = html;
+    }
+
+    function modificaQtyColore(code, delta) {
+        let input = document.getElementById('qty_' + code);
+        let val = parseInt(input.value) || 0;
+        val += delta;
+        if (val < 0) val = 0;
+        input.value = val;
+    }
+
+    function autoCompilaDatiBase() {
+        const modelloSelezionato = document.getElementById('modello').value;
+        const radioDim = document.querySelector('input[name="dimensioneRadio"]:checked');
+        const dimensioneSelezionata = radioDim ? radioDim.value : null;
+        
+        if(modelloSelezionato && dimensioneSelezionata && catalogoPrezzi[modelloSelezionato][dimensioneSelezionata]) {
+            const datiProdotto = catalogoPrezzi[modelloSelezionato][dimensioneSelezionata];
+            document.getElementById('skuProdottoDisplay').innerText = "SKU Base: " + datiProdotto.sku;
+            document.getElementById('prezzoUnitarioDisplay').innerText = "€ " + datiProdotto.prezzo.toFixed(2);
+        }
+    }
+
+
+    // === AGGIUNGI COLORI DIRETTAMENTE AL CARRELLO ===
+    function aggiungiColoriAlCarrello() {
+        const modello = document.getElementById('modello').value;
+        const radioDim = document.querySelector('input[name="dimensioneRadio"]:checked');
+        const dimensione = radioDim ? radioDim.value : null;
+
+        if(!modello || !dimensione) {
+            M.toast({html: 'Errore: Modello o Misura mancanti.', classes: 'red rounded'});
+            return;
+        }
+
+        let costoUnitario = catalogoPrezzi[modello][dimensione].costo;
+        let prezzoUnitario = catalogoPrezzi[modello][dimensione].prezzo;
+        let baseSku = catalogoPrezzi[modello][dimensione].sku;
+
+        let aggiunti = 0;
+
+        // Scansiona i bottoncini
+        listaColori.forEach(c => {
+            let input = document.getElementById('qty_' + c.code);
+            if (input) {
+                let qta = parseInt(input.value) || 0;
+                if (qta > 0) {
+                    carrelloCorrente.push({
+                        modello: modello,
+                        dimensione: dimensione,
+                        colore: c.nome,
+                        sku: baseSku + '-' + c.code,
+                        quantita: qta,
+                        costoUnitario: costoUnitario,
+                        prezzoUnitario: prezzoUnitario
+                    });
+                    aggiunti += qta;
+                    input.value = 0; // reset automatico
+                }
+            }
+        });
+
+        if (aggiunti > 0) {
+            M.toast({html: `Aggiunti ${aggiunti} articoli al carrello!`, classes: 'green rounded'});
+            
+            // Reset Visivo Sezione Modello
+            document.getElementById('modello').value = '';
+            document.getElementById('modelloDisplay').innerHTML = '<span style="font-weight: bold; color: #4a004a;">Clicca per scegliere...</span>';
+            document.getElementById('dimensioneContainer').innerHTML = '<span class="grey-text" style="font-size:0.9em; font-style:italic;">Seleziona prima il modello...</span>';
+            document.getElementById('skuProdottoDisplay').innerText = "Scegli modello...";
+            document.getElementById('prezzoUnitarioDisplay').innerText = "€ 0.00";
+            
+            aggiornaUICarrello();
+            chiudiSidebar('slide-out-colori');
+        } else {
+            M.toast({html: 'Devi impostare almeno la quantità 1 per un colore.', classes: 'orange rounded'});
+        }
+    }
+
+    // === GENERAZIONE CATALOGO ===
+    function renderCatalogo(modelloInModifica = null) {
+        const container = document.getElementById('catalogo-container');
+        let html = '<div class="row">';
+        const selectCatAnno = document.getElementById('catalogoAnno');
+        let annoScelto = selectCatAnno ? selectCatAnno.value : 'Tutti';
+
+        let venditeModelli = {};
+        orders.forEach(o => {
+            if (annoScelto === 'Tutti' || (o.data && o.data.startsWith(annoScelto))) {
+                o.articoli.forEach(a => { venditeModelli[a.modello] = (venditeModelli[a.modello] || 0) + parseInt(a.quantita); });
+            }
+        });
+        
+        for (let modello in catalogoPrezzi) {
+            let svgIcon = iconeProdotti[modello] || iconeProdotti["Default"];
+            let varianti = catalogoPrezzi[modello];
+            let isModifica = (modello === modelloInModifica);
+            let venduti = venditeModelli[modello] || 0;
+            let testoVenduti = annoScelto === 'Tutti' ? 'venduti in tot.' : 'venduti nel ' + annoScelto;
+            
+            let tableRows = '';
+            for (let dim in varianti) {
+                if(isModifica) {
+                    tableRows += `
+                    <tr>
+                        <td style="padding: 5px;">
+                            <a href="#!" class="red-text" onclick="eliminaMisura('${modello}', '${dim}')" title="Elimina Misura" style="margin-right: 5px;"><i class="material-icons" style="font-size: 16px; vertical-align: middle;">delete</i></a>
+                            ${dim}
+                        </td>
+                        <td style="padding: 5px;">${varianti[dim].sku}</td>
+                        <td style="padding: 5px;"><input type="number" step="0.01" id="edit_costo_${modello}_${dim}" value="${varianti[dim].costo}" class="input-catalogo"></td>
+                        <td style="padding: 5px;"><input type="number" step="0.01" id="edit_prezzo_${modello}_${dim}" value="${varianti[dim].prezzo}" class="input-catalogo" style="font-weight:bold; color:#b50084;"></td>
+                    </tr>`;
+                } else {
+                    tableRows += `
+                    <tr>
+                        <td style="padding: 5px;">${dim}</td>
+                        <td style="padding: 5px;">${varianti[dim].sku}</td>
+                        <td style="padding: 5px;">€ ${varianti[dim].costo.toFixed(2)}</td>
+                        <td style="padding: 5px; font-weight: bold;">€ ${varianti[dim].prezzo.toFixed(2)}</td>
+                    </tr>`;
+                }
+            }
+
+            let btnHtml = isModifica ? `
+                <button class="btn-floating btn-small red waves-effect waves-light" onclick="eliminaModello('${modello}')" title="Elimina intero modello"><i class="material-icons">delete_forever</i></button>
+                <button class="btn-floating btn-small yellow darken-3 waves-effect waves-light" onclick="aggiungiMisura('${modello}')" title="Aggiungi Misura" style="margin-left:5px;"><i class="material-icons">add</i></button>
+                <button class="btn-floating btn-small green darken-1 waves-effect waves-light" onclick="salvaModificaCatalogo('${modello}')" style="margin-left:5px;"><i class="material-icons">save</i></button>
+                <button class="btn-floating btn-small grey waves-effect waves-light" onclick="renderCatalogo()" style="margin-left:5px;"><i class="material-icons">close</i></button>
+            ` : `<button class="btn-floating btn-small blue waves-effect waves-light" onclick="renderCatalogo('${modello}')" title="Modifica Prezzi o Aggiungi Misure"><i class="material-icons">edit</i></button>`;
+
+            html += `
+            <div class="col s12 m6 l6">
+                <div class="card hoverable" style="border-radius: 12px; overflow: hidden;">
+                    <div class="card-image" style="background-color: #faebf7; height: 120px; display: flex; align-items: center; justify-content: center; position: relative;">
+                        <img src="${modello}.jpg" alt="${modello}" style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; z-index: 1;" onerror="this.style.display='none'">
+                        <div style="z-index: 0; opacity: 0.2; transform: scale(3);">${svgIcon}</div>
+                        <div style="background: rgba(74, 0, 74, 0.85); width: 100%; padding: 10px 15px; z-index: 2; display: flex; justify-content: space-between; align-items: center; position: absolute; bottom: 0;">
+                            <div style="display:flex; flex-direction:column; align-items:flex-start; line-height: 1.2;">
+                                <span style="font-weight: bold; font-size: 1.3rem; color: white;">${modello}</span>
+                                <span style="color:#a5d6a7; font-size:0.85em; font-weight:bold;"><i class="material-icons" style="font-size:12px; vertical-align:middle;">shopping_cart</i> ${venduti} ${testoVenduti}</span>
+                            </div>
+                            <div style="display:flex;">${btnHtml}</div>
+                        </div>
+                    </div>
+                    <div class="card-content" style="padding: 15px; overflow-x: auto;">
+                        <table class="striped" style="font-size: 0.85em;">
+                            <thead><tr><th style="padding: 5px;">Misura</th><th style="padding: 5px;">SKU Base</th><th style="padding: 5px;">Costo Lab.</th><th style="padding: 5px;">Prezzo Listino</th></tr></thead>
+                            <tbody>${tableRows}</tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>`;
+        }
+        html += '</div>';
+        container.innerHTML = html;
+    }
+
+    function salvaModificaCatalogo(modello) {
+        let varianti = catalogoPrezzi[modello];
+        for (let dim in varianti) {
+            let inputCosto = document.getElementById(`edit_costo_${modello}_${dim}`);
+            let inputPrezzo = document.getElementById(`edit_prezzo_${modello}_${dim}`);
+            if (inputCosto && inputPrezzo) {
+                varianti[dim].costo = parseFloat(inputCosto.value) || 0;
+                varianti[dim].prezzo = parseFloat(inputPrezzo.value) || 0;
+            }
+        }
+        localStorage.setItem('24pet_preview_catalogo', JSON.stringify(catalogoPrezzi));
+        M.toast({html: `Prezzi per ${modello} aggiornati!`, classes: 'green rounded'});
+        renderCatalogo();
+    }
+
+    function aggiungiNuovoModello() {
+        let nome = prompt("Inserisci il NOME del nuovo modello di urna (es. Piramide):");
+        if(!nome || nome.trim() === "") return;
+        nome = nome.trim();
+        nome = nome.charAt(0).toUpperCase() + nome.slice(1).toLowerCase();
+        if(catalogoPrezzi[nome]) { alert("Attenzione: questo modello esiste già nel catalogo!"); return; }
+
+        let skuBase = "URN-" + nome.substring(0,3).toUpperCase() + "-UNI";
+        catalogoPrezzi[nome] = { "Unica": { sku: skuBase, costo: 0, prezzo: 0 } };
+        localStorage.setItem('24pet_preview_catalogo', JSON.stringify(catalogoPrezzi));
+        M.toast({html: `Modello '${nome}' creato! Ora imposta i prezzi.`, classes: 'purple rounded'});
+        aggiornaSelectModelli();
+        renderCatalogo(nome); 
+    }
+
+    function aggiungiMisura(modello) {
+        let misura = prompt(`Inserisci il nome della NUOVA MISURA per ${modello} (es. Extra-Large):`);
+        if(!misura || misura.trim() === "") return;
+        misura = misura.trim();
+        if(catalogoPrezzi[modello][misura]) { alert("Questa misura esiste già per questo modello!"); return; }
+
+        let skuMisura = "URN-" + modello.substring(0,3).toUpperCase() + "-" + misura.substring(0,3).toUpperCase();
+        catalogoPrezzi[modello][misura] = { sku: skuMisura, costo: 0, prezzo: 0 };
+        localStorage.setItem('24pet_preview_catalogo', JSON.stringify(catalogoPrezzi));
+        renderCatalogo(modello); 
+    }
+
+    function eliminaMisura(modello, dimensione) {
+        if(confirm(`⚠️ ATTENZIONE ⚠️\n\nEliminare definitivamente la misura "${dimensione}" del modello ${modello}?\n\nNon potrai annullare questa operazione.`)) {
+            delete catalogoPrezzi[modello][dimensione];
+            if(Object.keys(catalogoPrezzi[modello]).length === 0) {
+                delete catalogoPrezzi[modello];
+                M.toast({html: `Modello ${modello} eliminato (nessuna misura rimasta).`, classes: 'red rounded'});
+                renderCatalogo();
+            } else {
+                M.toast({html: `Misura ${dimensione} eliminata.`, classes: 'orange rounded'});
+                renderCatalogo(modello);
+            }
+            localStorage.setItem('24pet_preview_catalogo', JSON.stringify(catalogoPrezzi));
+            aggiornaSelectModelli();
+        }
+    }
+
+    function eliminaModello(modello) {
+        if(confirm(`⚠️ ATTENZIONE ⚠️\n\nSei sicuro di voler eliminare DEFINITIVAMENTE l'intero modello "${modello}" e tutte le sue misure dal catalogo?\n\nQuesta azione non può essere annullata.`)) {
+            delete catalogoPrezzi[modello];
+            localStorage.setItem('24pet_preview_catalogo', JSON.stringify(catalogoPrezzi));
+            aggiornaSelectModelli();
+            M.toast({html: `Modello ${modello} eliminato!`, classes: 'red rounded'});
+            renderCatalogo();
+        }
+    }
+
+
+    // === GESTIONE RUBRICA E MODIFICA CLIENTE ===
+    function preparaModificaCliente(codice) {
+        const client = clients.find(c => c.codice === codice);
+        if(!client) return;
+        clientInModifica = codice; 
+        
+        document.getElementById('nuovoNomeCliente').value = client.nome || '';
+        document.getElementById('nuovoTipoCliente').value = client.tipo || 'Azienda';
+        document.getElementById('indirizzoSede').value = client.indirizzoSede || '';
+        document.getElementById('indirizzoSpedizione').value = client.indirizzoSpedizione || '';
+        document.getElementById('telefono').value = client.telefono || '';
+        document.getElementById('cellulare').value = client.cellulare || '';
+        document.getElementById('email').value = client.email || '';
+        document.getElementById('referenteSpedizione').value = client.referenteSpedizione || '';
+        document.getElementById('partitaIva').value = client.partitaIva || '';
+        document.getElementById('codiceFiscale').value = client.codiceFiscale || '';
+        document.getElementById('codiceUnivoco').value = client.codiceUnivoco || '';
+        document.getElementById('pec').value = client.pec || '';
+
+        M.updateTextFields(); 
+        M.FormSelect.init(document.querySelectorAll('#gestione-clienti select'));
+
+        document.getElementById('titoloFormCliente').innerHTML = `<i class="material-icons left">edit</i>Modifica Cliente: ${client.nome || 'Senza Nome'}`;
+        document.getElementById('btnSalvaCliente').innerHTML = 'Aggiorna Cliente <i class="material-icons right">update</i>';
+        document.getElementById('btnSalvaCliente').classList.replace('btn-custom', 'blue');
+        document.getElementById('btnAnnullaModifica').style.display = 'inline-block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function annullaModificaCliente() {
+        clientInModifica = null;
+        document.getElementById('clientForm').reset();
+        document.getElementById('titoloFormCliente').innerHTML = `<i class="material-icons left">person_add</i>Aggiungi Nuovo Cliente in Rubrica`;
+        document.getElementById('btnSalvaCliente').innerHTML = 'Salva in Rubrica <i class="material-icons right">save</i>';
+        document.getElementById('btnSalvaCliente').classList.replace('blue', 'btn-custom');
+        document.getElementById('btnAnnullaModifica').style.display = 'none';
+        M.updateTextFields();
+        M.FormSelect.init(document.querySelectorAll('#gestione-clienti select'));
+    }
+
+    document.getElementById('clientForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const nome = document.getElementById('nuovoNomeCliente').value.trim();
+        const tipo = document.getElementById('nuovoTipoCliente').value;
+        const indirizzoSede = document.getElementById('indirizzoSede').value.trim();
+        const indirizzoSpedizione = document.getElementById('indirizzoSpedizione').value.trim();
+        const telefono = document.getElementById('telefono').value.trim();
+        const cellulare = document.getElementById('cellulare').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const referenteSpedizione = document.getElementById('referenteSpedizione').value.trim();
+        const partitaIva = document.getElementById('partitaIva').value.trim();
+        const codiceFiscale = document.getElementById('codiceFiscale').value.trim();
+        const codiceUnivoco = document.getElementById('codiceUnivoco').value.trim();
+        const pec = document.getElementById('pec').value.trim();
+
+        if (clientInModifica) {
+            if(clients.some(c => (c.nome || "").toLowerCase() === nome.toLowerCase() && c.codice !== clientInModifica)) {
+                M.toast({html: 'Un altro cliente ha già questo nome!', classes: 'red rounded'});
+                return;
+            }
+            let idx = clients.findIndex(c => c.codice === clientInModifica);
+            clients[idx] = {
+                codice: clientInModifica, nome: nome, tipo: tipo, indirizzoSede: indirizzoSede, 
+                indirizzoSpedizione: indirizzoSpedizione, telefono: telefono, cellulare: cellulare, 
+                email: email, referenteSpedizione: referenteSpedizione, partitaIva: partitaIva, codiceFiscale: codiceFiscale, codiceUnivoco: codiceUnivoco, pec: pec
+            };
+            orders.forEach(o => { if (o.codiceCliente === clientInModifica) { o.cliente = nome; o.tipo = tipo; } });
+            localStorage.setItem('24pet_preview_orders', JSON.stringify(orders));
+            M.toast({html: 'Cliente aggiornato con successo!', classes: 'blue rounded'});
+            annullaModificaCliente();
+        } else {
+            if(clients.some(c => (c.nome || "").toLowerCase() === nome.toLowerCase())) {
+                M.toast({html: 'Questo cliente è già in rubrica!', classes: 'red rounded'});
+                return;
+            }
+            let maxNum = 0;
+            clients.forEach(c => {
+                if(c.codice) {
+                    let num = parseInt(c.codice.replace('C-', ''));
+                    if(num > maxNum) maxNum = num;
+                }
+            });
+            let nuovoCodice = 'C-' + String(maxNum + 1).padStart(3, '0');
+            clients.push({ 
+                codice: nuovoCodice, nome: nome, tipo: tipo, indirizzoSede: indirizzoSede, 
+                indirizzoSpedizione: indirizzoSpedizione, telefono: telefono, cellulare: cellulare, 
+                email: email, referenteSpedizione: referenteSpedizione, partitaIva: partitaIva, codiceFiscale: codiceFiscale, codiceUnivoco: codiceUnivoco, pec: pec
+            });
+            M.toast({html: 'Cliente aggiunto! Codice: ' + nuovoCodice, classes: 'purple rounded'});
+            this.reset();
+        }
+        localStorage.setItem('24pet_preview_clients', JSON.stringify(clients));
+
+        aggiornaRubrica();
+        loadOrders(); 
+    });
+
+    function eliminaCliente(index) {
+        if(confirm("Sei sicuro di voler eliminare questo cliente?")) {
+            clients.splice(index, 1);
+            localStorage.setItem('24pet_preview_clients', JSON.stringify(clients));
+
+            aggiornaRubrica();
+        }
+    }
+
+    function aggiornaRubrica() {
+        const tbody = document.getElementById('clientsTableBody');
+        tbody.innerHTML = '';
+        
+        let sortedClients = [...clients].sort((a,b) => {
+            let numA = parseInt((a.codice || "0").replace('C-', ''));
+            let numB = parseInt((b.codice || "0").replace('C-', ''));
+            return numA - numB;
+        });
+
+        let sidebarHtml = '';
+
+        sortedClients.forEach((c, i) => {
+            let tr = document.createElement('tr');
+            let badge = c.tipo === 'Rivenditore' ? '<span class="new badge" style="background-color: #8c0066;" data-badge-caption="Rivenditore"></span>' : '<span class="new badge" style="background-color: #4a004a;" data-badge-caption="Azienda"></span>';
+            let realIndex = clients.findIndex(orig => orig.codice === c.codice);
+            let nomeSicuro = c.nome || "Senza Nome";
+
+            let arrayContatti = [];
+            if(c.telefono) arrayContatti.push(`📞 ${c.telefono}`);
+            if(c.cellulare) arrayContatti.push(`📱 ${c.cellulare}`);
+            if(c.email) arrayContatti.push(`✉️ ${c.email}`);
+            let contattiStr = arrayContatti.join('<br>') || '-';
+
+            tr.innerHTML = `
+                <td><strong>${c.codice}</strong></td>
+                <td><strong>${nomeSicuro}</strong></td>
+                <td>${badge}</td>
+                <td>${c.indirizzoSpedizione || '-'}</td>
+                <td>${c.referenteSpedizione || '-'}</td>
+                <td>${contattiStr}</td>
+                <td>
+                    <a href="#!" class="blue-text" onclick="preparaModificaCliente('${c.codice}')" title="Modifica" style="margin-right: 15px;"><i class="material-icons">edit</i></a>
+                    <a href="#!" class="red-text" onclick="eliminaCliente(${realIndex})" title="Elimina"><i class="material-icons">delete</i></a>
+                </td>
+            `;
+            tbody.appendChild(tr);
+
+            // Popola colonna Sidebar Rapida
+            let safeNameHTML = nomeSicuro.replace(/"/g, '&quot;');
+            sidebarHtml += `
+                <a href="#!" class="collection-item" style="color: #333; border-radius: 4px; margin-bottom: 5px; border: 1px solid #eee;" data-codice="${c.codice}" data-nome="${safeNameHTML}" data-tipo="${c.tipo}" onclick="selezionaClienteDaLista(this)">
+                    <span style="font-weight:bold;">${nomeSicuro}</span><br>
+                    <span style="font-size:0.8em; color:#888;">[${c.codice}] - ${c.tipo}</span>
+                </a>
+            `;
+        });
+
+        document.getElementById('listaClientiSidebar').innerHTML = sidebarHtml;
+    }
+
+
+    function rimuoviDalCarrello(idx) {
+        if(confirm("Sei sicuro di voler rimuovere questo articolo dal carrello?")) {
+            carrelloCorrente.splice(idx, 1);
+            aggiornaUICarrello();
+        }
+    }
+
+    function aggiornaUICarrello() {
+        const tbody = document.getElementById('bodyCarrello');
+        tbody.innerHTML = '';
+        
+        let tipoCliente = document.getElementById('tipoClienteAuto').value;
+        let subtotaleListino = 0;
+        let totaleProduzione = 0;
+
+        if(carrelloCorrente.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="center-align grey-text">Il carrello è vuoto. Aggiungi i prodotti qui sopra.</td></tr>';
+            document.getElementById('importo').value = '';
+            document.getElementById('labelUtile').innerText = '';
+            document.getElementById('riepilogoScontoContenitore').style.display = 'none';
+            document.getElementById('subtotaliCarrelloContainer').style.display = 'none';
+            M.updateTextFields();
+            return;
+        }
+
+        carrelloCorrente.forEach((item, idx) => {
+            let totArticoloListino = item.prezzoUnitario * item.quantita;
+            
+            totaleProduzione += (item.costoUnitario * item.quantita);
+            subtotaleListino += totArticoloListino;
+
+            let icona = iconeProdotti[item.modello] || iconeProdotti["Default"];
+            let hexColor = mappaColoriHex[item.colore] || '#ccc';
+            let borderStyle = (item.colore === "Bianco") ? "border: 1px solid #ccc;" : "border: 1px solid #999;";
+
+            tbody.innerHTML += `
+                <tr>
+                    <td>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <div style="width:24px;">${icona.replace('width="28"', 'width="24"').replace('height="28"', 'height="24"')}</div>
+                            <div><strong>${item.modello}</strong> <span style="font-size:0.9em; color:#666;">(${item.dimensione})</span><br><small class="grey-text" style="font-family:monospace;">${item.sku}</small></div>
+                        </div>
+                    </td>
+                    <td>
+                        <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background-color: ${hexColor}; ${borderStyle} margin-right: 4px; vertical-align: middle;"></span>
+                        <span style="vertical-align: middle;">${item.colore}</span>
+                    </td>
+                    <td><strong>${item.quantita}</strong></td>
+                    <td>€ ${item.prezzoUnitario.toFixed(2)}</td>
+                    <td><strong>€ ${totArticoloListino.toFixed(2)}</strong></td>
+                    <td><i class="material-icons red-text" style="cursor:pointer;" onclick="rimuoviDalCarrello(${idx})" title="Rimuovi">delete</i></td>
+                </tr>
+            `;
+        });
+
+        // CALCOLO E STAMPA TOTALI PARZIALI SOTTO LA TABELLA DEL CARRELLO
+        let contSubtotali = document.getElementById('subtotaliCarrelloContainer');
+        let subtotali = {};
+        carrelloCorrente.forEach(item => {
+            let chiave = `${item.modello} (${item.dimensione})`;
+            subtotali[chiave] = (subtotali[chiave] || 0) + item.quantita;
+        });
+        
+        let subHtml = `<div style="background-color: #f3e5f5; border: 1px solid #ce93d8; border-radius: 8px; padding: 10px;">
+                        <div style="font-weight: bold; color: #4a004a; font-size: 1em; margin-bottom: 5px;"><i class="material-icons left" style="font-size:1.2em; margin-right: 5px;">summarize</i>Totali Parziali in Carrello</div>
+                        <div style="display: flex; flex-wrap: wrap; gap: 10px;">`;
+        for (let k in subtotali) {
+            subHtml += `<span style="background: white; padding: 4px 10px; border-radius: 12px; border: 1px solid #e1bee7; color: #333; font-weight: 500; font-size: 0.9em;">${k}: <b class="text-fucsia">${subtotali[k]} pz</b></span>`;
+        }
+        subHtml += `</div></div>`;
+        contSubtotali.innerHTML = subHtml;
+        contSubtotali.style.display = 'block';
+
+        let testiSconto = [];
+        let scontoRivenditore = 0;
+        
+        if (tipoCliente === 'Rivenditore') {
+            scontoRivenditore = subtotaleListino * 0.25;
+            testiSconto.push(`Sconto Riv. (25%): <strong>- € ${scontoRivenditore.toFixed(2)}</strong>`);
+        }
+
+        let importoProdottiScontato = subtotaleListino - scontoRivenditore;
+
+        let scontoExtraPerc = parseFloat(document.getElementById('scontoExtraPerc').value) || 0;
+        let scontoExtraEuro = 0;
+        if (scontoExtraPerc > 0) {
+            scontoExtraEuro = importoProdottiScontato * (scontoExtraPerc / 100);
+            importoProdottiScontato -= scontoExtraEuro;
+            testiSconto.push(`Sconto Extra (${scontoExtraPerc}%): <strong>- € ${scontoExtraEuro.toFixed(2)}</strong>`);
+        }
+
+        if (testiSconto.length > 0) {
+            document.getElementById('riepilogoScontoContenitore').style.display = 'block';
+            document.getElementById('riepilogoScontoContenitore').innerHTML = testiSconto.join(' &nbsp; | &nbsp; ');
+        } else {
+            document.getElementById('riepilogoScontoContenitore').style.display = 'none';
+        }
+
+        let costoImballaggio = parseFloat(document.getElementById('costoImballaggio').value) || 0;
+        let costoSpedizione = parseFloat(document.getElementById('costoSpedizione').value) || 0;
+        let spedizioneACarico = document.getElementById('spedizioneACarico').value; 
+
+        let importoFinale = importoProdottiScontato;
+        if(spedizioneACarico === 'Cliente') {
+            importoFinale += costoSpedizione;
+        }
+
+        let utileNetto = importoFinale - totaleProduzione - costoImballaggio - costoSpedizione;
+
+        document.getElementById('importo').value = importoFinale.toFixed(2);
+        document.getElementById('labelUtile').innerText = "Vero Guadagno (Utile Netto): € " + utileNetto.toFixed(2) + " (+ iva)";
+        M.updateTextFields();
+    }
+
+    // === GESTIONE MODIFICA E SALVATAGGIO ORDINE ===
+    function preparaModificaOrdine(id) {
+        const order = orders.find(x => x.id === id);
+        if(!order) return;
+        
+        idOrdineInModifica = id;
+        showPage('nuovo-ordine', document.querySelector('a[onclick*="nuovo-ordine"]'));
+
+        const clienteInfo = clients.find(c => c.codice === order.codiceCliente);
+        if(clienteInfo) {
+            let nomeSicuro = clienteInfo.nome || 'Senza Nome';
+            document.getElementById('clienteSearchDisplay').innerText = `[${clienteInfo.codice}] ${nomeSicuro}` + (clienteInfo.tipo === 'Rivenditore' ? ' (Rivenditore)' : '');
+            document.getElementById('clienteSearchDisplay').style.color = '#000';
+            document.getElementById('clienteSearch').value = `[${clienteInfo.codice}] ${nomeSicuro}` + (clienteInfo.tipo === 'Rivenditore' ? ' (Rivenditore)' : '');
+        }
+
+        document.getElementById('data').value = order.data;
+        document.getElementById('tipoClienteAuto').value = order.tipo || 'Azienda';
+        document.getElementById('costoImballaggio').value = order.costoImballaggio || 0;
+        document.getElementById('costoSpedizione').value = order.costoSpedizione || 0;
+        document.getElementById('spedizioneACarico').value = order.spedizioneACarico || 'Nostro';
+        document.getElementById('scontoExtraPerc').value = order.scontoExtraPerc || 0;
+        document.getElementById('pagato').checked = order.pagato;
+        document.getElementById('evaso').checked = order.evaso;
+
+        carrelloCorrente = JSON.parse(JSON.stringify(order.articoli));
+
+        M.updateTextFields();
+        aggiornaUICarrello();
+
+        document.getElementById('titoloFormOrdine').innerHTML = `<i class="material-icons left">edit</i>Modifica Ordine`;
+        const btn = document.getElementById('btnSalvaOrdine');
+        btn.innerHTML = 'Aggiorna Ordine <i class="material-icons right">update</i>';
+        btn.classList.replace('btn-custom', 'blue');
+        document.getElementById('btnAnnullaModificaOrdine').style.display = 'inline-block';
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function annullaModificaOrdine() {
+        idOrdineInModifica = null;
+        carrelloCorrente = [];
+        document.getElementById('orderForm').reset();
+        
+        document.getElementById('titoloFormOrdine').innerHTML = `<i class="material-icons left">add_shopping_cart</i>Componi Ordine Multiplo`;
+        const btn = document.getElementById('btnSalvaOrdine');
+        btn.innerHTML = 'Conferma e Salva Intero Ordine <i class="material-icons right">save</i>';
+        btn.classList.replace('blue', 'btn-custom');
+        document.getElementById('btnAnnullaModificaOrdine').style.display = 'none';
+
+        document.getElementById('clienteSearchDisplay').innerHTML = '<span style="font-weight: bold; color: #4a004a;">Clicca per cercare in rubrica...</span>';
+        document.getElementById('clienteSearch').value = '';
+        document.getElementById('tipoClienteAuto').value = '';
+        document.getElementById('importo').value = '';
+        document.getElementById('labelUtile').innerText = '';
+        document.getElementById('riepilogoScontoContenitore').style.display = 'none';
+        document.getElementById('subtotaliCarrelloContainer').style.display = 'none';
+        
+        document.getElementById('modello').value = '';
+        document.getElementById('modelloDisplay').innerHTML = '<span style="font-weight: bold; color: #4a004a;">Clicca per scegliere...</span>';
+        document.getElementById('dimensioneContainer').innerHTML = '<span class="grey-text" style="font-size:0.9em; font-style:italic;">Seleziona prima il modello...</span>';
+        document.getElementById('prezzoUnitarioDisplay').innerText = '€ 0.00';
+        document.getElementById('skuProdottoDisplay').innerText = 'Scegli modello...';
+
+        M.updateTextFields();
+        aggiornaUICarrello();
+        impostaDataRapida(0);
+    }
+
+    function salvaOrdineCompleto(e) {
+        e.preventDefault();
+        
+        if(carrelloCorrente.length === 0) {
+            M.toast({html: 'Devi aggiungere almeno un articolo al carrello!', classes: 'red rounded'});
+            return;
+        }
+
+        const testoScelto = document.getElementById('clienteSearchDisplay').innerText;
+        let match = testoScelto.match(/\[(C-\d+)\]/);
+        if(!match) {
+            M.toast({html: 'Devi selezionare un cliente valido dalla rubrica!', classes: 'red rounded'});
+            return;
+        }
+
+        const codiceCliente = match[1];
+        const clienteInfo = clients.find(c => c.codice === codiceCliente);
+        const nomeCliente = clienteInfo ? (clienteInfo.nome || 'Senza Nome') : 'Senza Nome';
+        
+        const dataOrdine = document.getElementById('data').value;
+        const tipoCliente = document.getElementById('tipoClienteAuto').value;
+        const costoImballaggio = parseFloat(document.getElementById('costoImballaggio').value) || 0;
+        const costoSpedizione = parseFloat(document.getElementById('costoSpedizione').value) || 0;
+        const scontoExtraPerc = parseFloat(document.getElementById('scontoExtraPerc').value) || 0;
+        const spedizioneACarico = document.getElementById('spedizioneACarico').value;
+        
+        let totaleProduzione = 0;
+        let subtotaleListino = 0;
+
+        carrelloCorrente.forEach(item => {
+            totaleProduzione += (item.costoUnitario * item.quantita);
+            subtotaleListino += (item.prezzoUnitario * item.quantita);
+        });
+
+        let scontoRivenditore = (tipoCliente === 'Rivenditore') ? (subtotaleListino * 0.25) : 0;
+        let importoProdottiScontato = subtotaleListino - scontoRivenditore;
+        
+        let scontoExtraEuro = 0;
+        if (scontoExtraPerc > 0) {
+            scontoExtraEuro = importoProdottiScontato * (scontoExtraPerc / 100);
+            importoProdottiScontato -= scontoExtraEuro;
+        }
+
+        let importoFinale = importoProdottiScontato;
+        if(spedizioneACarico === 'Cliente') {
+            importoFinale += costoSpedizione;
+        }
+
+        const utileNetto = importoFinale - totaleProduzione - costoImballaggio - costoSpedizione;
+
+        const newOrderData = {
+            id: idOrdineInModifica ? idOrdineInModifica : Date.now(),
+            codiceCliente: codiceCliente,
+            cliente: nomeCliente,
+            data: dataOrdine,
+            tipo: tipoCliente,
+            articoli: [...carrelloCorrente], 
+            costoImballaggio: costoImballaggio,
+            costoSpedizione: costoSpedizione,
+            spedizioneACarico: spedizioneACarico,
+            scontoExtraPerc: scontoExtraPerc,
+            importo: importoFinale,
+            utile: utileNetto,
+            pagato: document.getElementById('pagato').checked,
+            evaso: document.getElementById('evaso').checked
+        };
+
+        if (idOrdineInModifica) {
+            const idx = orders.findIndex(o => o.id === idOrdineInModifica);
+            if(idx !== -1) orders[idx] = newOrderData;
+            M.toast({html: 'Ordine aggiornato con successo!', classes: 'blue rounded'});
+        } else {
+            orders.push(newOrderData);
+            M.toast({html: 'Ordine Multiplo salvato con successo!', classes: 'purple rounded'});
+        }
+
+        localStorage.setItem('24pet_preview_orders', JSON.stringify(orders));
+
+        
+        annullaModificaOrdine(); 
+        loadOrders();
+    }
+
+    function eliminaOrdine(idOrdine) {
+        if(confirm("Sei sicuro di voler eliminare questo intero ordine?")) {
+            orders = orders.filter(o => o.id !== idOrdine);
+            localStorage.setItem('24pet_preview_orders', JSON.stringify(orders));
+
+            loadOrders();
+        }
+    }
+
+    // === CARICAMENTO LISTA ORDINI E AZIONI DI STAMPA ===
+    function loadOrders() {
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = '';
+        const sortedOrders = [...orders].sort((a, b) => new Date(b.data) - new Date(a.data));
+
+        sortedOrders.forEach(o => {
+            const tr = document.createElement('tr');
+            const d = new Date(o.data);
+            const dataFormattata = ('0'+d.getDate()).slice(-2) + '/' + ('0'+(d.getMonth()+1)).slice(-2) + '/' + d.getFullYear();
+            const utile = o.utile || 0; 
+            const clienteString = o.codiceCliente ? `[${o.codiceCliente}] ${o.cliente}` : o.cliente;
+            
+            let qtaTotale = 0;
+            let articoliHtml = '';
+            let riepilogoHtml = '<div style="margin-top: 10px; padding: 8px; background-color: #faebf7; border-radius: 6px; border-left: 3px solid #b50084;"><div style="font-size: 0.8em; font-weight: bold; color: #4a004a; margin-bottom: 3px;">RIEPILOGO TOTALI:</div>';
+
+            let gruppiMap = new Map();
+            o.articoli.forEach(a => {
+                let key = `${a.modello} (${a.dimensione})`;
+                if(!gruppiMap.has(key)) {
+                    gruppiMap.set(key, { items: [], totale: 0 });
+                }
+                let grp = gruppiMap.get(key);
+                grp.items.push(a);
+                grp.totale += parseInt(a.quantita);
+                qtaTotale += parseInt(a.quantita);
+            });
+
+            gruppiMap.forEach((grp, key) => {
+                grp.items.forEach(a => {
+                    let hexColor = mappaColoriHex[a.colore] || '#ccc'; 
+                    let borderStyle = (a.colore === "Bianco") ? "border: 1px solid #ccc;" : "border: 1px solid transparent;";
+                    articoliHtml += `
+                        <div style="margin-bottom:4px; font-size: 0.95em; display:flex; align-items:center;">
+                            <strong style="margin-right:6px;">${a.quantita}x ${a.modello}</strong> <span style="color:#666; margin-right:6px;">(${a.dimensione})</span> - 
+                            <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background-color:${hexColor}; margin:0 4px 0 6px; ${borderStyle}"></span>
+                            <span style="color:#333;">${a.colore}</span>
+                        </div>`;
+                });
+                
+                articoliHtml += `<div style="margin-top: 4px; margin-bottom: 12px; font-size: 0.85em; color: #4a004a; background: #f3e5f5; padding: 3px 8px; border-radius: 4px; border-left: 2px solid #ab47bc; display: inline-block;"><b>Totale Parziale ${key}: ${grp.totale} pz</b></div><br>`;
+                riepilogoHtml += `<div style="font-size: 0.85em; color: #333;">&bull; ${key}: <b>${grp.totale} pz</b></div>`;
+            });
+            riepilogoHtml += `</div>`;
+
+            tr.innerHTML = `
+                <td>
+                    <div style="font-weight: bold; color: #4a004a; font-size: 1.1em;">${clienteString}</div>
+                    <div class="grey-text" style="font-size: 0.9em; margin-top: 2px;"><i class="material-icons" style="font-size: 14px; vertical-align: middle;">event</i> ${dataFormattata}</div>
+                </td>
+                <td style="min-width: 280px;">
+                    ${articoliHtml}
+                    ${riepilogoHtml}
+                    <div style="margin-top: 8px; font-size: 0.9em; color: #b50084;"><strong>Totale Pezzi Ordine: ${qtaTotale}</strong></div>
+                </td>
+                <td>
+                    <div style="font-weight: 900; font-size: 1.15em;">€ ${o.importo.toFixed(2)}</div>
+                    <div style="color: #2e7d32; font-size: 0.95em; font-weight: bold; margin-top: 2px;">Utile: € ${utile.toFixed(2)}</div>
+                </td>
+                <td>
+                    <div style="margin-bottom: 6px;">${o.pagato ? '<span class="new badge black" data-badge-caption="Pagato"></span>' : '<span class="new badge red" data-badge-caption="Da Pagare"></span>'}</div>
+                    <div>${o.evaso ? '<span class="new badge black" data-badge-caption="Evaso"></span>' : '<span class="new badge orange" data-badge-caption="In Lavorazione"></span>'}</div>
+                </td>
+                <td>
+                    <a href="#!" class="teal-text text-darken-2" onclick="stampaRiepilogoCliente(${o.id})" title="Stampa Riepilogo per Cliente" style="margin-right: 15px;"><i class="material-icons">receipt</i></a>
+                    <a href="#!" class="grey-text text-darken-3" onclick="stampaSchedaProduzioneSingola(${o.id})" title="Stampa Scheda Produzione (Laboratorio)" style="margin-right: 15px;"><i class="material-icons">print</i></a>
+                    <a href="#!" class="blue-text" onclick="preparaModificaOrdine(${o.id})" title="Modifica Ordine" style="margin-right: 15px;"><i class="material-icons">edit</i></a>
+                    <a href="#!" class="red-text" onclick="eliminaOrdine(${o.id})" title="Elimina Ordine"><i class="material-icons">delete</i></a>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        aggiornaFiltroAnni(); 
+        aggiornaStatistiche();
+        renderCatalogo(); 
+    }
+
+    // === GENERAZIONE SCHEDA PRODUZIONE PDF (PER IL LABORATORIO) ===
+    function costruisciHtmlSchedeProduzione(ordiniDaStampare, titoloHeader) {
+        let printHtml = `
+            <div style="max-width: 850px; margin: 0 auto; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #333; padding: 10px;">
+                <div style="background: linear-gradient(135deg, #4a004a 0%, #b50084 100%); border-radius: 6px; padding: 6px 12px; color: white; display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; page-break-inside: avoid;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        
+                        <div><h1 style="margin: 0; font-weight: 800; font-size: 15px; letter-spacing: 0.5px;">${titoloHeader}</h1></div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 12px; font-weight: bold;">${new Date().toLocaleDateString('it-IT')}</div>
+                    </div>
+                </div>
+                <div style="display: block;">
+        `;
+
+        ordiniDaStampare.forEach(o => {
+            const dataFormattata = ('0'+new Date(o.data).getDate()).slice(-2) + '/' + ('0'+(new Date(o.data).getMonth()+1)).slice(-2) + '/' + new Date(o.data).getFullYear();
+            const orderNum = Number(o.id).toString(36).toUpperCase().slice(-5); 
+            
+            let articoliHtmlPrint = '';
+            let riepilogoPrint = '<div style="margin-top: 10px; padding: 8px 10px; background-color: #f3e5f5; border-radius: 6px; border: 1px solid #ce93d8; page-break-inside: avoid;"><div style="font-size: 0.85em; font-weight: bold; color: #4a004a; margin-bottom: 6px;">RIEPILOGO TOTALE ORDINE:</div><div style="display: flex; flex-wrap: wrap; gap: 10px;">';
+            
+            let gruppiMap = new Map();
+            o.articoli.forEach(a => {
+                let key = `${a.modello} (${a.dimensione})`;
+                if(!gruppiMap.has(key)) {
+                    gruppiMap.set(key, { items: [], totale: 0, icona: iconeProdotti[a.modello] || iconeProdotti["Default"] });
+                }
+                let grp = gruppiMap.get(key);
+                grp.items.push(a);
+                grp.totale += parseInt(a.quantita);
+            });
+
+            gruppiMap.forEach((grp, key) => {
+                grp.items.forEach(a => {
+                    let hexColor = mappaColoriHex[a.colore] || '#ccc';
+                    let borderStyle = (a.colore === "Bianco") ? "border: 1px solid #ccc;" : "border: 1px solid transparent;";
+                    let iconaSVG = grp.icona;
+                    
+                    articoliHtmlPrint += `
+                        <div style="display: flex; align-items: center; justify-content: space-between; padding: 2px 0; border-bottom: 1px solid #eee; page-break-inside: avoid; min-height: 28px;">
+                            <div style="display: flex; align-items: center; gap: 6px; width: 45%;">
+                                <div style="background: #faebf7; border-radius: 4px; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;">
+                                    ${iconaSVG.replace('width="28"', 'width="14"').replace('height="28"', 'height="14"')}
+                                </div>
+                                <div style="line-height: 1;">
+                                    <div style="font-weight: 900; font-size: 0.9em; color: #4a004a;">${a.modello} <span style="font-weight:normal; color:#666; font-size: 0.85em;">(${a.dimensione})</span></div>
+                                    <div style="font-family: monospace; font-size: 0.65em; color: #888; margin-top: 1px;">${a.sku || 'N/D'}</div>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 4px; width: 35%;">
+                                <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background-color: ${hexColor}; ${borderStyle}"></span>
+                                <span style="color: #444; font-weight: bold; font-size: 0.8em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${a.colore}</span>
+                            </div>
+                            <div style="font-size: 1.1em; font-weight: 900; color: #b50084; text-align: right; width: 10%;">
+                                ${a.quantita}
+                            </div>
+                            <div style="width: 14px; height: 14px; border: 1px solid #999; border-radius: 2px;"></div>
+                        </div>
+                    `;
+                });
+
+                articoliHtmlPrint += `
+                    <div style="background-color: #fafafa; border-bottom: 2px solid #ccc; padding: 4px 8px; margin-bottom: 10px; text-align: right; page-break-inside: avoid;">
+                        <span style="font-size: 0.8em; color: #666; text-transform: uppercase;">Totale Parziale ${key}:</span> 
+                        <strong style="color: #b50084; font-size: 1.1em; margin-left: 8px;">${grp.totale} pz</strong>
+                    </div>
+                `;
+
+                riepilogoPrint += `<span style="background: white; padding: 2px 8px; border-radius: 4px; border: 1px solid #e1bee7; font-size: 0.8em;">${key}: <b style="color:#b50084;">${grp.totale} pz</b></span>`;
+            });
+            riepilogoPrint += '</div></div>';
+
+            let orderFooter = `
+                <div style="display: flex; justify-content: flex-end; gap: 15px; margin-top: 4px; padding-top: 4px; border-top: 2px solid #4a004a; page-break-inside: avoid;">
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                        <div style="width: 12px; height: 12px; border: 1px solid #333; border-radius: 2px;"></div>
+                        <span style="font-weight: bold; color: #333; font-size: 0.8em;">Evaso / Preparato</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                        <div style="width: 12px; height: 12px; border: 1px solid #333; border-radius: 2px;"></div>
+                        <span style="font-weight: bold; color: #333; font-size: 0.8em;">Consegnato / Spedito</span>
+                    </div>
+                </div>
+            `;
+
+            printHtml += `
+                <div class="print-box-break" style="border: 2px solid #4a004a; border-radius: 6px; padding: 8px 12px; margin-bottom: 12px; page-break-inside: auto; background: white;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f4f6f8; padding-bottom: 4px; margin-bottom: 4px; page-break-inside: avoid;">
+                        <div>
+                            <div style="font-size: 0.7em; color: #888; text-transform: uppercase; letter-spacing: 1px;">Ordine N&deg; <strong style="color: #b50084; font-size: 1.1em;">${orderNum}</strong></div>
+                            <div style="font-size: 1.2em; font-weight: 900; color: #17202A; margin-top: 1px;">${o.cliente}</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <span style="background: #f4f6f8; padding: 3px 8px; border-radius: 4px; font-weight: bold; color: #333; font-size: 0.9em;">Consegna: ${dataFormattata}</span>
+                        </div>
+                    </div>
+                    <div>${articoliHtmlPrint}</div>
+                    ${riepilogoPrint}
+                    ${orderFooter}
+                </div>
+            `;
+        });
+
+        printHtml += `</div></div>`;
+        return printHtml;
+    }
+
+    function stampaSchedaProduzioneSingola(idOrdine) {
+        const o = orders.find(ord => ord.id === idOrdine);
+        if(!o) return;
+        const printContainer = document.getElementById('print-section');
+        printContainer.innerHTML = costruisciHtmlSchedeProduzione([o], "SCHEDA DI PRODUZIONE (LABORATORIO)");
+        setTimeout(() => { window.print(); }, 200);
+    }
+
+    function stampaSchedaProduzione() {
+        const daEvadere = orders.filter(o => !o.evaso).sort((a, b) => new Date(a.data) - new Date(b.data));
+        if(daEvadere.length === 0) {
+            M.toast({html: 'Nessun ordine da produrre! (Tutti già evasi)', classes: 'orange rounded'});
+            return;
+        }
+        const printContainer = document.getElementById('print-section');
+        printContainer.innerHTML = costruisciHtmlSchedeProduzione(daEvadere, "PRODUZIONE MASSIVA (NON EVASI)");
+        setTimeout(() => { window.print(); }, 200);
+    }
+
+    // === GENERAZIONE RIEPILOGO CLIENTE COMPATTO ===
+    function stampaRiepilogoCliente(idOrdine) {
+        const o = orders.find(ord => ord.id === idOrdine);
+        if(!o) return;
+
+        const cInfo = clients.find(c => c.codice === o.codiceCliente) || {};
+        const dataFormattata = ('0'+new Date(o.data).getDate()).slice(-2) + '/' + ('0'+(new Date(o.data).getMonth()+1)).slice(-2) + '/' + new Date(o.data).getFullYear();
+        const orderNum = Number(o.id).toString(36).toUpperCase().slice(-5); 
+
+        let totaleListinoOrdine = 0;
+        let qtaTotaleOrdine = 0;
+        let articoliHtmlPrint = '';
+        
+        // Raggruppo per la tabella Cliente
+        let gruppiMap = new Map();
+        o.articoli.forEach(a => {
+            let key = `${a.modello} (${a.dimensione})`;
+            if(!gruppiMap.has(key)) {
+                gruppiMap.set(key, { 
+                    items: [], 
+                    totalePezzi: 0, 
+                    totalePrezzo: 0,
+                    prezzoUnitario: a.prezzoUnitario 
+                });
+            }
+            let grp = gruppiMap.get(key);
+            grp.items.push(a);
+            grp.totalePezzi += parseInt(a.quantita);
+            grp.totalePrezzo += (parseFloat(a.prezzoUnitario) * parseInt(a.quantita));
+            
+            totaleListinoOrdine += (parseFloat(a.prezzoUnitario) * parseInt(a.quantita));
+            qtaTotaleOrdine += parseInt(a.quantita);
+        });
+
+        gruppiMap.forEach((grp, key) => {
+            // Intestazione del gruppo (più compatta)
+            articoliHtmlPrint += `
+                <div style="background-color: #f4f6f8; border: 1px solid #ddd; border-bottom: none; padding: 4px 8px; margin-top: 8px; font-weight: bold; color: #4a004a; border-radius: 6px 6px 0 0; display: flex; justify-content: space-between; font-size: 0.9em;">
+                    <span>${key} - Prezzo Listino Cad: € ${parseFloat(grp.prezzoUnitario).toFixed(2)}</span>
+                    <span>Subtotale Gruppo: € ${grp.totalePrezzo.toFixed(2)}</span>
+                </div>
+                <div style="border: 1px solid #ddd; border-radius: 0 0 6px 6px; padding: 4px 8px; page-break-inside: avoid;">
+                    <div style="display: flex; flex-wrap: wrap; gap: 4px 10px;">
+            `;
+
+            // Elenco colori dentro il gruppo (3 colonne invece di 2)
+            grp.items.forEach(a => {
+                let hexColor = mappaColoriHex[a.colore] || '#ccc';
+                let borderStyle = (a.colore === "Bianco") ? "border: 1px solid #ccc;" : "border: 1px solid transparent;";
+                
+                articoliHtmlPrint += `
+                    <div style="display: flex; align-items: center; gap: 4px; width: 31%; font-size: 0.85em;">
+                        <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background-color: ${hexColor}; ${borderStyle}"></span>
+                        <span style="color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${a.colore}: <b>${a.quantita} pz</b></span>
+                    </div>
+                `;
+            });
+
+            articoliHtmlPrint += `
+                    </div>
+                    <div style="margin-top: 4px; padding-top: 4px; border-top: 1px dashed #ccc; text-align: right; font-size: 0.85em; color: #b50084;">
+                        <strong>Totale Pezzi ${key}: ${grp.totalePezzi}</strong>
+                    </div>
+                </div>
+            `;
+        });
+
+        // Calcolo Sconti da far vedere al cliente
+        let scontoRivenditoreEuro = 0;
+        let bloccoScontiHtml = '';
+        
+        if (o.tipo === 'Rivenditore') {
+            scontoRivenditoreEuro = totaleListinoOrdine * 0.25;
+            bloccoScontiHtml += `
+                <div style="display: flex; justify-content: space-between; padding: 2px 0; font-size: 0.85em;">
+                    <span>Sconto Rivenditore (25%)</span>
+                    <span style="color: #d32f2f;">- € ${scontoRivenditoreEuro.toFixed(2)}</span>
+                </div>
+            `;
+        }
+        
+        let importoScontato1 = totaleListinoOrdine - scontoRivenditoreEuro;
+        let scontoExtraEuro = 0;
+        if (o.scontoExtraPerc && o.scontoExtraPerc > 0) {
+            scontoExtraEuro = importoScontato1 * (o.scontoExtraPerc / 100);
+            bloccoScontiHtml += `
+                <div style="display: flex; justify-content: space-between; padding: 2px 0; font-size: 0.85em;">
+                    <span>Sconto Extra Commerciale (${o.scontoExtraPerc}%)</span>
+                    <span style="color: #d32f2f;">- € ${scontoExtraEuro.toFixed(2)}</span>
+                </div>
+            `;
+        }
+
+        let spedizioneHtml = '';
+        if (o.spedizioneACarico === 'Cliente' && o.costoSpedizione > 0) {
+            spedizioneHtml = `
+                <div style="display: flex; justify-content: space-between; padding: 2px 0; font-size: 0.85em;">
+                    <span>Spese di Spedizione</span>
+                    <span>€ ${parseFloat(o.costoSpedizione).toFixed(2)}</span>
+                </div>
+            `;
+        }
+
+        let printHtml = `
+            <div style="max-width: 850px; margin: 0 auto; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #333; padding: 15px;">
+                <!-- HEADER -->
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #4a004a; padding-bottom: 8px; margin-bottom: 12px;">
+                    <div>
+                        
+                        <div style="font-size: 0.75em; color: #666; line-height: 1.2;">
+                            <strong>24Pet by Cloood sas</strong><br>
+                            Alatri (FR), Lazio, Italia<br>
+                            P.IVA 02586560605
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <h2 style="margin: 0; font-weight: 900; color: #4a004a; font-size: 20px; letter-spacing: 1px;">CONFERMA D'ORDINE</h2>
+                        <div style="font-size: 1em; margin-top: 2px;">Data: <strong>${dataFormattata}</strong></div>
+                        <div style="font-size: 1em; color: #b50084;">Rif. Ordine: <strong>#${orderNum}</strong></div>
+                    </div>
+                </div>
+
+                <!-- INFO CLIENTE -->
+                <div style="background-color: #fafafa; border: 1px solid #eee; border-radius: 6px; padding: 8px 12px; margin-bottom: 12px; display: flex; justify-content: space-between;">
+                    <div style="width: 48%;">
+                        <div style="font-size: 0.75em; color: #888; text-transform: uppercase; margin-bottom: 2px; font-weight: bold;">Intestatario Ordine</div>
+                        <div style="font-size: 1.1em; font-weight: bold; color: #17202A;">${o.cliente} ${o.tipo === 'Rivenditore' ? '<span style="font-size: 0.6em; background: #8c0066; color: white; padding: 2px 6px; border-radius: 4px; vertical-align: middle;">RIVENDITORE</span>' : ''}</div>
+                        <div style="font-size: 0.85em; margin-top: 2px; line-height: 1.3;">
+                            ${cInfo.indirizzoSede ? cInfo.indirizzoSede + '<br>' : ''}
+                            P.IVA: ${cInfo.partitaIva || 'N/D'} | C.F.: ${cInfo.codiceFiscale || 'N/D'}<br>
+                            SDI: ${cInfo.codiceUnivoco || 'N/D'} | PEC: ${cInfo.pec || 'N/D'}
+                        </div>
+                    </div>
+                    <div style="width: 48%;">
+                        <div style="font-size: 0.75em; color: #888; text-transform: uppercase; margin-bottom: 2px; font-weight: bold;">Destinazione Merce</div>
+                        <div style="font-size: 0.85em; line-height: 1.3;">
+                            ${cInfo.indirizzoSpedizione || cInfo.indirizzoSede || 'Vedi intestatario'}<br>
+                            <strong>Referente:</strong> ${cInfo.referenteSpedizione || 'N/D'}<br>
+                            <strong>Tel:</strong> ${cInfo.cellulare || cInfo.telefono || 'N/D'}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ELENCO PRODOTTI -->
+                <h5 style="font-weight: bold; color: #4a004a; border-bottom: 1px solid #ccc; padding-bottom: 3px; font-size: 1.1em; margin-top: 0; margin-bottom: 5px;">Dettaglio Fornitura</h5>
+                ${articoliHtmlPrint}
+                
+                <div style="text-align: right; margin-top: 6px; font-size: 0.9em; color: #666;">
+                    Totale articoli ordinati: <strong>${qtaTotaleOrdine} pz</strong>
+                </div>
+
+                <!-- TOTALI E SCONTI -->
+                <div style="margin-top: 15px; display: flex; justify-content: flex-end;">
+                    <div style="width: 320px; background-color: #fafafa; border: 1px solid #ccc; border-radius: 6px; padding: 8px 12px;">
+                        
+                        <div style="display: flex; justify-content: space-between; padding-bottom: 4px; border-bottom: 1px solid #eee; margin-bottom: 4px; font-size: 0.85em;">
+                            <span>Subtotale Listino</span>
+                            <span>€ ${totaleListinoOrdine.toFixed(2)}</span>
+                        </div>
+                        
+                        ${bloccoScontiHtml}
+                        ${spedizioneHtml}
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px; padding-top: 6px; border-top: 2px solid #4a004a;">
+                            <span style="font-weight: bold; font-size: 1.1em; color: #4a004a;">TOTALE (Iva esc.)</span>
+                            <span style="font-weight: 900; font-size: 1.3em; color: #b50084;">€ ${o.importo.toFixed(2)}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FIRMA E ACCETTAZIONE -->
+                <div style="margin-top: 25px; display: flex; justify-content: space-between; align-items: flex-end;">
+                    <div style="font-size: 0.75em; color: #888; line-height: 1.2;">
+                        Documento generato il ${new Date().toLocaleDateString('it-IT')}<br>
+                        Valido come riepilogo d'ordine e distinta di preparazione.
+                    </div>
+                    <div style="text-align: center; width: 220px;">
+                        <div style="font-size: 0.75em; color: #666; margin-bottom: 20px;">Timbro e Firma per accettazione</div>
+                        <div style="border-bottom: 1px solid #333;"></div>
+                    </div>
+                </div>
+
+            </div>
+        `;
+
+        const printContainer = document.getElementById('print-section');
+        printContainer.innerHTML = printHtml;
+        setTimeout(() => { window.print(); }, 200);
+    }
+
+    function aggiornaFiltroAnni() {
+        const selectAnno = document.getElementById('searchAnno');
+        const selectDashAnno = document.getElementById('dashboardAnno');
+        const selectCatAnno = document.getElementById('catalogoAnno');
+        
+        let currSearch = selectAnno.value;
+        let currDash = selectDashAnno.value;
+        let currCat = selectCatAnno ? selectCatAnno.value : 'Tutti';
+
+        const anni = new Set();
+        orders.forEach(o => { if(o.data) { anni.add(o.data.substring(0, 4)); } });
+        
+        let arrayAnni = Array.from(anni).sort().reverse(); 
+        let optionsHtml = '<option value="Tutti" selected>Tutti gli anni</option>';
+        arrayAnni.forEach(anno => { optionsHtml += `<option value="${anno}">${anno}</option>`; });
+        
+        selectAnno.innerHTML = optionsHtml;
+        selectDashAnno.innerHTML = optionsHtml;
+        if(selectCatAnno) selectCatAnno.innerHTML = optionsHtml;
+        
+        if (currSearch) selectAnno.value = currSearch;
+        if (currDash) selectDashAnno.value = currDash;
+        if (selectCatAnno && currCat) selectCatAnno.value = currCat;
+    }
+
+    // === AGGIORNAMENTO STATISTICHE ===
+    function aggiornaStatistiche() {
+        const selectDashAnno = document.getElementById('dashboardAnno');
+        let annoSelezionato = "Tutti";
+        if(selectDashAnno) annoSelezionato = selectDashAnno.value || "Tutti";
+
+        let filteredOrders = orders;
+        if (annoSelezionato !== "Tutti") {
+            filteredOrders = orders.filter(o => o.data && o.data.startsWith(annoSelezionato));
+        }
+
+        const totaleOrdini = filteredOrders.length;
+        const totaleFatturato = filteredOrders.reduce((sum, o) => sum + o.importo, 0);
+        const totaleUtile = filteredOrders.reduce((sum, o) => sum + (o.utile || 0), 0);
+
+        document.getElementById('kpi-ordini').innerText = totaleOrdini;
+        document.getElementById('kpi-fatturato').innerText = '€ ' + totaleFatturato.toFixed(2);
+        document.getElementById('kpi-utile').innerText = '€ ' + totaleUtile.toFixed(2);
+
+        let conteggioModelli = {};
+        let conteggioColori = {};
+        let conteggioMisure = {};
+        let spesaClienti = {};
+        
+        let fatturatoAziende = 0;
+        let fatturatoRivenditori = 0;
+        let totaleProduzione = 0, totaleImballaggio = 0, totaleSpedizione = 0;
+        let totaleIncassato = 0, totaleDaSaldare = 0;
+
+        filteredOrders.forEach(o => { 
+            o.articoli.forEach(a => {
+                conteggioModelli[a.modello] = (conteggioModelli[a.modello] || 0) + parseInt(a.quantita); 
+                if(a.colore && a.colore.trim() !== "") {
+                    conteggioColori[a.colore] = (conteggioColori[a.colore] || 0) + parseInt(a.quantita);
+                }
+                if(a.dimensione) {
+                    conteggioMisure[a.dimensione] = (conteggioMisure[a.dimensione] || 0) + parseInt(a.quantita);
+                }
+                totaleProduzione += (a.costoUnitario * a.quantita);
+            });
+
+            if(o.cliente) {
+                spesaClienti[o.cliente] = (spesaClienti[o.cliente] || 0) + o.importo;
+            }
+
+            const tipo = o.tipo || 'Azienda';
+            if(tipo === 'Azienda' || tipo === 'Privato' || tipo === 'Cliente Privato') fatturatoAziende += o.importo;
+            else fatturatoRivenditori += o.importo;
+
+            totaleImballaggio += (o.costoImballaggio || 0);
+            totaleSpedizione += (o.costoSpedizione || 0);
+
+            if (o.pagato) totaleIncassato += o.importo;
+            else totaleDaSaldare += o.importo;
+        });
+
+        function getTop(dict, isCurrency = false) {
+            let topKey = '-';
+            let maxVal = 0;
+            for(let key in dict) {
+                if(dict[key] > maxVal) {
+                    maxVal = dict[key];
+                    topKey = key;
+                }
+            }
+            if (topKey === '-') return '-';
+            return isCurrency ? `${topKey}<br><span style="font-size:0.7em; color:#888; font-weight:normal;">(€ ${maxVal.toFixed(2)})</span>` 
+                              : `${topKey}<br><span style="font-size:0.7em; color:#888; font-weight:normal;">(${maxVal} pz)</span>`;
+        }
+
+        document.getElementById('top-modello').innerHTML = getTop(conteggioModelli);
+        document.getElementById('top-misura').innerHTML = getTop(conteggioMisure);
+        document.getElementById('top-cliente').innerHTML = getTop(spesaClienti, true);
+
+        let topColorKey = '-';
+        let maxColor = 0;
+        for(let c in conteggioColori) {
+            if(conteggioColori[c] > maxColor) { maxColor = conteggioColori[c]; topColorKey = c; }
+        }
+        if(topColorKey !== '-') {
+             const hex = mappaColoriHex[topColorKey] || '#ccc';
+             let borderStyle = (topColorKey === "Bianco") ? "border: 1px solid #ccc;" : "border: 1px solid #999;";
+             document.getElementById('top-colore').innerHTML = `
+                <div style="display:flex; align-items:center; justify-content:center; gap:8px;">
+                    <span style="display:inline-block; width:18px; height:18px; border-radius:50%; background-color:${hex}; ${borderStyle}"></span>
+                    <span>${topColorKey}</span>
+                </div>
+                <span style="font-size:0.7em; color:#888; font-weight:normal;">(${maxColor} pz)</span>
+             `;
+        } else {
+             document.getElementById('top-colore').innerHTML = '-';
+        }
+
+        if (chartModelliInstance) chartModelliInstance.destroy();
+        const ctxModelli = document.getElementById('chartModelli').getContext('2d');
+        chartModelliInstance = new Chart(ctxModelli, {
+            type: 'pie',
+            data: {
+                labels: Object.keys(conteggioModelli),
+                datasets: [{
+                    data: Object.values(conteggioModelli),
+                    backgroundColor: ['#4a004a', '#b50084', '#8c0066', '#d81b60', '#ab47bc', '#e1bee7', '#7b1fa2', '#1a237e', '#004d40', '#e65100'],
+                    borderWidth: 1
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+
+        if (chartClientiInstance) chartClientiInstance.destroy();
+        const ctxClienti = document.getElementById('chartClienti').getContext('2d');
+        chartClientiInstance = new Chart(ctxClienti, {
+            type: 'doughnut',
+            data: {
+                labels: ['Aziende', 'Rivenditori'],
+                datasets: [{
+                    data: [fatturatoAziende, fatturatoRivenditori],
+                    backgroundColor: ['#b50084', '#4a004a'],
+                    borderWidth: 1
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+
+        if (chartCostiUtileInstance) chartCostiUtileInstance.destroy();
+        const ctxCosti = document.getElementById('chartCostiUtile').getContext('2d');
+        chartCostiUtileInstance = new Chart(ctxCosti, {
+            type: 'pie',
+            data: {
+                labels: ['Costi Produzione', 'Costi Imballaggio', 'Costi Spedizione', 'Guadagno Netto'],
+                datasets: [{
+                    data: [totaleProduzione, totaleImballaggio, totaleSpedizione, totaleUtile],
+                    backgroundColor: ['#ff9800', '#03a9f4', '#f44336', '#2e7d32'], 
+                    borderWidth: 1
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+
+        if (chartPagamentiInstance) chartPagamentiInstance.destroy();
+        const ctxPagamenti = document.getElementById('chartPagamenti').getContext('2d');
+        chartPagamentiInstance = new Chart(ctxPagamenti, {
+            type: 'doughnut',
+            data: {
+                labels: ['Incassato', 'Da Saldare'],
+                datasets: [{
+                    data: [totaleIncassato, totaleDaSaldare],
+                    backgroundColor: ['#2e7d32', '#d32f2f'], 
+                    borderWidth: 1
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+    }
+
+    function searchClient(valoreCerca) {
+        let codiceRicerca = "";
+        
+        if (valoreCerca) {
+            if(valoreCerca.startsWith('C-')) {
+                codiceRicerca = valoreCerca;
+            } else {
+                let match = valoreCerca.match(/\[(C-\d+)\]/);
+                if(match) codiceRicerca = match[1];
+            }
+        } else {
+            let text = document.getElementById('searchClienteInputDisplay').innerText;
+            let match = text.match(/\[(C-\d+)\]/);
+            if(match) codiceRicerca = match[1];
+        }
+
+        if(!codiceRicerca) return;
+
+        const annoRicerca = document.getElementById('searchAnno').value;
+
+        let clientOrders = orders.filter(o => o.codiceCliente === codiceRicerca);
+        
+        if(annoRicerca && annoRicerca !== "Tutti") {
+            clientOrders = clientOrders.filter(o => o.data && o.data.startsWith(annoRicerca));
+        }
+
+        const totalOrdini = clientOrders.length;
+        const totalSpesa = clientOrders.reduce((sum, o) => sum + o.importo, 0);
+        const totalUtile = clientOrders.reduce((sum, o) => sum + (o.utile || 0), 0);
+        const daPagare = clientOrders.filter(o => !o.pagato).reduce((sum, o) => sum + o.importo, 0);
+
+        const clienteInfo = clients.find(c => c.codice === codiceRicerca);
+
+        document.getElementById('resCodice').innerText = clienteInfo ? clienteInfo.codice : "";
+        document.getElementById('resNome').innerText = (clienteInfo ? (clienteInfo.nome || 'Senza Nome') : "").toUpperCase();
+        
+        if(clienteInfo && clienteInfo.tipo === 'Rivenditore') {
+            document.getElementById('resTipo').innerText = "(Rivenditore)";
+        } else {
+            document.getElementById('resTipo').innerText = "";
+        }
+
+        document.getElementById('resOrdini').innerText = totalOrdini;
+        document.getElementById('resSpesa').innerText = '€ ' + totalSpesa.toFixed(2);
+        document.getElementById('resUtile').innerText = '€ ' + totalUtile.toFixed(2);
+        document.getElementById('resDaPagare').innerText = '€ ' + daPagare.toFixed(2);
+        
+        document.getElementById('schedaIndirizzo').innerText = clienteInfo ? (clienteInfo.indirizzoSede || '-') : '-';
+        document.getElementById('schedaSpedizione').innerText = clienteInfo ? (clienteInfo.indirizzoSpedizione || '-') : '-';
+        document.getElementById('schedaTelefono').innerText = clienteInfo ? (clienteInfo.telefono || '-') : '-';
+        document.getElementById('schedaCellulare').innerText = clienteInfo ? (clienteInfo.cellulare || '-') : '-';
+        document.getElementById('schedaEmail').innerText = clienteInfo ? (clienteInfo.email || '-') : '-';
+        document.getElementById('schedaReferente').innerText = clienteInfo ? (clienteInfo.referenteSpedizione || '-') : '-';
+        document.getElementById('schedaPiva').innerText = clienteInfo ? (clienteInfo.partitaIva || '-') : '-';
+        document.getElementById('schedaCf').innerText = clienteInfo ? (clienteInfo.codiceFiscale || '-') : '-';
+        
+        let sdi = clienteInfo ? (clienteInfo.codiceUnivoco || '-') : '-';
+        let pec = clienteInfo ? (clienteInfo.pec || '-') : '-';
+        document.getElementById('schedaSdiPec').innerText = sdi + " / " + pec;
+
+        const tbody = document.getElementById('clientOrdersTableBody');
+        tbody.innerHTML = '';
+        const sortedClientOrders = [...clientOrders].sort((a, b) => new Date(b.data) - new Date(a.data));
+
+        if(sortedClientOrders.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="center-align grey-text">Nessun ordine trovato per questo cliente in questo periodo.</td></tr>';
+        } else {
+            sortedClientOrders.forEach(o => {
+                const tr = document.createElement('tr');
+                const d = new Date(o.data);
+                const dataFormattata = ('0'+d.getDate()).slice(-2) + '/' + ('0'+(d.getMonth()+1)).slice(-2) + '/' + d.getFullYear();
+                const utile = o.utile || 0; 
+                
+                let qtaTotale = 0;
+                let articoliHtml = '';
+                let riepilogoHtml = '<div style="margin-top: 10px; padding: 8px; background-color: #faebf7; border-radius: 6px; border-left: 3px solid #b50084;"><div style="font-size: 0.8em; font-weight: bold; color: #4a004a; margin-bottom: 3px;">RIEPILOGO TOTALI:</div>';
+
+                let gruppiMap = new Map();
+                o.articoli.forEach(a => {
+                    let key = `${a.modello} (${a.dimensione})`;
+                    if(!gruppiMap.has(key)) {
+                        gruppiMap.set(key, { items: [], totale: 0 });
+                    }
+                    let grp = gruppiMap.get(key);
+                    grp.items.push(a);
+                    grp.totale += parseInt(a.quantita);
+                    qtaTotale += parseInt(a.quantita);
+                });
+
+                gruppiMap.forEach((grp, key) => {
+                    grp.items.forEach(a => {
+                        let hexColor = mappaColoriHex[a.colore] || '#ccc'; 
+                        let borderStyle = (a.colore === "Bianco") ? "border: 1px solid #ccc;" : "border: 1px solid transparent;";
+                        articoliHtml += `
+                            <div style="margin-bottom:4px; font-size: 0.95em; display:flex; align-items:center;">
+                                <strong style="margin-right:6px;">${a.quantita}x ${a.modello}</strong> <span style="color:#666; margin-right:6px;">(${a.dimensione})</span> - 
+                                <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background-color:${hexColor}; margin:0 4px 0 6px; ${borderStyle}"></span>
+                                <span style="color:#333;">${a.colore}</span>
+                            </div>`;
+                    });
+                    
+                    articoliHtml += `<div style="margin-top: 4px; margin-bottom: 12px; font-size: 0.85em; color: #4a004a; background: #f3e5f5; padding: 3px 8px; border-radius: 4px; border-left: 2px solid #ab47bc; display: inline-block;"><b>Totale Parziale ${key}: ${grp.totale} pz</b></div><br>`;
+                    riepilogoHtml += `<div style="font-size: 0.85em; color: #333;">&bull; ${key}: <b>${grp.totale} pz</b></div>`;
+                });
+                riepilogoHtml += `</div>`;
+
+                tr.innerHTML = `
+                    <td>
+                        <div style="font-weight: bold; color: #4a004a; font-size: 1.1em;">Ordine</div>
+                        <div class="grey-text" style="font-size: 0.9em; margin-top: 2px;"><i class="material-icons" style="font-size: 14px; vertical-align: middle;">event</i> ${dataFormattata}</div>
+                    </td>
+                    <td style="min-width: 280px;">
+                        ${articoliHtml}
+                        ${riepilogoHtml}
+                        <div style="margin-top: 8px; font-size: 0.9em; color: #b50084;"><strong>Totale Pezzi Ordine: ${qtaTotale}</strong></div>
+                    </td>
+                    <td>
+                        <div style="font-weight: 900; font-size: 1.15em;">€ ${o.importo.toFixed(2)}</div>
+                        <div style="color: #2e7d32; font-size: 0.95em; font-weight: bold; margin-top: 2px;">Utile: € ${utile.toFixed(2)}</div>
+                    </td>
+                    <td>
+                        <div style="margin-bottom: 6px;">${o.pagato ? '<span class="new badge black" data-badge-caption="Pagato"></span>' : '<span class="new badge red" data-badge-caption="Da Pagare"></span>'}</div>
+                        <div>${o.evaso ? '<span class="new badge black" data-badge-caption="Evaso"></span>' : '<span class="new badge orange" data-badge-caption="In Lavorazione"></span>'}</div>
+                    </td>
+                    <td>
+                        <a href="#!" class="teal-text text-darken-2" onclick="stampaRiepilogoCliente(${o.id})" title="Stampa Riepilogo per Cliente" style="margin-right: 15px;"><i class="material-icons">receipt</i></a>
+                        <a href="#!" class="grey-text text-darken-3" onclick="stampaSchedaProduzioneSingola(${o.id})" title="Stampa Scheda Produzione (Laboratorio)" style="margin-right: 15px;"><i class="material-icons">print</i></a>
+                        <a href="#!" class="blue-text" onclick="preparaModificaOrdine(${o.id})" title="Modifica Ordine" style="margin-right: 15px;"><i class="material-icons">edit</i></a>
+                        <a href="#!" class="red-text" onclick="eliminaOrdine(${o.id})" title="Elimina Ordine"><i class="material-icons">delete</i></a>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        document.getElementById('risultatiRicerca').style.display = 'block';
+    }
+</script>
+</body>
+</html>
