@@ -209,6 +209,36 @@
         .pet-client-nav button { display:flex; gap:12px; align-items:center; padding:12px 15px; border:0; border-radius:8px; background:white; color:#24242a; font:inherit; font-weight:700; min-height:44px; text-align:left; cursor:pointer; }
         .pet-client-nav button .material-icons { height:auto; line-height:1; }
         .pet-client-nav button[aria-current=page] { color:#fff; background:#4a004c; }
+        .pet-home-pending { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px 16px; margin:0 0 16px; padding:12px 16px; border-radius:10px; background:#f7e6f1; color:#5c0342; }
+        .pet-home-pending strong { color:#5c0342; }
+        .pet-link-button { border:0; background:none; padding:4px 0; color:var(--accent); font:inherit; font-weight:800; cursor:pointer; text-decoration:underline; text-underline-offset:3px; }
+        .pet-kpis { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:12px; margin-bottom:18px; }
+        .pet-kpi { display:flex; flex-direction:column; gap:4px; padding:16px; border:1px solid var(--line); border-radius:12px; background:#fff; }
+        .pet-kpi-label { display:flex; align-items:center; gap:6px; color:var(--muted); font-size:.9rem; font-weight:700; }
+        .pet-kpi-label .material-icons { font-size:18px; color:var(--accent); }
+        .pet-kpi-value { color:var(--plum); font-size:2rem; font-weight:800; line-height:1.1; font-variant-numeric:tabular-nums; }
+        .pet-kpi-note { color:var(--muted); font-size:.86rem; }
+        .pet-kpi-warn { background:#fffaf2; border-color:#f3dcb8; }
+        .pet-kpi-warn .pet-kpi-note { color:#7a4300; font-weight:700; }
+        .pet-home-saving { margin:-6px 0 18px; color:#1b6434; font-weight:700; }
+        .pet-home-grid { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:14px; }
+        .pet-home-card { padding:16px; border:1px solid var(--line); border-radius:12px; min-width:0; }
+        .pet-home-card h2 { margin:0 0 12px; color:var(--plum); font-size:1.05rem; font-weight:800; }
+        .pet-bars { display:grid; gap:10px; margin:0; padding:0; list-style:none; }
+        .pet-bar-row { display:grid; grid-template-columns:minmax(140px, 1.15fr) minmax(60px, 1.2fr) 5.6rem; align-items:center; gap:10px; }
+        .pet-bars-narrow { max-width:640px; }
+        .pet-home-wide { grid-column:1 / -1; }
+        .pet-bar-name { display:flex; align-items:center; gap:8px; min-width:0; font-weight:700; }
+        .pet-bar-thumb { width:34px; height:34px; flex:none; border-radius:8px; object-fit:cover; background:#f4edf6; }
+        .pet-bar-track { height:8px; border-radius:4px; background:#f1ecf3; overflow:hidden; }
+        .pet-bar-fill { display:block; height:100%; border-radius:4px; background:#83045e; }
+        .pet-bar-value { color:var(--plum); font-weight:800; font-variant-numeric:tabular-nums; white-space:nowrap; text-align:right; }
+        .pet-bar-value small { color:var(--muted); font-weight:600; }
+        #pet-home-last { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px 20px; }
+        .pet-last-order p { margin:0 0 8px; }
+        .pet-home-actions { display:flex; flex-wrap:wrap; gap:8px 16px; align-items:center; }
+        .pet-home-actions .btn { text-transform:none; }
+        .pet-home-empty { color:var(--muted); }
         .pet-client-workspace { grid-column:2; min-width:0; background:#fff; padding:24px; border:1px solid #e3e4e8; border-radius:13px; box-shadow:0 2px 9px #26082915; }
         .pet-client-workspace #pet-role-title { font-size:clamp(24px, 3vw, 32px); font-weight:650; color:#4a004c; margin:0 0 8px; }
         .pet-client-workspace #pet-role-message { margin:0 0 20px; color:#5d5661; }
@@ -305,7 +335,11 @@
         .pet-stepper button { border:0; width:35px; min-height:38px; background:#ecebef; color:#29232b; font-weight:800; cursor:pointer; }
         .pet-stepper button:last-child { background:#b50084; color:#fff; }
         .pet-stepper input[type=number] { width:38px; margin:0; padding:0; min-height:38px; height:auto; text-align:center; border:0; box-shadow:none; }
+        @media(max-width:1100px) {
+            .pet-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
         @media(max-width:900px) {
+            .pet-home-grid { grid-template-columns: minmax(0, 1fr); }
             .pet-history-order summary { grid-template-columns: minmax(0, 1fr) auto auto auto; gap: 4px 8px; }
             .pet-order-state { grid-column: 1 / -1; grid-row: 2; }
             .pet-order-toggle span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
@@ -313,7 +347,13 @@
         @media(max-width:760px) {
             .pet-client-layout { width:calc(100% - 24px); grid-template-columns:minmax(0,1fr); gap:12px; margin:14px auto; }
             .pet-client-workspace { grid-column:1; padding:14px; }
-            .pet-client-nav { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+            .pet-client-nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .pet-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); gap:8px; }
+            .pet-kpi { padding:12px; }
+            .pet-kpi-value { font-size:1.6rem; }
+            .pet-home-grid { grid-template-columns: minmax(0, 1fr); }
+            .pet-bar-row { grid-template-columns: minmax(0, 1fr) auto; gap:4px 10px; }
+            .pet-bar-track { grid-column: 1 / -1; grid-row: 2; }
             .pet-client-nav button { justify-content: center; gap: 5px; padding-inline: 6px; }
             .pet-client-nav button .material-icons { font-size: 18px; }
             .pet-compose-fields { grid-template-columns:minmax(0,1fr); gap:8px; }
@@ -351,7 +391,8 @@
         </header>
         <div class="pet-client-layout">
             <nav class="pet-client-nav" id="pet-customer-nav" aria-label="Area clienti" hidden>
-                <button type="button" data-client-page="compose" aria-current="page"><i class="material-icons" aria-hidden="true">add_shopping_cart</i> Nuovo ordine</button>
+                <button type="button" data-client-page="home" aria-current="page"><i class="material-icons" aria-hidden="true">space_dashboard</i> Panoramica</button>
+                <button type="button" data-client-page="compose"><i class="material-icons" aria-hidden="true">add_shopping_cart</i> Nuovo ordine</button>
                 <button type="button" data-client-page="history"><i class="material-icons" aria-hidden="true">list_alt</i> I tuoi ordini</button>
                 <button type="button" data-client-page="profile"><i class="material-icons" aria-hidden="true">person_outline</i> Profilo</button>
             </nav>
@@ -388,6 +429,18 @@
                         </div>
                     </div>
                 </form>
+                <section id="pet-client-home" hidden aria-label="Panoramica">
+                    <p id="pet-home-status" role="status"></p>
+                    <div id="pet-home-pending" class="pet-home-pending" hidden></div>
+                    <div id="pet-home-kpis" class="pet-kpis"></div>
+                    <p id="pet-home-saving" class="pet-home-saving" hidden></p>
+                    <div id="pet-home-details" class="pet-home-grid" hidden>
+                        <section class="pet-home-card pet-home-wide pet-last-order" aria-labelledby="pet-home-last-title"><h2 id="pet-home-last-title">Ultimo ordine</h2><div id="pet-home-last"></div></section>
+                        <section class="pet-home-card" aria-labelledby="pet-home-models-title"><h2 id="pet-home-models-title">Le urne che scegli di più</h2><ul id="pet-home-models" class="pet-bars"></ul></section>
+                        <section class="pet-home-card" aria-labelledby="pet-home-colors-title"><h2 id="pet-home-colors-title">I colori più scelti</h2><ul id="pet-home-colors" class="pet-bars"></ul></section>
+                        <section class="pet-home-card pet-home-wide" aria-labelledby="pet-home-sizes-title"><h2 id="pet-home-sizes-title">Le misure</h2><ul id="pet-home-sizes" class="pet-bars pet-bars-narrow"></ul></section>
+                    </div>
+                </section>
                 <section id="pet-order-records" class="pet-order-records" hidden aria-label="I tuoi ordini">
                     <div id="pet-request-list" aria-label="Richieste inviate"></div>
                     <section aria-labelledby="pet-client-history-title">
@@ -2800,6 +2853,7 @@
             admin.hidden = true;
             roleView.hidden = true;
             clientOrders.replaceChildren();
+            resetClientHome();
             resetCustomerProfile();
             if (modelDrawer.open) modelDrawer.close();
             if (colorDrawer.open) colorDrawer.close();
@@ -2951,6 +3005,166 @@
             return order;
         }
 
+        const homePanel = document.getElementById('pet-client-home');
+        const homeStatus = document.getElementById('pet-home-status');
+        const modelPhotos = {
+            'Cuore': 'cuore.jpg', 'Ottagonale': 'ottagonale.jpg', 'Sfera': 'sfera.jpg', 'Quadro': 'quadro.jpg',
+            'Cubo': 'cubo.jpg', 'Cane': 'cane.jpg', 'Gatto': 'gatto.jpg', 'Quadro con calco': 'calco.jpg'
+        };
+        let clientHistory = null;
+        let pendingRequestsCount = 0;
+
+        function resetClientHome() {
+            clientHistory = null;
+            pendingRequestsCount = 0;
+            homeStatus.textContent = '';
+            document.getElementById('pet-home-kpis').replaceChildren();
+            document.getElementById('pet-home-pending').hidden = true;
+            document.getElementById('pet-home-saving').hidden = true;
+            document.getElementById('pet-home-details').hidden = true;
+        }
+
+        function homeKpi(icon, label, value, note, warn) {
+            const tile = document.createElement('div');
+            tile.className = 'pet-kpi' + (warn ? ' pet-kpi-warn' : '');
+            const head = document.createElement('span');
+            head.className = 'pet-kpi-label';
+            const glyph = labeledText('i', 'material-icons', icon);
+            glyph.setAttribute('aria-hidden', 'true');
+            head.append(glyph, labeledText('span', '', label));
+            tile.append(head, labeledText('strong', 'pet-kpi-value', value), labeledText('span', 'pet-kpi-note', note));
+            return tile;
+        }
+
+        function homeBars(target, entries, options = {}) {
+            target.replaceChildren();
+            const total = options.total || entries.reduce((sum, [, value]) => sum + value, 0);
+            const max = Math.max(...entries.map(([, value]) => value), 1);
+            for (const [name, value] of entries) {
+                const share = total ? Math.round(value / total * 100) : 0;
+                const row = document.createElement('li');
+                row.className = 'pet-bar-row';
+                row.title = name + ': ' + value + ' pz (' + share + '%)';
+                const label = document.createElement('span');
+                label.className = 'pet-bar-name';
+                if (options.photo && modelPhotos[name]) {
+                    const img = document.createElement('img');
+                    img.className = 'pet-bar-thumb';
+                    img.src = '/assets/' + modelPhotos[name];
+                    img.alt = '';
+                    img.loading = 'lazy';
+                    img.width = img.height = 34;
+                    label.append(img);
+                }
+                if (options.swatch) label.append(swatch(name));
+                label.append(labeledText('span', '', name));
+                const track = document.createElement('span');
+                track.className = 'pet-bar-track';
+                track.setAttribute('aria-hidden', 'true');
+                const fill = document.createElement('span');
+                fill.className = 'pet-bar-fill';
+                fill.style.width = Math.max(4, value / max * 100) + '%';
+                track.append(fill);
+                const amount = labeledText('span', 'pet-bar-value', value + ' pz ');
+                amount.append(labeledText('small', '', share + '%'));
+                row.append(label, track, amount);
+                target.append(row);
+            }
+        }
+
+        function renderClientHome() {
+            if (!clientHistory) return;
+            const orders = clientHistory;
+            const pending = document.getElementById('pet-home-pending');
+            pending.replaceChildren();
+            pending.hidden = !pendingRequestsCount;
+            if (pendingRequestsCount) {
+                const text = document.createElement('span');
+                text.append(labeledText('strong', '', pendingRequestsCount === 1
+                    ? '1 richiesta d’ordine' : pendingRequestsCount + ' richieste d’ordine'),
+                    document.createTextNode(' in attesa di conferma da 24Pet.'));
+                const open = labeledText('button', 'pet-link-button', 'Vedi le richieste');
+                open.type = 'button';
+                open.addEventListener('click', () => showCustomerPage('history'));
+                pending.append(text, open);
+            }
+
+            const models = new Map(), colors = new Map(), sizes = new Map();
+            let pieces = 0, spent = 0, toPay = 0, saved = 0;
+            for (const order of orders) {
+                let listCents = 0;
+                for (const item of order.items) {
+                    const quantity = Number(item.quantita) || 0;
+                    pieces += quantity;
+                    models.set(item.modello, (models.get(item.modello) || 0) + quantity);
+                    if (item.colore) colors.set(item.colore, (colors.get(item.colore) || 0) + quantity);
+                    if (item.dimensione) sizes.set(item.dimensione, (sizes.get(item.dimensione) || 0) + quantity);
+                    listCents += Math.round(Number(item.prezzoUnitario || 0) * quantity * 100);
+                }
+                const amount = Number(order.amount) || 0;
+                spent += amount;
+                if (!order.paid) toPay += amount;
+                const reseller = Math.round(listCents * Number(order.reseller_discount_pct || 0) / 100);
+                const extra = Math.round((listCents - reseller) * Number(order.extra_discount_pct || 0) / 100);
+                saved += (reseller + extra) / 100;
+            }
+            const notReceived = orders.filter(order => !order.fulfilled).length;
+            const unpaid = orders.filter(order => !order.paid).length;
+            const firstMonth = orders.length ? new Intl.DateTimeFormat('it-IT', { month: 'long', year: 'numeric', timeZone: 'UTC' })
+                .format(new Date(orders[orders.length - 1].order_date + 'T00:00:00Z')) : '';
+
+            document.getElementById('pet-home-kpis').replaceChildren(
+                homeKpi('receipt_long', 'Ordini effettuati', String(orders.length),
+                    orders.length ? money.format(spent) + ' in totale' : 'Ancora nessun ordine'),
+                homeKpi('inventory_2', 'Urne acquistate', String(pieces),
+                    models.size ? (models.size === 1 ? '1 modello' : models.size + ' modelli diversi') : '—'),
+                homeKpi('local_shipping', 'Ordini da ricevere', String(notReceived),
+                    notReceived ? 'In preparazione o in viaggio' : 'Tutto consegnato'),
+                homeKpi('payments', 'Ordini da pagare', String(unpaid),
+                    unpaid ? money.format(toPay) + ' da saldare' : 'Nessun pagamento in sospeso', unpaid > 0)
+            );
+
+            const saving = document.getElementById('pet-home-saving');
+            saving.hidden = saved < 0.01;
+            saving.textContent = 'Con i tuoi sconti hai risparmiato ' + money.format(saved) + ' sul prezzo di listino'
+                + (firstMonth ? ' da ' + firstMonth + '.' : '.');
+
+            const details = document.getElementById('pet-home-details');
+            details.hidden = !orders.length;
+            homeStatus.textContent = orders.length ? '' : 'Qui vedrai le statistiche dei tuoi acquisti dopo il primo ordine.';
+            if (!orders.length) return;
+
+            const byCount = map => [...map.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'it'));
+            homeBars(document.getElementById('pet-home-models'), byCount(models).slice(0, 6), { photo: true, total: pieces });
+            homeBars(document.getElementById('pet-home-colors'), byCount(colors).slice(0, 6), { swatch: true, total: pieces });
+            const sizeOrder = ['Piccolo', 'Medio', 'Grande', 'Unica'];
+            homeBars(document.getElementById('pet-home-sizes'), [...sizes.entries()]
+                .sort((a, b) => (sizeOrder.indexOf(a[0]) + 1 || 99) - (sizeOrder.indexOf(b[0]) + 1 || 99)));
+
+            const last = orders[0];
+            const lastPieces = last.items.reduce((sum, item) => sum + (Number(item.quantita) || 0), 0);
+            const lastBox = document.getElementById('pet-home-last');
+            lastBox.replaceChildren();
+            const info = document.createElement('div');
+            info.append(labeledText('p', '', 'Ordine del ' + calendarDate.format(new Date(last.order_date + 'T00:00:00Z'))
+                + ' · ' + lastPieces + ' pz · ' + money.format(Number(last.amount) || 0)));
+            const state = document.createElement('div');
+            state.className = 'pet-order-state';
+            state.append(labeledText('span', 'pet-badge pet-badge-' + (last.paid ? 'ok' : 'warn'), last.paid ? 'Pagato' : 'Da pagare'),
+                labeledText('span', 'pet-badge pet-badge-' + (last.fulfilled ? 'ok' : 'neutral'), last.fulfilled ? 'Evaso' : 'Da evadere'));
+            const actions = document.createElement('div');
+            actions.className = 'pet-home-actions';
+            const reorder = labeledText('button', 'btn btn-custom', 'Nuova richiesta d’ordine');
+            reorder.type = 'button';
+            reorder.addEventListener('click', () => showCustomerPage('compose'));
+            const all = labeledText('button', 'pet-link-button', 'Vedi tutti gli ordini');
+            all.type = 'button';
+            all.addEventListener('click', () => showCustomerPage('history'));
+            actions.append(reorder, all);
+            info.append(state);
+            lastBox.append(info, actions);
+        }
+
         async function loadClientHistory(check) {
             clientOrders.replaceChildren();
             clientStatus.textContent = 'Caricamento ordini…';
@@ -2960,6 +3174,8 @@
                     .order('order_date', { ascending: false }).order('order_id', { ascending: false });
                 if (check !== accessCheck) return;
                 if (error) throw error;
+                clientHistory = orders;
+                renderClientHome();
                 if (!orders.length) {
                     clientStatus.textContent = 'Non risultano ordini nello storico.';
                     return;
@@ -2983,7 +3199,10 @@
                 })));
                 clientStatus.textContent = '';
             } catch {
-                if (check === accessCheck) clientStatus.textContent = 'Storico non disponibile. Ricarica per riprovare.';
+                if (check === accessCheck) {
+                    clientStatus.textContent = 'Storico non disponibile. Ricarica per riprovare.';
+                    homeStatus.textContent = 'Statistiche non disponibili. Ricarica per riprovare.';
+                }
             }
         }
 
@@ -3030,7 +3249,7 @@
         let selectedVariant = null;
         let customerCart = [];
         let requestSending = false;
-        let customerPage = 'compose';
+        let customerPage = 'home';
         let customerCode = null;
         let fiscalLoaded = false;
         let fiscalComplete = false;
@@ -3057,11 +3276,12 @@
             const compose = page === 'compose';
             requestForm.hidden = !compose || !orderingClient;
             recordsPanel.hidden = page !== 'history';
+            homePanel.hidden = page !== 'home';
             fiscalPanel.hidden = page !== 'profile';
             fiscalNotice.hidden = !compose || !fiscalLoaded || fiscalComplete;
             availability.hidden = !compose;
             document.getElementById('pet-role-title').textContent = {
-                compose: 'Nuova richiesta d’ordine', history: 'I tuoi ordini', profile: 'Profilo e fatturazione'
+                home: 'Panoramica', compose: 'Nuova richiesta d’ordine', history: 'I tuoi ordini', profile: 'Profilo e fatturazione'
             }[page];
             for (const button of customerNav.querySelectorAll('button')) {
                 if (button.dataset.clientPage === page) button.setAttribute('aria-current','page');
@@ -3330,6 +3550,8 @@
         function renderRequests(target, requests, adminView) {
             target.replaceChildren();
             if (!adminView) {
+                pendingRequestsCount = requests.length;
+                renderClientHome();
                 if (requests.length) target.append(labeledText('h2', '', 'Richieste inviate'));
                 for (const request of requests) {
                     target.append(customerOrderRow({
@@ -3526,7 +3748,8 @@
             clientOrders.replaceChildren();
             roleView.hidden = false;
             if (data.role === 'client') {
-                showCustomerPage('compose');
+                resetClientHome();
+                showCustomerPage('home');
                 loadCustomerProfile(check);
                 loadClientHistory(check);
             }
