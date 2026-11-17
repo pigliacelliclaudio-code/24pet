@@ -1,0 +1,1 @@
+{"rewrites":[{"source":"/","has":[{"type":"host","value":"dashboard.24pet.it"}],"destination":"/area-riservata/index.html"}]}
