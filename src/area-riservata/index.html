@@ -189,8 +189,9 @@
         .pet-access-card .btn { min-height: 44px; margin-top: 8px; }
         #pet-role-view .pet-access-card { width: min(100%, 700px); }
         .pet-client-order { padding: 12px 16px; margin: 10px 0; border: 1px solid #e8e0eb; border-radius: 12px; }
-        .pet-client-order h2, .pet-client-order h3 { font: 700 1.1rem "DM Sans", sans-serif; margin: 5px 0; }
+        .pet-client-order h2, .pet-client-order h3 { font: 700 1.1rem "DM Sans", sans-serif; margin: 5px 0; overflow-wrap: anywhere; }
         .pet-client-order p { margin: 5px 0; }
+        .pet-order-contact a { color: var(--plum); overflow-wrap: anywhere; }
         .pet-request-row { border: 1px solid #e8e0eb; padding: 10px; margin: 8px 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
         .pet-request-row select, .pet-request-row input { width: 100%; color: #26192e; }
         .pet-order-consent { margin: 15px 0; }
@@ -221,16 +222,25 @@
         .pet-order-label, .pet-order-amount { color: var(--plum); font-weight: 800; }
         .pet-order-date { display: block; color: var(--muted); font-size: .88rem; }
         .pet-order-amount { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
-        .pet-order-state { color: var(--muted); font-size: .91rem; }
+        .pet-order-state { display: flex; flex-wrap: wrap; gap: 4px 6px; }
+        .pet-badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: .8rem; font-weight: 700; line-height: 1.35; white-space: nowrap; }
+        .pet-badge-warn { background: #fdf0dc; color: #7a4300; }
+        .pet-badge-ok { background: #e4f3e8; color: #1b6434; }
+        .pet-badge-neutral { background: #efe9f1; color: #574860; }
+        .pet-badge-info { background: #f7e6f1; color: #7d0459; }
         .pet-order-toggle { display: flex; align-items: center; justify-content: end; color: var(--plum); font-weight: 700; }
         .pet-history-order[open] .pet-order-toggle i { transform: rotate(180deg); }
         .pet-order-lines { padding: 12px 14px; border-top: 1px solid var(--line); }
         .pet-order-group + .pet-order-group { margin-top: 12px; }
         .pet-order-group-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; padding: 8px 10px; color: var(--plum); background: #f4edf6; border-radius: 6px; }
         .pet-order-group-head h3 { margin: 0; font: inherit; font-weight: 800; }
-        .pet-order-group ul { margin: 0; padding: 3px 10px 0; }
+        .pet-order-group ul { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); column-gap: 28px; margin: 0; padding: 3px 10px 0; }
         .pet-order-group li { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 5px 0; border-bottom: 1px solid var(--line); }
-        .pet-order-group li:last-child { border-bottom: 0; }
+        .pet-order-note { margin: 0 0 10px; color: var(--muted); font-size: .88rem; }
+        .pet-order-summary { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 0; max-width: 420px; margin: 14px 0 2px auto; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font-variant-numeric: tabular-nums; }
+        .pet-order-summary dt { color: var(--muted); }
+        .pet-order-summary dd { margin: 0; padding-left: 16px; text-align: right; }
+        .pet-order-summary .pet-summary-total { padding-top: 6px; border-top: 1px solid var(--line); color: var(--plum); font-weight: 800; }
         .pet-order-group li .pet-swatch { width: 12px; height: 12px; margin-right: 6px; }
         .pet-profile-notice { padding: 16px; border: 1px solid var(--line); border-radius: 10px; background: #faf4f9; }
         .pet-profile-notice p { margin: 0 0 12px; }
@@ -254,13 +264,18 @@
         #pet-size-options label { display:flex; align-items:center; gap:5px; margin:0; }
         #pet-size-options input[type=radio] { position:static; opacity:1; pointer-events:auto; accent-color:#b50084; width:17px; height:17px; margin:0; }
         #pet-unit-price { color:#4a004c; font-size:1.5rem; display:block; }
-        .pet-blue { width:100%; display:flex; gap:10px; align-items:center; justify-content:center; min-height:48px; border:0; border-radius:8px; background:#1684d7; color:white; padding:10px 14px; font:inherit; font-weight:800; cursor:pointer; }
-        .pet-blue:disabled, #pet-send-order:disabled { opacity:.55; cursor:default; }
+        .pet-blue { width:100%; display:flex; gap:10px; align-items:center; justify-content:center; min-height:48px; border:0; border-radius:8px; background:#83045e; color:white; padding:10px 14px; font:inherit; font-weight:800; cursor:pointer; }
+        .pet-blue:hover:not(:disabled) { background:#6a034c; }
+        .pet-blue:focus-visible { outline:2px solid var(--plum); outline-offset:2px; }
+        .pet-blue:disabled { background:#ece6ee; color:#7d7383; cursor:default; }
+        #pet-send-order:disabled { opacity:.55; cursor:default; }
         .pet-cart-wrap { overflow-x:auto; margin-top:16px; }
         .pet-cart { min-width:515px; border:1px solid #e3e4e8; }
         .pet-cart th { background:#f2f4f6; padding:12px 9px; }
         .pet-cart td { padding:11px 9px; }
         .pet-cart td[colspan] { text-align:center; color:#69636b; }
+        .pet-cart.is-empty { min-width:0; }
+        .pet-cart.is-empty thead { display:none; }
         .pet-cart button { cursor:pointer; color:#83045e; background:white; border:1px solid #ece2ea; border-radius:6px; padding:8px; }
         .pet-checkout { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px 26px; background:#faf2f7; border-radius:9px; padding:14px 18px; margin-top:16px; }
         .pet-checkout strong { display:block; color:#4a004c; }
@@ -268,6 +283,7 @@
         .pet-checkout p { margin:4px 0 0; }
         .pet-order-consent { margin:0; }
         .pet-order-consent label { margin-top:4px; color:#403646; }
+        .pet-order-consent a { color: var(--accent); font-weight:700; }
         .pet-drawer { position:fixed; inset:0 0 0 auto; margin:0; width:min(360px,100%); height:100dvh; max-height:none; max-width:none; border:0; padding:0; color:#242129; box-shadow:-6px 0 22px #0003; overflow:hidden; }
         .pet-drawer[open] { display:flex; flex-direction:column; }
         .pet-drawer::backdrop { background:#17121c80; }
@@ -357,7 +373,7 @@
                         <button class="pet-blue" id="pet-pick-colors" type="button" disabled><i class="material-icons" aria-hidden="true">palette</i> Scegli colori, quantità e aggiungi</button>
                     </section>
                     <div class="pet-cart-wrap">
-                        <table class="pet-cart">
+                        <table class="pet-cart is-empty">
                             <thead><tr><th>Articolo in ordine</th><th>Colore</th><th>Q.tà</th><th>Listino cad.</th><th>Totale riga</th><th>Rimuovi</th></tr></thead>
                             <tbody id="pet-request-items"><tr><td colspan="6">Il carrello è vuoto. Aggiungi i prodotti qui sopra.</td></tr></tbody>
                         </table>
@@ -2852,7 +2868,7 @@
             return element;
         }
 
-        function customerOrderRow({ label, date, state, amount, items }) {
+        function customerOrderRow({ label, date, badges, amount, items, breakdown }) {
             const groups = new Map();
             let count = 0;
             for (const item of items) {
@@ -2877,20 +2893,22 @@
             const arrow = labeledText('i', 'material-icons', 'expand_more');
             arrow.setAttribute('aria-hidden', 'true');
             toggle.append(labeledText('span', '', 'Dettagli'), arrow);
-            summary.append(name, labeledText('span', '', count + ' pz'),
-                labeledText('span', 'pet-order-state', state),
+            const state = document.createElement('span');
+            state.className = 'pet-order-state';
+            for (const badge of badges) state.append(labeledText('span', 'pet-badge pet-badge-' + badge.tone, badge.text));
+            summary.append(name, labeledText('span', '', count + ' pz'), state,
                 labeledText('span', 'pet-order-amount', amount == null ? '—' : money.format(amount)), toggle);
             order.append(summary);
 
             const details = document.createElement('div');
             details.className = 'pet-order-lines';
+            if (groups.size) details.append(labeledText('p', 'pet-order-note', 'Prezzi di listino, IVA esclusa.'));
             for (const [title, group] of groups) {
                 const section = document.createElement('section');
                 section.className = 'pet-order-group';
                 const heading = document.createElement('div');
                 heading.className = 'pet-order-group-head';
-                const subtotal = 'Subtotale ' + group.count + ' pz'
-                    + (group.priced ? ' · ' + money.format(group.cents / 100) + ' di listino' : '');
+                const subtotal = group.count + ' pz' + (group.priced ? ' · ' + money.format(group.cents / 100) : '');
                 heading.append(labeledText('h3', '', title), labeledText('strong', '', subtotal));
                 const list = document.createElement('ul');
                 for (const { color, quantity } of group.lines) {
@@ -2904,6 +2922,31 @@
                 details.append(section);
             }
             if (!groups.size) details.textContent = 'Nessun articolo disponibile per questo ordine.';
+            const listCents = [...groups.values()].every(group => group.priced)
+                ? [...groups.values()].reduce((sum, group) => sum + group.cents, 0) : null;
+            if (groups.size && listCents != null) {
+                const summaryList = document.createElement('dl');
+                summaryList.className = 'pet-order-summary';
+                const addLine = (term, value, total) => {
+                    const dt = labeledText('dt', total ? 'pet-summary-total' : '', term);
+                    const dd = labeledText('dd', total ? 'pet-summary-total' : '', value);
+                    summaryList.append(dt, dd);
+                };
+                addLine('Totale di listino', money.format(listCents / 100));
+                if (breakdown && amount != null) {
+                    const reseller = Math.round(listCents * Number(breakdown.resellerPct || 0) / 100);
+                    const extra = Math.round((listCents - reseller) * Number(breakdown.extraPct || 0) / 100);
+                    const shipping = Math.round(Number(breakdown.shipping || 0) * 100);
+                    const percent = value => Number(value).toLocaleString('it-IT', { maximumFractionDigits: 2 }) + '%';
+                    if (reseller) addLine('Sconto rivenditore ' + percent(breakdown.resellerPct), '− ' + money.format(reseller / 100));
+                    if (extra) addLine('Sconto extra ' + percent(breakdown.extraPct), '− ' + money.format(extra / 100));
+                    if (shipping) addLine('Spedizione', '+ ' + money.format(shipping / 100));
+                    addLine('Importo ordine', money.format(amount), true);
+                } else {
+                    addLine('Prezzo finale', 'nella conferma di 24Pet', true);
+                }
+                details.append(summaryList);
+            }
             order.append(details);
             return order;
         }
@@ -2913,7 +2956,7 @@
             clientStatus.textContent = 'Caricamento ordini…';
             try {
                 const { data: orders, error } = await api.from('client_order_history')
-                    .select('order_id,order_date,amount,paid,fulfilled,items')
+                    .select('order_id,order_date,amount,paid,fulfilled,items,reseller_discount_pct,extra_discount_pct,shipping_charged')
                     .order('order_date', { ascending: false }).order('order_id', { ascending: false });
                 if (check !== accessCheck) return;
                 if (error) throw error;
@@ -2925,8 +2968,14 @@
                     label: 'Ordine #' + (Number.isSafeInteger(Number(order.order_id))
                         ? Number(order.order_id).toString(36).toUpperCase().slice(-5) : order.order_id),
                     date: calendarDate.format(new Date(order.order_date + 'T00:00:00Z')),
-                    state: (order.paid ? 'Pagato' : 'Da pagare') + ' · ' + (order.fulfilled ? 'Evaso' : 'Da evadere'),
+                    badges: [
+                        order.paid ? { text: 'Pagato', tone: 'ok' } : { text: 'Da pagare', tone: 'warn' },
+                        order.fulfilled ? { text: 'Evaso', tone: 'ok' } : { text: 'Da evadere', tone: 'neutral' }
+                    ],
                     amount: order.amount,
+                    breakdown: {
+                        resellerPct: order.reseller_discount_pct, extraPct: order.extra_discount_pct, shipping: order.shipping_charged
+                    },
                     items: order.items.map(item => ({
                         model: item.modello, size: item.dimensione, color: item.colore,
                         quantity: item.quantita, list_price: item.prezzoUnitario
@@ -3012,7 +3061,7 @@
             fiscalNotice.hidden = !compose || !fiscalLoaded || fiscalComplete;
             availability.hidden = !compose;
             document.getElementById('pet-role-title').textContent = {
-                compose: 'Componi ordine multiplo', history: 'I tuoi ordini', profile: 'Profilo e fatturazione'
+                compose: 'Nuova richiesta d’ordine', history: 'I tuoi ordini', profile: 'Profilo e fatturazione'
             }[page];
             for (const button of customerNav.querySelectorAll('button')) {
                 if (button.dataset.clientPage === page) button.setAttribute('aria-current','page');
@@ -3216,6 +3265,7 @@
                 tr.insertCell().append(remove);
                 requestItems.append(tr);
             }
+            requestItems.closest('table').classList.toggle('is-empty', !customerCart.length);
             if (!customerCart.length) {
                 const td = requestItems.insertRow().insertCell();
                 td.colSpan = 6;
@@ -3285,7 +3335,7 @@
                     target.append(customerOrderRow({
                         label: 'Richiesta d’ordine',
                         date: requestDate.format(new Date(request.submitted_at)),
-                        state: 'In attesa di conferma da 24Pet',
+                        badges: [{ text: 'In attesa di conferma', tone: 'info' }],
                         items: request.items
                     }));
                 }
@@ -3295,8 +3345,12 @@
                 const card = document.createElement('article');
                 card.className = 'pet-client-order';
                 const heading = document.createElement('h3');
-                const buyer = clients.find(c => c.codice === request.client_code)?.nome || request.client_code;
-                heading.textContent = buyer + ' · ' + requestDate.format(new Date(request.submitted_at));
+                const rubricClient = clients.find(c => c.codice === request.client_code);
+                const buyer = rubricClient?.nome || request.client_code;
+                const legalName = request.billing_details?.legal_name;
+                const names = legalName && legalName.trim().toLowerCase() !== String(buyer).trim().toLowerCase()
+                    ? buyer + ' · ' + legalName : buyer;
+                heading.textContent = names + ' · ' + requestDate.format(new Date(request.submitted_at));
                 const status = document.createElement('p');
                 status.textContent = request.id + ' · Termini ' + request.terms_version;
                 const list = document.createElement('ul');
@@ -3306,7 +3360,17 @@
                     li.textContent = [item.model, item.size, item.color].join(' · ') + ' × ' + item.quantity;
                     list.append(li);
                 }
-                card.append(heading, status, list);
+                card.append(heading);
+                const email = String(rubricClient?.email || '').trim();
+                if (/^[^\s@]+@[^\s@]+$/.test(email)) {
+                    const contact = document.createElement('p');
+                    contact.className = 'pet-order-contact';
+                    const link = labeledText('a', '', email);
+                    link.href = 'mailto:' + email;
+                    contact.append(link);
+                    card.append(contact);
+                }
+                card.append(status, list);
                 if (request.billing_details) card.append(adminBillingDetails(request.billing_details));
                 target.append(card);
             }
