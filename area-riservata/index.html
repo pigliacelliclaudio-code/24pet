@@ -719,6 +719,8 @@
             .pet-fiscal-fields { grid-template-columns: minmax(0, 1fr); }
         }
         .pet-access-card [role="status"] { color: #685e72; }
+        .pet-login-legal { margin: 14px 0 0; font-size: .82rem; color: #685e72; }
+        .pet-login-legal a { color: #685e72; text-decoration: underline; }
         .pet-account { display: flex; align-items: center; gap: 8px; }
         .pet-account .btn { padding: 0 10px; }
         .pet-account .pet-sign-out-status:empty { display: none; }
@@ -736,6 +738,7 @@
         <input id="pet-password" type="password" autocomplete="current-password" required>
         <button id="pet-sign-in" type="submit" class="btn btn-custom" disabled>Accedi</button>
         <p id="pet-login-status" role="status">Verifica dell’accesso in corso…</p>
+        <p class="pet-login-legal"><a href="https://24pet.it/privacy/" target="_blank" rel="noopener">Informativa privacy</a> · <a href="https://24pet.it/condizioni-v1/" target="_blank" rel="noopener">Condizioni di vendita</a></p>
     </form>
 </section>
 <section id="pet-role-view" class="pet-access no-print" hidden>
