@@ -101,6 +101,18 @@
         .app-brand-logo { display: block; flex: none; width: 38px; height: 38px; }
         .app-header .sync-status { position: static; display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: 13px; background: var(--canvas); border: 1px solid var(--line); border-radius: 999px; padding: 5px 10px; }
         .app-header .sync-status i { height: auto; line-height: 1; font-size: 16px; }
+        .app-header .sync-status.is-ok { color: #1b6434; background: #eef6f0; border-color: #cfe6d6; opacity: 1; }
+        .app-header .sync-status.is-warn { color: #7a4b00; background: #fff6e5; border-color: #f2dcae; opacity: 1; }
+        .app-header .sync-status.is-error { color: #a3122a; background: #fdecee; border-color: #f3c3ca; opacity: 1; }
+        .pet-migrate { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; margin: 0 0 18px; padding: 16px 18px; border: 1px solid #f2dcae; border-radius: 14px; background: #fffaf0; }
+        .pet-migrate[hidden] { display: none; }
+        .pet-migrate > .material-icons { color: #7a4b00; font-size: 30px; }
+        .pet-migrate > div { flex: 1 1 320px; }
+        .pet-migrate h2 { margin: 0 0 4px; color: var(--plum); font-size: 1.15rem; font-weight: 800; }
+        .pet-migrate p { margin: 0; color: #403646; }
+        .pet-migrate-status { margin-top: 6px !important; font-weight: 700; }
+        .pet-migrate .btn { text-transform: none; }
+        .pet-migrate-status:empty { display: none; }
         .pet-admin-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
         .pet-admin-actions button { position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 40px; padding: 7px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--plum); font: inherit; font-size: .92rem; font-weight: 700; cursor: pointer; }
         .pet-admin-actions button:hover { background: #f1e5f4; border-color: #d6bddc; }
@@ -819,6 +831,15 @@
 
             <!-- CONTENUTO -->
             <div class="col s12 m9 l10">
+                <section class="pet-migrate" id="pet-migrate" hidden aria-labelledby="pet-migrate-title">
+                    <i class="material-icons" aria-hidden="true">cloud_upload</i>
+                    <div>
+                        <h2 id="pet-migrate-title">Porta online i dati del gestionale</h2>
+                        <p id="pet-migrate-text"></p>
+                        <p id="pet-migrate-status" class="pet-migrate-status" role="status"></p>
+                    </div>
+                    <button type="button" class="btn btn-custom" id="pet-migrate-btn" onclick="petMigrate()">Carica sul server</button>
+                </section>
                 
                 <!-- PAGINA: DASHBOARD HOME -->
                 <div id="dashboard-home" class="page-content active">
@@ -833,7 +854,7 @@
                         </div>
                     </div>
 
-                    <p class="adm-source">Dati del gestionale salvati in questo browser. Le richieste arrivano da Supabase.</p>
+                    <p class="adm-source" id="pet-data-source">Dati del gestionale salvati in questo browser.</p>
                     <div id="adm-todo" class="adm-todo" aria-label="Da fare"></div>
                     <div id="adm-kpis" class="pet-kpis adm-kpis"></div>
                     <div class="pet-home-grid adm-grid">
@@ -1295,11 +1316,224 @@
     let idOrdineInModifica = null;
     let carrelloCorrente = [];
 
-    // === INIZIALIZZAZIONE AL CARICAMENTO ===
-    function initPetDashboard() {
+    // === ARCHIVIO DATI: SERVER (con trasferimento iniziale dal browser) ===
+    const petStoreKeys = { orders: '24pet_preview_orders', clients: '24pet_preview_clients', catalogo: '24pet_preview_catalogo' };
+    const petKinds = ['orders', 'clients', 'catalogo'];
+    const petStore = { mode: 'local', boot: null, legacy: null, synced: {}, pending: new Set(), timer: null, failures: 0, busy: false };
+    function petCanon(value) {
+        if (Array.isArray(value)) return '[' + value.map(petCanon).join(',') + ']';
+        if (value && typeof value === 'object') return '{' + Object.keys(value).sort().filter(k => value[k] !== undefined).map(k => JSON.stringify(k) + ':' + petCanon(value[k])).join(',') + '}';
+        return JSON.stringify(value === undefined ? null : value);
+    }
+    function petRowsOf(kind, source) {
+        if (kind === 'orders') return (source.orders || []).map(o => ({ key: String(o.id), row: { id: String(o.id), data: o } }));
+        if (kind === 'clients') return (source.clients || []).filter(c => c && c.codice).map(c => ({ key: String(c.codice), row: { code: String(c.codice), data: c } }));
+        const rows = [];
+        Object.entries(source.catalogo || {}).forEach(([model, sizes], modelIndex) => {
+            Object.entries(sizes || {}).forEach(([size, item], sizeIndex) => rows.push({ key: model + '\u0000' + size, row: { model, size, position: modelIndex * 100 + sizeIndex, data: item } }));
+        });
+        return rows;
+    }
+    function petCurrent() { return { orders, clients, catalogo: catalogoPrezzi }; }
+    function petSnapshotOf(kind, source) { return new Map(petRowsOf(kind, source).map(r => [r.key, petCanon(r.row)])); }
+    function petSnapshotAll(source) { return Object.fromEntries(petKinds.map(kind => [kind, petSnapshotOf(kind, source)])); }
+    function petSameSnapshot(a, b) {
+        if (a.size !== b.size) return false;
+        for (const [key, value] of a) if (b.get(key) !== value) return false;
+        return true;
+    }
+
+    function petSetStatus(state) {
+        const box = document.getElementById('cloudSyncInfo');
+        const label = document.getElementById('dashboard-data-status');
+        if (!box || !label) return;
+        const views = {
+            local: ['storage', 'Solo in questo browser', 'is-warn'],
+            saving: ['sync', 'Salvataggio…', ''],
+            synced: ['cloud_done', 'Sincronizzato', 'is-ok'],
+            error: ['cloud_off', 'Non salvato · riprovo', 'is-error']
+        };
+        if (state === 'local' && label.textContent.startsWith('Storico non caricato')) return;
+        const [icon, text, tone] = views[state] || views.local;
+        box.classList.remove('is-warn', 'is-ok', 'is-error');
+        if (tone) box.classList.add(tone);
+        box.querySelector('i').textContent = icon;
+        label.textContent = text;
+        const source = document.getElementById('pet-data-source');
+        if (source) source.textContent = state === 'local' ? 'Dati del gestionale salvati solo in questo browser.' : 'Dati del gestionale salvati online e condivisi tra gli amministratori.';
+        box.title = state === 'local' ? 'Ordini, clienti e catalogo sono salvati solo in questo browser' : state === 'synced' ? 'Dati salvati sul server' : '';
+    }
+
+    function petSave(kind) {
+        if (petStore.mode !== 'cloud') {
+            const value = kind === 'orders' ? orders : kind === 'clients' ? clients : catalogoPrezzi;
+            try { localStorage.setItem(petStoreKeys[kind], JSON.stringify(value)); } catch {}
+            return;
+        }
+        petStore.pending.add(kind);
+        petSetStatus('saving');
+        clearTimeout(petStore.timer);
+        petStore.timer = setTimeout(petFlush, 300);
+    }
+    async function petFlush() {
+        if (petStore.busy) { clearTimeout(petStore.timer); petStore.timer = setTimeout(petFlush, 300); return; }
+        const kinds = [...petStore.pending];
+        if (!kinds.length) return;
+        petStore.pending.clear();
+        petStore.busy = true;
+        try {
+            for (const kind of kinds) {
+                const current = petSnapshotOf(kind, petCurrent());
+                const before = petStore.synced[kind] || new Map();
+                const upserts = [];
+                for (const [key, value] of current) if (before.get(key) !== value) upserts.push(JSON.parse(value));
+                const removed = [...before.keys()].filter(key => !current.has(key));
+                if (upserts.length || removed.length) await window.petCloud.write(kind, upserts, removed);
+                petStore.synced[kind] = current;
+            }
+            petStore.failures = 0;
+            petSetStatus(petStore.pending.size ? 'saving' : 'synced');
+        } catch {
+            kinds.forEach(kind => petStore.pending.add(kind));
+            petStore.failures++;
+            petSetStatus('error');
+            clearTimeout(petStore.timer);
+            petStore.timer = setTimeout(petFlush, Math.min(30000, 2000 * petStore.failures));
+        } finally {
+            petStore.busy = false;
+        }
+    }
+    window.addEventListener('beforeunload', event => {
+        if (petStore.mode === 'cloud' && (petStore.pending.size || petStore.busy)) { event.preventDefault(); event.returnValue = ''; }
+    });
+
+    function petStartCloud(data) {
+        petStore.mode = 'cloud';
+        petStore.boot = data;
+    }
+    function petLoadInitial() {
+        if (petStore.mode === 'cloud' && petStore.boot) {
+            const data = petStore.boot;
+            petStore.boot = null;
+            catalogoPrezzi = Object.keys(data.catalogo).length ? data.catalogo : JSON.parse(JSON.stringify(catalogoPrezziDefault));
+            orders = data.orders;
+            clients = data.clients;
+            petStore.synced = petSnapshotAll(data);
+            petSetStatus('synced');
+            return;
+        }
         catalogoPrezzi = JSON.parse(localStorage.getItem('24pet_preview_catalogo')) || catalogoPrezziDefault;
         orders = JSON.parse(localStorage.getItem('24pet_preview_orders')) || [];
         clients = JSON.parse(localStorage.getItem('24pet_preview_clients')) || [];
+        petSetStatus('local');
+    }
+
+    function petRerenderAll() {
+        renderCatalogo();
+        aggiornaSelectModelli();
+        aggiornaRubrica();
+        loadOrders();
+        if (document.getElementById('risultatiRicerca').style.display === 'block') searchClient(null);
+    }
+    let petLastRefresh = Date.now();
+    function petBusyEditing() {
+        return petStore.pending.size || petStore.busy || document.querySelector('dialog[open]') || idOrdineInModifica
+            || document.querySelector('.adm-product.is-editing') || (Array.isArray(carrelloCorrente) && carrelloCorrente.length);
+    }
+    document.addEventListener('visibilitychange', async () => {
+        if (document.visibilityState !== 'visible' || petStore.mode !== 'cloud' || typeof window.petCloud?.fetchAll !== 'function') return;
+        if (Date.now() - petLastRefresh < 15000 || petBusyEditing()) return;
+        petLastRefresh = Date.now();
+        try {
+            const data = await window.petCloud.fetchAll();
+            if (!data.migrated || petBusyEditing()) return;
+            const next = petSnapshotAll(data);
+            if (petKinds.every(kind => petSameSnapshot(next[kind], petStore.synced[kind] || new Map()))) return;
+            orders = data.orders;
+            clients = data.clients;
+            catalogoPrezzi = data.catalogo;
+            petStore.synced = next;
+            petRerenderAll();
+            M.toast({ html: 'Dati aggiornati dal server', classes: 'rounded' });
+        } catch {}
+    });
+
+    function petCounts(source) {
+        return { orders: (source.orders || []).length, clients: (source.clients || []).length, catalog: petRowsOf('catalogo', source).length };
+    }
+    function petShowMigrationBanner() {
+        const banner = document.getElementById('pet-migrate');
+        if (!banner || petStore.mode === 'cloud') return;
+        const counts = petCounts(petCurrent());
+        const last = orders.reduce((max, o) => (o.data || '') > max ? o.data : max, '');
+        let text = 'Ordini, clienti e catalogo sono salvati solo in questo browser: ' + counts.orders + ' ordini, ' + counts.clients + ' clienti e ' + counts.catalog + ' prodotti'
+            + (last ? ', ultimo ordine del ' + admDate.format(new Date(last + 'T00:00:00Z')) : '') + '. '
+            + 'Caricali sul server dal computer e dal browser dove lavori di solito: prima scarico una copia di sicurezza.';
+        const legacy = petStore.legacy;
+        if (legacy && Array.isArray(legacy.orders) && Array.isArray(legacy.clients)
+            && petSameSnapshot(petSnapshotOf('orders', legacy), petSnapshotOf('orders', petCurrent()))
+            && petSameSnapshot(petSnapshotOf('clients', legacy), petSnapshotOf('clients', petCurrent()))) {
+            text += ' Attenzione: qui c’è solo lo storico importato il 16 novembre, senza modifiche successive. Se di solito lavori su un altro computer o browser, fai il caricamento da lì.';
+        }
+        document.getElementById('pet-migrate-text').textContent = text;
+        banner.hidden = false;
+    }
+    function petDownloadBackup() {
+        const payload = { esportato: new Date().toISOString(), origine: 'dashboard.24pet.it', orders, clients, catalogo: catalogoPrezzi };
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = '24pet-backup-gestionale-' + new Date().toISOString().slice(0, 10) + '.json';
+        document.body.append(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(link.href), 10000);
+    }
+    async function petMigrate() {
+        const button = document.getElementById('pet-migrate-btn');
+        const status = document.getElementById('pet-migrate-status');
+        const counts = petCounts(petCurrent());
+        if (!confirm('Caricare sul server ' + counts.orders + ' ordini, ' + counts.clients + ' clienti e ' + counts.catalog + ' prodotti del catalogo?\n\nPrima si scarica una copia di sicurezza. Da quel momento la dashboard userà i dati online, per tutti gli amministratori.')) return;
+        button.disabled = true;
+        try {
+            const badOrder = orders.find(o => !/^[A-Za-z0-9_-]{1,64}$/.test(String(o?.id ?? '')));
+            if (badOrder) throw new Error('un ordine non ha un numero valido (' + (badOrder.cliente || 'senza cliente') + ')');
+            const keys = new Set();
+            for (const o of orders) { if (keys.has(String(o.id))) throw new Error('due ordini hanno lo stesso numero ' + o.id); keys.add(String(o.id)); }
+            const badClient = clients.find(c => !/^[A-Za-z0-9_-]{1,32}$/.test(String(c?.codice ?? '')));
+            if (badClient) throw new Error('un cliente non ha un codice valido (' + (badClient.nome || '') + ')');
+            petDownloadBackup();
+            status.textContent = 'Caricamento in corso…';
+            const before = await window.petCloud.fetchAll();
+            if (before.migrated) throw new Error('i dati risultano già caricati da un altro amministratore. Ricarica la pagina');
+            const local = petCurrent();
+            for (const kind of petKinds) {
+                const rows = petRowsOf(kind, local);
+                const localKeys = new Set(rows.map(r => r.key));
+                const removed = petRowsOf(kind, before).map(r => r.key).filter(key => !localKeys.has(key));
+                await window.petCloud.write(kind, rows.map(r => r.row), removed);
+            }
+            status.textContent = 'Controllo dei dati sul server…';
+            const after = await window.petCloud.fetchAll();
+            const expected = petSnapshotAll(local);
+            const actual = petSnapshotAll(after);
+            const wrong = petKinds.filter(kind => !petSameSnapshot(expected[kind], actual[kind]));
+            if (wrong.length) throw new Error('il controllo non torna per ' + wrong.join(', ') + '. Riprova');
+            await window.petCloud.markMigrated({ at: new Date().toISOString(), orders: counts.orders, clients: counts.clients, catalog: counts.catalog });
+            petStore.mode = 'cloud';
+            petStore.synced = expected;
+            petSetStatus('synced');
+            document.getElementById('pet-migrate').hidden = true;
+            M.toast({ html: 'Dati caricati sul server e verificati', classes: 'rounded' });
+        } catch (error) {
+            status.textContent = 'Caricamento non completato: ' + (error?.message || 'errore di rete') + '. I dati di questo browser non sono stati toccati.';
+            button.disabled = false;
+        }
+    }
+
+    // === INIZIALIZZAZIONE AL CARICAMENTO ===
+    function initPetDashboard() {
+        petLoadInitial();
         M.AutoInit();
         const sidenavs = document.querySelectorAll('.sidenav');
         sidenavs.forEach(element => M.Sidenav.getInstance(element)?.destroy());
@@ -1321,9 +1555,9 @@
         });
 
         if(dataChanged) {
-            localStorage.setItem('24pet_preview_catalogo', JSON.stringify(catalogoPrezzi));
-            localStorage.setItem('24pet_preview_clients', JSON.stringify(clients));
-            localStorage.setItem('24pet_preview_orders', JSON.stringify(orders));
+            petSave('catalogo');
+            petSave('clients');
+            petSave('orders');
 
         }
 
@@ -1728,7 +1962,7 @@
                 varianti[dim].prezzo = parseFloat(inputPrezzo.value) || 0;
             }
         }
-        localStorage.setItem('24pet_preview_catalogo', JSON.stringify(catalogoPrezzi));
+        petSave('catalogo');
         M.toast({html: `Prezzi per ${modello} aggiornati!`, classes: 'green rounded'});
         renderCatalogo();
     }
@@ -1742,7 +1976,7 @@
 
         let skuBase = "URN-" + nome.substring(0,3).toUpperCase() + "-UNI";
         catalogoPrezzi[nome] = { "Unica": { sku: skuBase, costo: 0, prezzo: 0 } };
-        localStorage.setItem('24pet_preview_catalogo', JSON.stringify(catalogoPrezzi));
+        petSave('catalogo');
         M.toast({html: `Modello '${nome}' creato! Ora imposta i prezzi.`, classes: 'purple rounded'});
         aggiornaSelectModelli();
         renderCatalogo(nome); 
@@ -1756,7 +1990,7 @@
 
         let skuMisura = "URN-" + modello.substring(0,3).toUpperCase() + "-" + misura.substring(0,3).toUpperCase();
         catalogoPrezzi[modello][misura] = { sku: skuMisura, costo: 0, prezzo: 0 };
-        localStorage.setItem('24pet_preview_catalogo', JSON.stringify(catalogoPrezzi));
+        petSave('catalogo');
         renderCatalogo(modello); 
     }
 
@@ -1771,7 +2005,7 @@
                 M.toast({html: `Misura ${dimensione} eliminata.`, classes: 'orange rounded'});
                 renderCatalogo(modello);
             }
-            localStorage.setItem('24pet_preview_catalogo', JSON.stringify(catalogoPrezzi));
+            petSave('catalogo');
             aggiornaSelectModelli();
         }
     }
@@ -1779,7 +2013,7 @@
     function eliminaModello(modello) {
         if(confirm(`⚠️ ATTENZIONE ⚠️\n\nSei sicuro di voler eliminare DEFINITIVAMENTE l'intero modello "${modello}" e tutte le sue misure dal catalogo?\n\nQuesta azione non può essere annullata.`)) {
             delete catalogoPrezzi[modello];
-            localStorage.setItem('24pet_preview_catalogo', JSON.stringify(catalogoPrezzi));
+            petSave('catalogo');
             aggiornaSelectModelli();
             M.toast({html: `Modello ${modello} eliminato!`, classes: 'red rounded'});
             renderCatalogo();
@@ -1935,7 +2169,7 @@
             const index = clients.findIndex(c => c.codice === clientInModifica);
             clients[index] = Object.assign({}, clients[index], data, { codice: clientInModifica });
             orders.forEach(o => { if (o.codiceCliente === clientInModifica) { o.cliente = nome; o.tipo = tipo; } });
-            localStorage.setItem('24pet_preview_orders', JSON.stringify(orders));
+            petSave('orders');
             M.toast({ html: 'Cliente aggiornato', classes: 'rounded' });
         } else {
             const maxNum = clients.reduce((max, c) => Math.max(max, parseInt(String(c.codice || '').replace('C-', ''), 10) || 0), 0);
@@ -1943,7 +2177,7 @@
             clients.push(Object.assign({ codice: nuovoCodice }, data));
             M.toast({ html: 'Cliente aggiunto con codice ' + nuovoCodice, classes: 'rounded' });
         }
-        localStorage.setItem('24pet_preview_clients', JSON.stringify(clients));
+        petSave('clients');
         const edited = clientInModifica;
         annullaModificaCliente();
         aggiornaRubrica();
@@ -1958,7 +2192,7 @@
         const message = 'Eliminare ' + (client.nome || client.codice) + ' dalla rubrica?' + (count ? '\nI suoi ' + count + ' ordini restano nell’elenco ordini.' : '');
         if (confirm(message)) {
             clients.splice(index, 1);
-            localStorage.setItem('24pet_preview_clients', JSON.stringify(clients));
+            petSave('clients');
             aggiornaRubrica();
         }
     }
@@ -2376,7 +2610,7 @@
             M.toast({html: 'Ordine Multiplo salvato con successo!', classes: 'purple rounded'});
         }
 
-        localStorage.setItem('24pet_preview_orders', JSON.stringify(orders));
+        petSave('orders');
 
         
         annullaModificaOrdine(); 
@@ -2386,7 +2620,7 @@
     function eliminaOrdine(idOrdine) {
         if(confirm("Sei sicuro di voler eliminare questo intero ordine?")) {
             orders = orders.filter(o => o.id !== idOrdine);
-            localStorage.setItem('24pet_preview_orders', JSON.stringify(orders));
+            petSave('orders');
 
             loadOrders();
         }
@@ -2400,7 +2634,7 @@
         const order = orders.find(o => o.id === id);
         if (!order) return;
         order[field] = !order[field];
-        localStorage.setItem('24pet_preview_orders', JSON.stringify(orders));
+        petSave('orders');
         loadOrders();
         if (document.getElementById('risultatiRicerca').style.display === 'block') searchClient(null);
         M.toast({ html: field === 'pagato' ? (order.pagato ? 'Ordine segnato come pagato' : 'Ordine segnato come da pagare') : (order.evaso ? 'Ordine segnato come evaso' : 'Ordine segnato come da evadere'), classes: 'rounded' });
@@ -3441,6 +3675,73 @@
             return { ...local, ...Object.fromEntries(entries) };
         }
 
+        // Gestionale online: ordini, rubrica e catalogo sul server
+        async function petSelectAll(table, columns, orderColumn) {
+            const rows = [];
+            const page = 1000;
+            for (let from = 0; ; from += page) {
+                const { data, error } = await api.from(table).select(columns).order(orderColumn, { ascending: true }).range(from, from + page - 1);
+                if (error) throw error;
+                rows.push(...(data || []));
+                if (!data || data.length < page) return rows;
+            }
+        }
+        async function petFetchAdminData() {
+            const { data: marker, error } = await api.from('admin_settings').select('value').eq('key', 'migration').maybeSingle();
+            if (error) throw error;
+            const [orderRows, clientRows, catalogRows] = await Promise.all([
+                petSelectAll('admin_orders', 'id,data', 'id'),
+                petSelectAll('admin_clients', 'code,data', 'code'),
+                petSelectAll('admin_catalog', 'model,size,position,data', 'position')
+            ]);
+            const byNumber = (a, b) => (Number(a.id) - Number(b.id)) || String(a.id).localeCompare(String(b.id));
+            const catalogo = {};
+            for (const row of [...catalogRows].sort((a, b) => a.position - b.position)) {
+                (catalogo[row.model] ||= {})[row.size] = row.data;
+            }
+            return {
+                migrated: Boolean(marker),
+                marker: marker?.value || null,
+                orders: orderRows.map(row => row.data).sort(byNumber),
+                clients: clientRows.map(row => Object.assign({}, row.data, { codice: row.code })),
+                catalogo
+            };
+        }
+        const petTables = { orders: ['admin_orders', 'id'], clients: ['admin_clients', 'code'], catalogo: ['admin_catalog', null] };
+        window.petCloud = {
+            fetchAll: petFetchAdminData,
+            async write(kind, upserts, removed) {
+                const [table, key] = petTables[kind];
+                for (let i = 0; i < upserts.length; i += 200) {
+                    const chunk = upserts.slice(i, i + 200);
+                    const { error } = key ? await api.from(table).upsert(chunk) : await api.from(table).upsert(chunk, { onConflict: 'model,size' });
+                    if (error) throw error;
+                }
+                if (key) {
+                    for (let i = 0; i < removed.length; i += 200) {
+                        const { error } = await api.from(table).delete().in(key, removed.slice(i, i + 200));
+                        if (error) throw error;
+                    }
+                } else {
+                    for (const item of removed) {
+                        const [model, size] = item.split('\u0000');
+                        const { error } = await api.from(table).delete().eq('model', model).eq('size', size);
+                        if (error) throw error;
+                    }
+                }
+            },
+            async markMigrated(value) {
+                const { error } = await api.from('admin_settings').insert({ key: 'migration', value });
+                if (error) throw error;
+            }
+        };
+        async function petLegacySnapshot() {
+            try {
+                const { data } = await api.from('dashboard_imports').select('payload').eq('import_id', importId).maybeSingle();
+                return data?.payload || null;
+            } catch { return null; }
+        }
+
         async function restoreImportedHistory(check) {
             const status = document.getElementById('dashboard-data-status');
             try {
@@ -4353,8 +4654,22 @@
             }
             if (data.role === 'admin' && !adminStarted) {
                 status.textContent = 'Caricamento del gestionale…';
-                await restoreImportedHistory(check);
+                let cloudData;
+                try {
+                    cloudData = await petFetchAdminData();
+                } catch {
+                    if (check === accessCheck) showLogin('Dati del gestionale non raggiungibili. Ricarica la pagina per riprovare.');
+                    return;
+                }
                 if (check !== accessCheck) return;
+                if (cloudData.migrated) {
+                    petStartCloud(cloudData);
+                } else {
+                    await restoreImportedHistory(check);
+                    if (check !== accessCheck) return;
+                    petStore.legacy = await petLegacySnapshot();
+                    if (check !== accessCheck) return;
+                }
             }
             login.hidden = true;
             if (data.role === 'admin') {
@@ -4364,6 +4679,7 @@
                 if (!adminStarted) {
                     initPetDashboard();
                     adminStarted = true;
+                    petShowMigrationBanner();
                     loadPartnerRequests();
                     loadRequests(adminRequestRows, true);
                 }
