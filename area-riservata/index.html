@@ -335,6 +335,14 @@
         .adm-stock-moves { display: grid; gap: 4px; margin: 0; max-height: 420px; overflow: auto; }
         .adm-stock-move { display: grid; grid-template-columns: 92px minmax(0, 1.2fr) minmax(0, 1.4fr) auto 38px; align-items: center; gap: 8px; padding: 4px 0; border-bottom: 1px solid var(--line); font-size: .86rem; }
         .adm-stock-dialog { width: min(560px, calc(100% - 20px)); }
+        .adm-logo-field { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; margin-top: 8px; }
+        .adm-logo-preview { display: grid; place-items: center; width: 220px; min-height: 80px; padding: 8px; border: 1px dashed #d9cfdc; border-radius: 10px; background: #fff; text-align: center; font-size: .85rem; }
+        .adm-logo-preview img { max-width: 100%; max-height: 90px; object-fit: contain; }
+        .adm-logo-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+        .adm-logo-actions label.adm-action { cursor: pointer; }
+        .adm-logo-actions label.adm-action:focus-within { outline: 2px solid var(--plum); outline-offset: 2px; }
+        .adm-client-logo { flex: none; max-width: 140px; max-height: 64px; object-fit: contain; }
+        .adm-client-hero-main { flex: 1 1 260px; min-width: 0; }
         .adm-box-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
         .adm-box-head h2 { margin: 0; }
         .adm-box-icon { color: #8a6a3b; font-size: 18px !important; }
@@ -929,6 +937,17 @@
                     </div>
                 </fieldset>
                 <fieldset>
+                    <legend>Logo per le etichette</legend>
+                    <div class="adm-logo-field">
+                        <div id="adm-logo-preview" class="adm-logo-preview"></div>
+                        <div class="adm-logo-actions">
+                            <label class="adm-action" id="adm-logo-pick"><i class="material-icons" aria-hidden="true">upload</i><span>Carica logo</span><input id="adm-logo-file" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" class="adm-visually-hidden"></label>
+                            <button type="button" class="adm-action adm-action-danger" id="adm-logo-remove" hidden><i class="material-icons" aria-hidden="true">delete</i><span>Togli logo</span></button>
+                        </div>
+                    </div>
+                    <p class="adm-note">Meglio un logo su sfondo bianco, in un solo colore scuro: la stampante stampa solo in nero.</p>
+                </fieldset>
+                <fieldset>
                     <legend>Sul sito 24pet.it</legend>
                     <label class="adm-check"><input id="sitoVisibile" type="checkbox" class="filled-in"><span>Mostra tra i punti vendita sul sito (solo con il consenso del cliente)</span></label>
                     <div class="adm-form-grid" id="sitoCampi" hidden>
@@ -1370,7 +1389,8 @@
 
                     <div id="risultatiRicerca" style="display: none;">
                         <section class="adm-client-hero" aria-labelledby="resNome">
-                            <div>
+                            <img id="resLogo" class="adm-client-logo" alt="" hidden>
+                            <div class="adm-client-hero-main">
                                 <p class="adm-client-code"><span id="resCodice"></span><span id="resTipo" class="pet-badge pet-badge-neutral"></span></p>
                                 <h2 id="resNome" class="adm-client-name"></h2>
                                 <p id="resRagione" class="adm-client-legal"></p>
@@ -3031,6 +3051,8 @@
         }
         admToggleShipping();
         admFillSite(client);
+        admClientLogoDraft = client?.logo || null;
+        admRenderLogoField();
         admLoadCloudBilling(client ? client.codice : null);
         document.getElementById('titoloFormCliente').textContent = client ? 'Modifica ' + (client.nome || client.codice) + ' · ' + client.codice : 'Nuovo cliente';
         document.querySelector('#btnSalvaCliente span').textContent = client ? 'Salva modifiche' : 'Salva cliente';
@@ -3071,6 +3093,8 @@
         if (dialog.open) dialog.close();
     }
     document.getElementById('spedUguale').addEventListener('change', admToggleShipping);
+    document.getElementById('adm-logo-file').addEventListener('change', event => { admReadLogo(event.target.files[0]); event.target.value = ''; });
+    document.getElementById('adm-logo-remove').addEventListener('click', () => petConfirmDelete('Togliere il logo del cliente?', 'Sulle etichette comparirà il nome del cliente. La modifica vale quando salvi la scheda.').then(ok => { if (ok) { admClientLogoDraft = null; admRenderLogoField(); } }));
     document.getElementById('sitoVisibile').addEventListener('change', () => {
         admToggleSite();
         if (document.getElementById('sitoVisibile').checked) {
@@ -3131,7 +3155,8 @@
             partitaIva: piva, codiceFiscale: admFormValue('codiceFiscale').toUpperCase(),
             codiceUnivoco: admFormValue('codiceUnivoco').toUpperCase(), pec,
             noteInterne: admFormValue('noteInterne'),
-            sito
+            sito,
+            logo: admClientLogoDraft || null
         };
         if (clientInModifica) {
             const index = clients.findIndex(c => c.codice === clientInModifica);
@@ -3689,6 +3714,7 @@
             action(o.evaso ? 'undo' : 'local_shipping', o.evaso ? 'Segna da evadere' : 'Segna evaso', () => admToggleOrder(o.id, 'evaso')),
             action('receipt', 'Conferma d’ordine', () => stampaRiepilogoCliente(o.id)),
             action('print', 'Scheda produzione', () => stampaSchedaProduzioneSingola(o.id)),
+            action('label', 'Etichette', () => stampaEtichetteOrdine(o.id)),
             action('edit', 'Modifica', () => preparaModificaOrdine(o.id)),
             action('delete', 'Elimina', () => eliminaOrdine(o.id), 'adm-action-danger')
         );
@@ -3907,7 +3933,123 @@
 
 
     // === STAMPA IN UNA PAGINA SEPARATA (affidabile anche su Safari) ===
-    function petPrint(html, title) {
+
+    // === ETICHETTE (Brother QL-820NWBc, rotolo pretagliato DK-11202 62×100 mm) ===
+    const CODE128 = ['212222','222122','222221','121223','121322','131222','122213','122312','132212','221213','221312','231212','112232','122132','122231','113222','123122','123221','223211','221132','221231','213212','223112','312131','311222','321122','321221','312212','322112','322211','212123','212321','232121','111323','131123','131321','112313','132113','132311','211313','231113','231311','112133','112331','132131','113123','113321','133121','313121','211331','231131','213113','213311','213131','311123','311321','331121','312113','312311','332111','314111','221411','431111','111224','111422','121124','121421','141122','141221','112214','112412','122114','122411','142112','142211','241211','221114','413111','241112','134111','111242','121142','121241','114212','124112','124211','411212','421112','421211','212141','214121','412121','111143','111341','131141','114113','114311','411113','411311','113141','114131','311141','411131','211412','211214','211232','2331112'];
+    function admBarcodeSvg(text, heightMm) {
+        const value = String(text).replace(/[^\x20-\x7e]/g, '');
+        const codes = [104];
+        for (const ch of value) codes.push(ch.charCodeAt(0) - 32);
+        codes.push(codes.reduce((sum, c, i) => sum + c * (i || 1), 0) % 103, 106);
+        let x = 10, bars = '';
+        for (const c of codes) {
+            const widths = CODE128[c];
+            for (let i = 0; i < widths.length; i++) {
+                const w = Number(widths[i]);
+                if (i % 2 === 0) bars += `<rect x="${x}" y="0" width="${w}" height="1"/>`;
+                x += w;
+            }
+        }
+        const total = x + 10;
+        // modulo di 3 punti a 300 dpi (0,254 mm): barre nette sulla stampante termica
+        const widthMm = total * 0.254 <= 55 ? (total * 0.254).toFixed(3) + 'mm' : '100%';
+        return `<svg class="lab-barcode" viewBox="0 0 ${total} 1" preserveAspectRatio="none" style="width:${widthMm};height:${heightMm}mm" shape-rendering="crispEdges" aria-label="${admEsc(value)}">${bars}</svg>`;
+    }
+    function admEsc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+    function admItemCode(a) {
+        if (a.sku && /-[A-Z]\d$/.test(a.sku)) return a.sku;
+        const base = catalogoPrezzi[a.modello]?.[a.dimensione]?.sku || a.sku || '';
+        const color = listaColori.find(c => c.nome === a.colore)?.code;
+        return base && color ? base + '-' + color : base;
+    }
+    function admLabelPictogram(model) {
+        return (iconeProdotti[model] || iconeProdotti.Default).replace(/#b50084/gi, '#000').replace(/width="28" height="28"/, '');
+    }
+    function admLabelsHtml(order, client) {
+        const items = [];
+        const sorted = [...(order.articoli || [])].sort((a, b) => (a.modello || '').localeCompare(b.modello || '') || (a.dimensione || '').localeCompare(b.dimensione || '') || (a.colore || '').localeCompare(b.colore || ''));
+        for (const a of sorted) for (let i = 0; i < admQty(a); i++) items.push(a);
+        const total = items.length;
+        const head = client?.logo
+            ? `<div class="lab-logo"><img src="${client.logo}" alt=""></div>`
+            : `<div class="lab-client">${admEsc(client?.nome || order.cliente || '')}</div>`;
+        return `<style>
+            @page { size: 62mm 100mm; margin: 0; }
+            body { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; color: #000; }
+            .lab { width: 62mm; height: 100mm; padding: 3.5mm 3.5mm 3mm; display: flex; flex-direction: column; overflow: hidden; break-after: page; page-break-after: always; }
+            .lab:last-child { break-after: auto; page-break-after: auto; }
+            .lab-logo { height: 17mm; display: flex; align-items: center; justify-content: center; }
+            .lab-logo img { max-width: 52mm; max-height: 17mm; object-fit: contain; filter: grayscale(1) contrast(1.3); }
+            .lab-client { height: 17mm; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 5mm; font-weight: 800; line-height: 1.1; }
+            .lab-rule { border-top: .35mm solid #000; margin: 2.2mm 0; }
+            .lab-model { display: flex; align-items: center; gap: 3mm; }
+            .lab-model svg { width: 17mm; height: 17mm; flex: none; }
+            .lab-model strong { font-size: 6.2mm; font-weight: 800; line-height: 1.05; }
+            .lab-facts { margin: 3.5mm 0 0; display: grid; grid-template-columns: auto 1fr; gap: 1.6mm 2.5mm; font-size: 4.8mm; line-height: 1.15; }
+            .lab-facts dt { font-weight: 400; }
+            .lab-facts dd { margin: 0; font-weight: 800; }
+            .lab-code { margin-top: auto; text-align: center; }
+            .lab-barcode { display: block; margin: 0 auto; fill: #000; }
+            .lab-code span { display: block; margin-top: .8mm; font-family: "SF Mono", Menlo, monospace; font-size: 3.2mm; letter-spacing: .2mm; }
+            .lab-foot { display: flex; justify-content: space-between; margin-top: 1.5mm; font-size: 2.6mm; }
+        </style>` + items.map((a, i) => {
+            const code = admItemCode(a);
+            return `<section class="lab">${head}<div class="lab-rule"></div>
+                <div class="lab-model">${admLabelPictogram(a.modello)}<strong>${admEsc(a.modello)}</strong></div>
+                <dl class="lab-facts"><dt>Misura</dt><dd>${admEsc(a.dimensione || '—')}</dd><dt>Colore</dt><dd>${admEsc(a.colore || '—')}</dd></dl>
+                <div class="lab-code">${code ? admBarcodeSvg(code, 13) + `<span>${admEsc(code)}</span>` : ''}</div>
+                <div class="lab-foot"><span>24Pet · ${admEsc(admOrderNumber(order))}</span><span>${i + 1}/${total}</span></div></section>`;
+        }).join('');
+    }
+    function stampaEtichetteOrdine(idOrdine) {
+        const o = orders.find(x => x.id === idOrdine);
+        if (!o) return;
+        if (!(o.articoli || []).length) { M.toast({ html: 'L’ordine non ha articoli', classes: 'rounded' }); return; }
+        const client = clients.find(c => c.codice === o.codiceCliente);
+        petPrint(admLabelsHtml(o, client), 'Etichette ' + admOrderNumber(o), '@page { size: 62mm 100mm; margin: 0; }');
+    }
+
+    // Logo del cliente (salvato nella scheda come immagine ridotta)
+    let admClientLogoDraft = null;
+    function admRenderLogoField() {
+        const preview = document.getElementById('adm-logo-preview');
+        const remove = document.getElementById('adm-logo-remove');
+        preview.replaceChildren();
+        if (admClientLogoDraft) {
+            const img = document.createElement('img');
+            img.src = admClientLogoDraft; img.alt = 'Logo del cliente';
+            preview.append(img);
+        } else preview.append(admEl('span', 'adm-muted', 'Nessun logo: sull’etichetta comparirà il nome del cliente.'));
+        remove.hidden = !admClientLogoDraft;
+        document.getElementById('adm-logo-pick').querySelector('span').textContent = admClientLogoDraft ? 'Cambia logo' : 'Carica logo';
+    }
+    function admReadLogo(file) {
+        const error = document.getElementById('adm-client-form-error');
+        error.textContent = '';
+        if (!file) return;
+        if (!/^image\/(png|jpeg|webp|svg\+xml)$/.test(file.type)) { error.textContent = 'Il logo deve essere un’immagine PNG, JPG, WebP o SVG.'; return; }
+        if (file.size > 8 * 1024 * 1024) { error.textContent = 'L’immagine è troppo grande (massimo 8 MB).'; return; }
+        const url = URL.createObjectURL(file);
+        const img = new Image();
+        img.onload = () => {
+            const w0 = img.naturalWidth || 600, h0 = img.naturalHeight || 240;
+            const scale = Math.min(1, 640 / w0, 260 / h0);
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.max(1, Math.round(w0 * scale)); canvas.height = Math.max(1, Math.round(h0 * scale));
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            URL.revokeObjectURL(url);
+            let data = canvas.toDataURL('image/png');
+            if (data.length > 160000) data = canvas.toDataURL('image/jpeg', 0.85);
+            admClientLogoDraft = data;
+            admRenderLogoField();
+        };
+        img.onerror = () => { URL.revokeObjectURL(url); error.textContent = 'Non riesco a leggere questa immagine.'; };
+        img.src = url;
+    }
+
+    function petPrint(html, title, pageCss) {
         document.getElementById('pet-print-frame')?.remove();
         const frame = document.createElement('iframe');
         frame.id = 'pet-print-frame';
@@ -3918,7 +4060,7 @@
         const doc = frame.contentDocument;
         doc.open();
         doc.write('<!DOCTYPE html><html lang="it"><head><meta charset="utf-8"><title></title>'
-            + '<style>@page { size: A4; margin: 10mm; } html, body { margin: 0; background: #fff; }'
+            + '<style>' + (pageCss || '@page { size: A4; margin: 10mm; }') + ' html, body { margin: 0; background: #fff; }'
             + ' body { font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #333; }'
             + ' * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; }'
             + ' .print-box-break { -webkit-box-decoration-break: clone; box-decoration-break: clone; break-inside: auto; }</style></head><body></body></html>');
@@ -4537,6 +4679,9 @@
         document.getElementById('resCodice').textContent = client.codice;
         document.getElementById('resTipo').textContent = client.tipo || 'Azienda';
         document.getElementById('resNome').textContent = client.nome || 'Senza nome';
+        const heroLogo = document.getElementById('resLogo');
+        heroLogo.hidden = !client.logo;
+        if (client.logo) heroLogo.src = client.logo; else heroLogo.removeAttribute('src');
         document.getElementById('resRagione').textContent = client.ragioneSociale || '';
         const first = allOrders[allOrders.length - 1];
         const last = allOrders[0];
