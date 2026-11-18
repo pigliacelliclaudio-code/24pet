@@ -32,7 +32,7 @@ if (location.hostname === 'dashboard.24pet.it' && location.pathname === '/') {
 ]}
 </script>
 <link rel="preload" href="/assets/fonts/mulish-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/assets/landing.css?v=14">
+<link rel="stylesheet" href="/assets/landing.css?v=16">
 <link rel="stylesheet" href="/assets/urn-details.css?v=3">
 </head>
 <body>
@@ -285,10 +285,12 @@ if (location.hostname === 'dashboard.24pet.it' && location.pathname === '/') {
 <div class="wrap">
 <div class="section-head"><div><p class="eyebrow">Per le famiglie</p><h2 id="titolo-negozi">Dove trovarle.</h2></div><p class="intro">Per scegliere l’urna giusta affidati a un professionista: l’agenzia funebre o il centro di cremazione ti seguono nella scelta del modello, della taglia e del colore, e si occupano dell’ordine.<span id="stores-intro-search" hidden> Qui sotto trovi chi propone le urne 24Pet.</span></p></div>
 <div class="stores-tools" hidden>
-<label class="stores-search"><span>Cerca per città o provincia</span><input id="stores-search" type="search" placeholder="es. Padova o PD" autocomplete="off"></label>
+<label class="stores-search"><span>Cerca per città, provincia o regione</span><input id="stores-search" type="search" placeholder="es. Palermo, LE o Sardegna" autocomplete="off"></label>
 <p id="stores-count" class="stores-count" role="status"></p>
 </div>
 <ul id="stores-list" class="stores-list" role="list"></ul>
+<div id="stores-groups" class="stores-groups" hidden></div>
+<p class="stores-more" id="stores-more" hidden><a class="button outline" href="/punti-vendita/">Vedi tutti i punti vendita, divisi per regione <span aria-hidden="true">→</span></a></p>
 <p class="stores-help" id="stores-help"><span id="stores-help-lead" hidden>Non trovi un punto vendita vicino? </span>Chiedi all’agenzia o al centro di cremazione a cui ti sei già rivolto: può ordinarle per te.</p>
 </div>
 </section>
@@ -375,42 +377,39 @@ form.addEventListener('submit', async (event) => {
     }
 });
 </script>
+<script src="/assets/punti-vendita.js?v=2"></script>
 <script>
 (() => {
+    if (!window.PetStores) return;
     const list = document.querySelector('#stores-list');
+    const groupsBox = document.querySelector('#stores-groups');
     const tools = document.querySelector('.stores-tools');
     const search = document.querySelector('#stores-search');
     const count = document.querySelector('#stores-count');
-    const kinds = { agenzia: 'Agenzia funebre', crematorio: 'Centro di cremazione', altro: 'Punto vendita' };
-    let stores = [];
-    const norm = value => String(value || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    function link(href, text) { const a = document.createElement('a'); a.href = href; a.textContent = text; if (/^https?:/.test(href)) { a.target = '_blank'; a.rel = 'noopener'; } return a; }
+    const more = document.querySelector('#stores-more');
+    const HOME_MAX = 6;
+    let stores = [], preview = [];
     function render() {
-        const query = norm(search.value.trim());
-        const shown = stores.filter(s => !query || norm([s.name, s.city, s.province, s.address].join(' ')).includes(query));
-        list.replaceChildren(...shown.map(s => {
-            const li = document.createElement('li');
-            li.className = 'store';
-            const kind = document.createElement('p'); kind.className = 'store-kind'; kind.textContent = kinds[s.kind] || kinds.altro;
-            const name = document.createElement('h3'); name.textContent = s.name;
-            const place = document.createElement('p'); place.className = 'store-place';
-            place.textContent = [s.address, [s.city, s.province ? '(' + s.province + ')' : ''].filter(Boolean).join(' ')].filter(Boolean).join(' · ');
-            const contacts = document.createElement('p'); contacts.className = 'store-contacts';
-            if (s.phone) contacts.append(link('tel:' + s.phone.replace(/[^+\d]/g, ''), s.phone));
-            if (s.email) contacts.append(link('mailto:' + s.email, s.email));
-            if (s.website) contacts.append(link(s.website, s.website.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')));
-            li.append(kind, name, place);
-            if (contacts.childNodes.length) li.append(contacts);
-            return li;
-        }));
-        count.textContent = query ? (shown.length ? shown.length + (shown.length === 1 ? ' punto vendita' : ' punti vendita') : 'Nessun punto vendita trovato per questa ricerca.') : '';
+        const query = search.value.trim();
+        if (!query) {
+            groupsBox.hidden = true; groupsBox.replaceChildren();
+            list.hidden = false;
+            list.replaceChildren(...preview.map(s => PetStores.card(s)));
+            count.textContent = stores.length > HOME_MAX ? 'Ne vedi ' + HOME_MAX + ' su ' + stores.length + '.' : '';
+            return;
+        }
+        const shown = stores.filter(s => PetStores.matches(s, query));
+        list.hidden = true; list.replaceChildren();
+        groupsBox.hidden = !shown.length;
+        PetStores.renderGrouped(groupsBox, shown, { level: 3 });
+        count.textContent = shown.length ? shown.length + (shown.length === 1 ? ' punto vendita trovato' : ' punti vendita trovati') : 'Nessun punto vendita trovato per questa ricerca.';
     }
     search.addEventListener('input', render);
-    fetch('https://vacxudtbzpfygkkxmhyz.supabase.co/rest/v1/public_resellers?select=name,kind,address,city,province,phone,email,website&order=province.asc,city.asc,name.asc', {
-        headers: { apikey: 'sb_publishable_Pxz4_0wKSdVx4_sHoyhJlw_jfMSJid8' }
-    }).then(r => r.ok ? r.json() : []).then(rows => {
-        stores = Array.isArray(rows) ? rows : [];
-        tools.hidden = stores.length < 4;
+    PetStores.load().then(rows => {
+        stores = rows;
+        preview = PetStores.shuffle(stores).slice(0, HOME_MAX);
+        tools.hidden = !stores.length;
+        more.hidden = !stores.length;
         document.querySelector('#stores-intro-search').hidden = !stores.length;
         document.querySelector('#stores-help-lead').hidden = !stores.length;
         render();

@@ -265,11 +265,29 @@ h2 { font-size: clamp(36px, 4.1vw, 62px); line-height: 1.08; text-wrap: balance;
 .stores-list:empty { display: none; }
 .store { display: grid; gap: 4px; align-content: start; padding: 18px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
 .store-kind { color: var(--accent); font-size: .74rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
-.store h3 { font-size: 1.15rem; font-weight: 700; line-height: 1.25; letter-spacing: -.02em; }
+.store h3, .store .store-name { margin: 0; font-size: 1.15rem; font-weight: 700; line-height: 1.25; letter-spacing: -.02em; }
 .store-place { color: var(--muted); font-size: .92rem; }
 .store-contacts { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 6px; padding-top: 8px; border-top: 1px solid var(--line); font-size: .9rem; font-weight: 700; }
 .store-contacts a { color: var(--accent); text-underline-offset: 4px; overflow-wrap: anywhere; }
 .stores-help { max-width: 70ch; margin-top: 22px; color: var(--muted); }
+.stores-more { margin-top: 22px; }
+.stores-more .button { color: var(--accent); border-color: var(--accent); }
+.stores-groups { display: grid; gap: 8px; }
+.stores-region { scroll-margin-top: 20px; }
+.stores-region + .stores-region { margin-top: 26px; }
+.stores-region-title { display: flex; align-items: baseline; gap: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--line); font-size: clamp(1.35rem, 2.2vw, 1.7rem); font-weight: 700; letter-spacing: -.03em; line-height: 1.2; }
+.stores-region-title span { padding: 1px 9px; border-radius: 999px; background: #f1e3f0; color: var(--accent); font-size: .8rem; font-weight: 800; letter-spacing: 0; }
+.stores-provinces { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 0 16px; }
+.stores-province .stores-list { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+.stores-province-title { margin: 18px 0 10px; color: var(--muted); font-size: .78rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.stores-page .section-head { margin-bottom: 26px; }
+.stores-page h1 { font-size: clamp(36px, 4.1vw, 62px); line-height: 1.08; text-wrap: balance; }
+.stores-regions-nav { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 28px; padding: 0; list-style: none; }
+.stores-regions-nav a { display: inline-flex; align-items: center; gap: 6px; min-height: 38px; padding: 6px 13px; border: 1px solid var(--line); border-radius: 999px; background: #fff; color: var(--ink); font-size: .9rem; font-weight: 700; text-decoration: none; }
+.stores-regions-nav a:hover { border-color: var(--accent); color: var(--accent); }
+.stores-regions-nav a span { color: var(--muted); font-weight: 600; }
+.stores-back { margin-top: 30px; }
+.stores-back a { color: var(--accent); font-weight: 700; text-underline-offset: 4px; }
 .hero-family { margin-top: 18px; color: var(--muted); font-size: .92rem; }
 .hero-family a { color: var(--accent); font-weight: 700; text-underline-offset: 5px; }
 
@@ -312,7 +330,7 @@ h2 { font-size: clamp(36px, 4.1vw, 62px); line-height: 1.08; text-wrap: balance;
 .footer-layout a { text-underline-offset: 4px; }
 
 @supports ((background-clip: text) or (-webkit-background-clip: text)) {
-    .hero h1, .section-head h2, .about h2, .partner-band h2 {
+    .hero h1, .section-head h1, .section-head h2, .about h2, .partner-band h2 {
         width: fit-content;
         max-width: 100%;
         background-image: var(--title-gradient);
@@ -323,7 +341,7 @@ h2 { font-size: clamp(36px, 4.1vw, 62px); line-height: 1.08; text-wrap: balance;
 }
 
 @media (forced-colors: active) {
-    .hero h1, .section-head h2, .about h2, .partner-band h2 {
+    .hero h1, .section-head h1, .section-head h2, .about h2, .partner-band h2 {
         background-image: none;
         color: CanvasText;
     }

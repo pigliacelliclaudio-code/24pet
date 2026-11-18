@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#2e0d42">
+<title>Dove acquistare le urne per animali 24Pet: punti vendita | 24Pet</title>
+<meta name="description" content="Agenzie funebri e centri di cremazione per animali che propongono le urne cinerarie 24Pet, divisi per regione e provincia. Trova il punto vendita più vicino.">
+<link rel="canonical" href="https://24pet.it/punti-vendita/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="24Pet">
+<meta property="og:locale" content="it_IT">
+<meta property="og:url" content="https://24pet.it/punti-vendita/">
+<meta property="og:title" content="Dove trovare le urne 24Pet">
+<meta property="og:description" content="I punti vendita delle urne cinerarie per animali 24Pet, divisi per regione e provincia.">
+<meta property="og:image" content="https://24pet.it/assets/og-copertina-v2.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" sizes="64x64" href="/assets/favicon-24pet.png">
+<link rel="apple-touch-icon" href="/assets/logo-24pet.png">
+<link rel="preload" href="/assets/fonts/mulish-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/landing.css?v=16">
+</head>
+<body>
+<header>
+<div class="bar wrap">
+<a class="brand" href="/" aria-label="24Pet, homepage"><img src="/assets/logo-24pet.png" width="192" height="192" alt="24Pet"></a>
+<nav class="nav" aria-label="Navigazione principale">
+<a class="catalog-link" href="/#collezione">Collezione</a>
+<a class="stores-link" href="/punti-vendita/" aria-current="page">Dove trovarle</a>
+<a class="about-link" href="/#azienda">Chi siamo</a>
+<a href="/#professionisti">Professionisti</a>
+<a class="button outline" href="https://dashboard.24pet.it/area-riservata/">Area riservata ↗</a>
+</nav>
+</div>
+</header>
+<main>
+<section class="section stores stores-page" aria-labelledby="titolo-punti-vendita">
+<div class="wrap">
+<div class="section-head"><div><p class="eyebrow">Per le famiglie</p><h1 id="titolo-punti-vendita">Dove trovare le urne 24Pet.</h1></div><p class="intro">Per scegliere l’urna giusta affidati a un professionista: l’agenzia funebre o il centro di cremazione ti seguono nella scelta del modello, della taglia e del colore, e si occupano dell’ordine. Qui trovi chi propone le urne 24Pet, diviso per regione e provincia.</p></div>
+<div class="stores-tools">
+<label class="stores-search"><span>Cerca per città, provincia o regione</span><input id="stores-search" type="search" placeholder="es. Palermo, LE o Sardegna" autocomplete="off"></label>
+<p id="stores-count" class="stores-count" role="status">Caricamento dei punti vendita…</p>
+</div>
+<nav aria-label="Regioni"><ul id="stores-regions" class="stores-regions-nav" role="list"></ul></nav>
+<div id="stores-groups" class="stores-groups"></div>
+<p class="stores-help">Non trovi un punto vendita vicino? Chiedi all’agenzia o al centro di cremazione a cui ti sei già rivolto: può ordinare le urne 24Pet per te.</p>
+<p class="stores-back"><a href="/#collezione">← Torna alla collezione</a></p>
+</div>
+</section>
+</main>
+<footer class="footer">
+<div class="wrap footer-layout"><div><strong>24Pet · Cloood s.a.s.</strong><br>Via Palmieri 33, 03030 Pescosolido (FR) · P. IVA 02586560605</div>
+<nav aria-label="Informazioni e accesso"><a href="/#professionisti">Contatti</a><a href="/condizioni-v1/">Condizioni di vendita</a><a href="/privacy/">Privacy</a><a href="https://dashboard.24pet.it/area-riservata/">Area riservata</a></nav></div>
+</footer>
+<script src="/assets/punti-vendita.js?v=2"></script>
+<script>
+(() => {
+    const count = document.querySelector('#stores-count');
+    if (!window.PetStores) { count.textContent = 'Non è stato possibile caricare i punti vendita.'; return; }
+    const box = document.querySelector('#stores-groups');
+    const regionsNav = document.querySelector('#stores-regions');
+    const search = document.querySelector('#stores-search');
+    let stores = [];
+    function render() {
+        const query = search.value.trim();
+        const shown = stores.filter(s => PetStores.matches(s, query));
+        const groups = PetStores.renderGrouped(box, shown, { level: 2 });
+        regionsNav.replaceChildren(...groups.map(g => {
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            a.href = '#' + PetStores.slug(g.region);
+            a.append(document.createTextNode(g.region + ' '));
+            const n = document.createElement('span'); n.textContent = g.count; a.append(n);
+            li.append(a);
+            return li;
+        }));
+        regionsNav.hidden = groups.length < 2;
+        count.textContent = !stores.length ? 'L’elenco dei punti vendita è in aggiornamento.'
+            : query ? (shown.length ? shown.length + (shown.length === 1 ? ' punto vendita trovato' : ' punti vendita trovati') : 'Nessun punto vendita trovato per questa ricerca.')
+            : stores.length + (stores.length === 1 ? ' punto vendita' : ' punti vendita') + ' in ' + groups.length + (groups.length === 1 ? ' regione' : ' regioni');
+    }
+    search.addEventListener('input', render);
+    const q = new URLSearchParams(location.search).get('q');
+    if (q) search.value = q;
+    PetStores.load().then(rows => { stores = rows; render(); if (location.hash) document.querySelector(location.hash)?.scrollIntoView(); })
+        .catch(() => { count.textContent = 'Non è stato possibile caricare i punti vendita. Riprova tra poco.'; });
+})();
+</script>
+</body>
+</html>
