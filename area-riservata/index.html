@@ -291,6 +291,9 @@
         .pet-is-new { border-color: #f1a7bd !important; background: #fff6f8 !important; }
         .pet-new-label { display: inline-block; margin-left: 8px; padding: 1px 8px; border-radius: 999px; background: #d1123f; color: #fff; font-size: .72rem; font-weight: 800; vertical-align: middle; }
         .adm-client-tools { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px 20px; margin-bottom: 18px; }
+        .adm-back { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; margin-right: auto; padding: 6px 14px 6px 8px; border: 1px solid var(--line); border-radius: 999px; background: #fff; color: var(--plum); font: inherit; font-weight: 700; cursor: pointer; }
+        .adm-back:hover { border-color: #e2c3d9; background: #fffafd; }
+        .adm-back:focus-visible { outline: 2px solid var(--plum); outline-offset: 2px; }
         .adm-client-picker { display: flex; align-items: center; gap: 10px; flex: 1 1 380px; max-width: 560px; min-height: 50px; padding: 8px 14px; border: 1px solid var(--accent); border-radius: 10px; background: #fff; color: var(--plum); font: inherit; font-weight: 700; text-align: left; cursor: pointer; }
         .adm-client-picker span { flex: 1; }
         .adm-client-picker .material-icons { color: var(--accent); }
@@ -547,6 +550,7 @@
             .adm-client-name { font-size: 1.5rem; }
             .adm-client-hero { padding: 14px; }
             .adm-year-field { flex: 1 1 100%; }
+            .adm-client-tools .adm-year-field { margin-top: 18px !important; }
             .adm-catalog { grid-template-columns: minmax(0, 1fr); }
             .adm-product-table .input-catalogo { width: 70px !important; }
             .adm-form-grid { grid-template-columns: minmax(0, 1fr); }
@@ -807,10 +811,9 @@
                 <div class="collection">
                     <a href="#dashboard-home" class="collection-item active" onclick="showPage('dashboard-home', this); return false;"><i class="material-icons left">dashboard</i> Panoramica</a>
                     <a href="#catalogo-prodotti" class="collection-item" onclick="showPage('catalogo-prodotti', this); return false;"><i class="material-icons left">storefront</i> Catalogo Prodotti</a>
-                    <a href="#gestione-clienti" class="collection-item" onclick="showPage('gestione-clienti', this); return false;"><i class="material-icons left">people</i> Rubrica Clienti</a>
+                    <a href="#gestione-clienti" class="collection-item" onclick="showPage('gestione-clienti', this); return false;"><i class="material-icons left">people</i> Clienti</a>
                     <a href="#nuovo-ordine" class="collection-item" onclick="showPage('nuovo-ordine', this); return false;"><i class="material-icons left">add_shopping_cart</i> Nuovo Ordine</a>
                     <a href="#lista-ordini" class="collection-item" onclick="showPage('lista-ordini', this); return false;"><i class="material-icons left">list</i> Elenco Ordini</a>
-                    <a href="#riepilogo-cliente" class="collection-item" onclick="showPage('riepilogo-cliente', this); return false;"><i class="material-icons left">person_search</i> Scheda Cliente</a>
                 </div>
             </div>
 
@@ -894,7 +897,7 @@
                 <div id="gestione-clienti" class="page-content">
                     <div class="adm-list-head">
                         <div>
-                            <h4 class="text-prugna">Rubrica clienti</h4>
+                            <h4 class="text-prugna">Clienti</h4>
                             <p class="adm-note">Clicca un cliente per aprire la sua scheda.</p>
                         </div>
                         <button type="button" class="btn btn-custom" onclick="admOpenClientForm()"><i class="material-icons left" aria-hidden="true">person_add</i>Nuovo cliente</button>
@@ -1105,15 +1108,11 @@
 
                 <!-- PAGINA: RIEPILOGO / SCHEDA CLIENTE -->
                 <div id="riepilogo-cliente" class="page-content">
-                    <div class="adm-list-head">
-                        <h4 class="text-prugna">Scheda cliente</h4>
-                    </div>
                     <div class="adm-client-tools">
-                        <button type="button" class="adm-client-picker" onclick="apriSidebarClienti('searchClienteInputDisplay')">
-                            <i class="material-icons" aria-hidden="true">person_search</i>
-                            <span id="searchClienteInputDisplay">Scegli un cliente dalla rubrica…</span>
-                            <i class="material-icons" aria-hidden="true">chevron_right</i>
+                        <button type="button" class="adm-back" onclick="admBackToClients()">
+                            <i class="material-icons" aria-hidden="true">arrow_back</i><span>Tutti i clienti</span>
                         </button>
+                        <span id="searchClienteInputDisplay" hidden></span>
                         <input type="hidden" id="searchClienteInput">
                         <div class="input-field adm-year-field">
                             <select id="searchAnno" onchange="searchClient(null)">
@@ -1342,7 +1341,7 @@
     function showPage(pageId, element) {
         let links = document.querySelectorAll('.collection-item');
         links.forEach(l => l.classList.remove('active'));
-        element.classList.add('active');
+        if (element) element.classList.add('active');
         
         let pages = document.querySelectorAll('.page-content');
         pages.forEach(p => p.classList.remove('active'));
@@ -1964,18 +1963,39 @@
         }
     }
 
+    let admClientListScroll = 0;
+    function admOpenClientCard(codice, fromHistory) {
+        const c = clients.find(x => x.codice === codice);
+        if (!c) return;
+        if (document.getElementById('gestione-clienti').classList.contains('active')) admClientListScroll = window.scrollY;
+        showPage('riepilogo-cliente', document.querySelector('.app-menu a[href="#gestione-clienti"]'));
+        const label = '[' + c.codice + '] ' + (c.nome || '') + (c.tipo === 'Rivenditore' ? ' (Rivenditore)' : '');
+        document.getElementById('searchClienteInputDisplay').innerText = label;
+        document.getElementById('searchClienteInput').value = label;
+        searchClient(c.codice);
+        window.scrollTo({ top: 0 });
+        if (!fromHistory) { try { history.pushState({ petClient: codice }, ''); } catch {} }
+    }
+    function admShowClientList() {
+        showPage('gestione-clienti', document.querySelector('.app-menu a[href="#gestione-clienti"]'));
+        aggiornaRubrica();
+        requestAnimationFrame(() => window.scrollTo({ top: admClientListScroll }));
+    }
+    function admBackToClients() {
+        if (history.state && history.state.petClient) history.back();
+        else admShowClientList();
+    }
+    window.addEventListener('popstate', event => {
+        const code = event.state && event.state.petClient;
+        if (code) admOpenClientCard(code, true);
+        else if (document.getElementById('riepilogo-cliente').classList.contains('active')) admShowClientList();
+    });
+
     function admClientRow(c, stats) {
         const row = admEl('article', 'adm-client-row');
         row.tabIndex = 0;
         row.setAttribute('aria-label', 'Apri la scheda di ' + (c.nome || c.codice));
-        const open = () => {
-            showPage('riepilogo-cliente', document.querySelector('.app-menu a[href="#riepilogo-cliente"]'));
-            const label = '[' + c.codice + '] ' + (c.nome || '') + (c.tipo === 'Rivenditore' ? ' (Rivenditore)' : '');
-            document.getElementById('searchClienteInputDisplay').innerText = label;
-            document.getElementById('searchClienteInput').value = label;
-            searchClient(c.codice);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        };
+        const open = () => admOpenClientCard(c.codice);
         row.addEventListener('click', event => { if (!event.target.closest('a, button')) open(); });
         row.addEventListener('keydown', event => { if ((event.key === 'Enter' || event.key === ' ') && event.target === row) { event.preventDefault(); open(); } });
 
@@ -3226,7 +3246,7 @@
         const actions = document.getElementById('resAzioni');
         actions.replaceChildren(
             admClientAction('add_shopping_cart', 'Nuovo ordine', () => admNewOrderFor(client)),
-            admClientAction('edit', 'Modifica in rubrica', () => { showPage('gestione-clienti', document.querySelector('.app-menu a[href="#gestione-clienti"]')); preparaModificaCliente(client.codice); window.scrollTo({ top: 0, behavior: 'smooth' }); })
+            admClientAction('edit', 'Modifica', () => admOpenClientForm(client.codice))
         );
         if (client.email) actions.append(admClientAction('mail', 'Scrivi', null, 'mailto:' + client.email.trim()));
         const phone = (client.cellulare || client.telefono || '').replace(/\s+/g, '');
