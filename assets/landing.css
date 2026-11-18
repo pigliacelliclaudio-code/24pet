@@ -87,6 +87,7 @@ body > header { background: var(--deep); color: var(--ink); border-bottom: 1px s
 h1, h2 { font-weight: 600; letter-spacing: -.045em; }
 h1 { font-size: clamp(40px, 4.95vw, 72px); line-height: 1.04; }
 h1 em { display: block; font-style: normal; }
+.hero h1 .eyebrow { display: block; width: fit-content; line-height: 1.4; }
 h2 { font-size: clamp(36px, 4.1vw, 62px); line-height: 1.08; text-wrap: balance; }
 .hero-copy { margin-top: 25px; color: var(--muted); font-size: clamp(1.04rem, 1.4vw, 1.16rem); max-width: 39ch; }
 .hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; margin-top: 28px; }

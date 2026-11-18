@@ -1,0 +1,4 @@
+User-agent: *
+Disallow: /area-riservata/
+
+Sitemap: https://24pet.it/sitemap.xml
