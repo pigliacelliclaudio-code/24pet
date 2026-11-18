@@ -40,7 +40,11 @@ Deno.serve(async (req) => {
   if (Date.now() - new Date(row[dateColumn]).getTime() > MAX_AGE_MS) return json({ skipped: "old" });
 
   const token = Deno.env.get("TELEGRAM_BOT_TOKEN");
-  const chats = (Deno.env.get("TELEGRAM_CHAT_ID") ?? "").split(",").map((c) => c.trim()).filter(Boolean);
+  // Accepts "123456789", "Id: 123456789", "-100…" (groups) or "@channel"; several separated by commas.
+  const chats = (Deno.env.get("TELEGRAM_CHAT_ID") ?? "").split(",")
+    .map((c) => c.trim())
+    .map((c) => (c.startsWith("@") ? c : (c.match(/-?\d{5,}/)?.[0] ?? "")))
+    .filter(Boolean);
   if (!token || !chats.length) return json({ skipped: "not_configured" });
 
   const { data: claimed, error: claimError } = await db
@@ -112,7 +116,16 @@ Deno.serve(async (req) => {
   }
   if (!delivered) {
     await db.from("notification_log").delete().eq("source", table).eq("record_id", id);
-    return json({ error: "telegram", detail: problems }, 502);
+    // Safe diagnostics: which bot the token belongs to, and the shape of each chat id (never the full value).
+    const me = await fetch(`https://api.telegram.org/bot${token}/getMe`).then((r) => r.json()).catch(() => null);
+    const botId = token.split(":")[0];
+    const chatShapes = chats.map((c) => ({
+      length: c.length,
+      start: c.slice(0, 2),
+      numeric: /^-?\d+$/.test(c),
+      sameAsBot: c === botId,
+    }));
+    return json({ error: "telegram", detail: problems, bot: me?.result?.username ?? null, chats: chatShapes }, 502);
   }
   return json({ sent: delivered });
 });
