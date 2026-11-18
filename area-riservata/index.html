@@ -343,6 +343,51 @@
         .adm-icon-button { padding: 2px 4px; border: 0; background: none; color: #a3122a; vertical-align: middle; cursor: pointer; }
         .adm-icon-button .material-icons { font-size: 18px; }
         .adm-product-edit { margin: 0; }
+        .adm-client-list { display: grid; gap: 8px; }
+        .adm-client-row { display: grid; grid-template-columns: minmax(200px, 1.4fr) minmax(150px, .9fr) minmax(180px, 1.2fr) minmax(170px, 1fr) auto; align-items: center; gap: 10px 16px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: #fff; cursor: pointer; }
+        .adm-client-row:hover { border-color: #e2c3d9; background: #fffafd; }
+        .adm-client-row:focus-visible { outline: 2px solid var(--plum); outline-offset: 2px; }
+        .adm-client-who { display: grid; min-width: 0; }
+        .adm-client-who strong { color: var(--plum); font-size: 1.05rem; }
+        .adm-client-legal-small { color: #403646; font-size: .86rem; font-weight: 600; }
+        .adm-client-meta { color: var(--muted); font-size: .84rem; }
+        .adm-client-tags { display: flex; flex-wrap: wrap; gap: 4px 6px; }
+        .adm-access { display: inline-flex; align-items: center; gap: 5px; color: var(--muted); font-size: .8rem; font-weight: 700; }
+        .adm-access::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: #b9adbd; }
+        .adm-access.is-on { color: #1b6434; }
+        .adm-access.is-on::before { background: #2e9a5a; }
+        .adm-client-contact { display: grid; min-width: 0; font-size: .88rem; }
+        .adm-client-contact a { color: var(--accent); overflow-wrap: anywhere; }
+        .adm-client-numbers { display: grid; justify-items: start; gap: 4px; font-size: .88rem; font-variant-numeric: tabular-nums; }
+        .adm-client-row-actions { display: flex; gap: 2px; }
+        .adm-icon-action { display: grid; place-items: center; width: 38px; height: 38px; border: 0; border-radius: 8px; background: none; color: var(--plum); cursor: pointer; }
+        .adm-icon-action:hover { background: #f5eef5; }
+        .adm-icon-action.adm-action-danger { color: #a3122a; }
+        .adm-icon-action .material-icons { font-size: 20px; }
+        .adm-client-dialog { width: min(820px, calc(100% - 20px)); max-height: min(92vh, 980px); max-height: min(92dvh, 980px); }
+        .adm-form { display: flex; flex-direction: column; min-height: 0; flex: 1; }
+        .adm-form-body { overflow-y: auto; padding: 8px clamp(16px, 4vw, 24px) 4px; }
+        .adm-form fieldset { margin: 0 0 14px; padding: 12px 0 0; border: 0; border-top: 1px solid var(--line); }
+        .adm-form fieldset:first-child { border-top: 0; }
+        .adm-form legend { padding: 0; color: var(--plum); font-size: 1rem; font-weight: 800; }
+        .adm-form-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px 14px; margin-top: 8px; }
+        .adm-span-2 { grid-column: span 2; }
+        .adm-span-3 { grid-column: 1 / -1; }
+        .adm-field { display: grid; gap: 4px; color: #403646; font-size: .86rem; font-weight: 700; }
+        .adm-field small { color: var(--muted); font-size: .78rem; font-weight: 400; }
+        .adm-form input[type=text], .adm-form input[type=tel], .adm-form input[type=email], .adm-form input[type=url], .adm-form select, .adm-form textarea {
+            box-sizing: border-box; width: 100%; height: 42px; margin: 0 !important; padding: 8px 10px !important; border: 1px solid #d9cfdc !important; border-radius: 8px !important; background: #fff; box-shadow: none !important; color: var(--ink); font: inherit; font-weight: 400; }
+        .adm-form textarea { height: auto; min-height: 80px; resize: vertical; }
+        .adm-form input:focus, .adm-form select:focus, .adm-form textarea:focus { border-color: var(--accent) !important; outline: 2px solid #f2c7e3; outline-offset: 0; }
+        .adm-check { display: inline-flex; align-items: center; gap: 8px; margin-top: 8px; cursor: pointer; }
+        .adm-check input[type=checkbox] { position: static !important; opacity: 1 !important; pointer-events: auto !important; width: 18px; height: 18px; margin: 0; accent-color: #83045e; }
+        .adm-check span { padding: 0 !important; height: auto !important; line-height: 1.3 !important; color: #403646; font-size: .92rem; }
+        .adm-check span::before, .adm-check span::after { display: none !important; }
+        .adm-cloud-hint { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 10px 0 6px; padding: 10px 12px; border-radius: 10px; background: #eef6f0; color: #1b4d2c; }
+        .adm-cloud-hint p { flex: 1 1 260px; margin: 0; }
+        .adm-cloud-hint[hidden] { display: none; }
+        .adm-form-error { min-height: 1.2em; margin: 0 0 6px; color: #a3122a; font-weight: 700; }
+        .adm-form-footer { display: flex; justify-content: flex-end; gap: 8px; padding: 12px clamp(16px, 4vw, 24px); border-top: 1px solid var(--line); background: #fff; }
         .adm-list-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 20px; padding: 8px 0 14px; }
         .adm-list-head h4 { margin: 0; font-weight: 800; }
         .adm-list-head .btn { text-transform: none; border-radius: 8px; }
@@ -467,6 +512,9 @@
         .pet-stepper input[type=number] { width:38px; margin:0; padding:0; min-height:38px; height:auto; text-align:center; border:0; box-shadow:none; }
         @media(max-width:1100px) {
             .pet-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .adm-client-row { grid-template-columns: minmax(0, 1fr) auto; }
+            .adm-client-row > .adm-client-tags, .adm-client-row > .adm-client-contact, .adm-client-row > .adm-client-numbers { grid-column: 1; }
+            .adm-client-row > .adm-client-row-actions { grid-column: 2; grid-row: 1; }
             .adm-todo { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         }
         @media(max-width:900px) {
@@ -501,6 +549,8 @@
             .adm-year-field { flex: 1 1 100%; }
             .adm-catalog { grid-template-columns: minmax(0, 1fr); }
             .adm-product-table .input-catalogo { width: 70px !important; }
+            .adm-form-grid { grid-template-columns: minmax(0, 1fr); }
+            .adm-span-2 { grid-column: auto; }
             .pet-client-nav button { justify-content: center; gap: 5px; padding-inline: 6px; }
             .pet-client-nav button .material-icons { font-size: 18px; }
             .pet-compose-fields { grid-template-columns:minmax(0,1fr); gap:8px; }
@@ -647,6 +697,84 @@
             </div><button class="btn btn-custom" type="button" data-pet-sign-out>Esci</button><span class="pet-sign-out-status" role="status"></span></div>
         </div>
     </nav>
+    <dialog class="pet-inbox-dialog adm-client-dialog" id="adm-client-dialog" aria-labelledby="titoloFormCliente">
+        <header>
+            <h2 id="titoloFormCliente">Nuovo cliente</h2>
+            <button class="pet-inbox-close" type="button" aria-label="Chiudi" onclick="annullaModificaCliente()"><i class="material-icons" aria-hidden="true">close</i></button>
+        </header>
+        <form id="clientForm" class="adm-form" novalidate>
+            <div class="adm-form-body">
+                <div class="adm-cloud-hint" id="adm-client-cloud-hint" hidden>
+                    <i class="material-icons" aria-hidden="true">cloud_done</i>
+                    <p>Il cliente ha già salvato i suoi dati fiscali nell’area clienti: <strong id="adm-client-cloud-name"></strong>.</p>
+                    <button type="button" class="adm-action" id="adm-client-cloud-use">Usa questi dati</button>
+                </div>
+                <fieldset>
+                    <legend>Anagrafica</legend>
+                    <div class="adm-form-grid">
+                        <label class="adm-field adm-span-2">Nome in rubrica *<input id="nuovoNomeCliente" type="text" required autocomplete="off"><small>Il nome breve che usi tu, per esempio «Giesse».</small></label>
+                        <label class="adm-field">Tipo di cliente *
+                            <select id="nuovoTipoCliente" class="browser-default"><option value="Azienda">Azienda</option><option value="Rivenditore">Rivenditore (sconto 25%)</option></select></label>
+                        <label class="adm-field adm-span-3">Ragione sociale<input id="ragioneSociale" type="text" autocomplete="organization"><small>Come compare in fattura, per esempio «Giesse srl».</small></label>
+                    </div>
+                </fieldset>
+                <fieldset>
+                    <legend>Contatti</legend>
+                    <div class="adm-form-grid">
+                        <label class="adm-field">Referente<input id="referente" type="text" autocomplete="name"></label>
+                        <label class="adm-field">Telefono<input id="telefono" type="tel" autocomplete="tel"></label>
+                        <label class="adm-field">Cellulare<input id="cellulare" type="tel" autocomplete="tel"></label>
+                        <label class="adm-field adm-span-2">Email<input id="email" type="email" autocomplete="email"></label>
+                        <label class="adm-field">Sito web<input id="sitoWeb" type="url" placeholder="https://" autocomplete="url"></label>
+                    </div>
+                </fieldset>
+                <fieldset>
+                    <legend>Indirizzo di fatturazione</legend>
+                    <div class="adm-form-grid">
+                        <label class="adm-field adm-span-3">Via e numero civico<input id="fattVia" type="text" autocomplete="off"></label>
+                        <label class="adm-field">CAP<input id="fattCap" type="text" inputmode="numeric" maxlength="5" pattern="\d{5}" autocomplete="off"></label>
+                        <label class="adm-field">Comune<input id="fattComune" type="text" autocomplete="off"></label>
+                        <label class="adm-field">Provincia<input id="fattProvincia" type="text" maxlength="2" pattern="[A-Za-z]{2}" placeholder="es. MI" autocomplete="off"></label>
+                    </div>
+                </fieldset>
+                <fieldset>
+                    <legend>Indirizzo di spedizione</legend>
+                    <label class="adm-check"><input id="spedUguale" type="checkbox" class="filled-in" checked><span>Uguale all’indirizzo di fatturazione</span></label>
+                    <div class="adm-form-grid" id="spedCampi" hidden>
+                        <label class="adm-field adm-span-3">Presso / destinatario<input id="spedPresso" type="text" autocomplete="off"><small>Per esempio «Casa funeraria Prosdocimo».</small></label>
+                        <label class="adm-field adm-span-3">Via e numero civico<input id="spedVia" type="text" autocomplete="off"></label>
+                        <label class="adm-field">CAP<input id="spedCap" type="text" inputmode="numeric" maxlength="5" pattern="\d{5}" autocomplete="off"></label>
+                        <label class="adm-field">Comune<input id="spedComune" type="text" autocomplete="off"></label>
+                        <label class="adm-field">Provincia<input id="spedProvincia" type="text" maxlength="2" pattern="[A-Za-z]{2}" autocomplete="off"></label>
+                    </div>
+                    <div class="adm-form-grid">
+                        <label class="adm-field">Referente per la consegna<input id="referenteSpedizione" type="text" autocomplete="off"></label>
+                        <label class="adm-field">Telefono per la consegna<input id="telefonoSpedizione" type="tel" autocomplete="off"></label>
+                        <label class="adm-field">Orari di consegna<input id="orariConsegna" type="text" placeholder="es. 9–13 / 15–18" autocomplete="off"></label>
+                        <label class="adm-field adm-span-3">Note per il corriere<input id="noteConsegna" type="text" autocomplete="off"></label>
+                    </div>
+                </fieldset>
+                <fieldset>
+                    <legend>Dati fiscali</legend>
+                    <div class="adm-form-grid">
+                        <label class="adm-field">Partita IVA<input id="partitaIva" type="text" inputmode="numeric" maxlength="11" pattern="\d{11}" autocomplete="off"></label>
+                        <label class="adm-field">Codice fiscale<input id="codiceFiscale" type="text" maxlength="16" autocomplete="off"></label>
+                        <label class="adm-field">Codice SDI<input id="codiceUnivoco" type="text" maxlength="7" autocomplete="off"></label>
+                        <label class="adm-field adm-span-3">PEC<input id="pec" type="email" autocomplete="off"></label>
+                    </div>
+                </fieldset>
+                <fieldset>
+                    <legend>Note interne</legend>
+                    <label class="adm-field adm-span-3"><span class="adm-visually-hidden">Note interne</span><textarea id="noteInterne" rows="3" placeholder="Visibili solo a te e agli amministratori"></textarea></label>
+                </fieldset>
+                <p id="adm-client-form-error" class="adm-form-error" role="alert"></p>
+            </div>
+            <footer class="adm-form-footer">
+                <button type="button" class="adm-action" id="btnAnnullaModifica" onclick="annullaModificaCliente()">Annulla</button>
+                <button type="submit" class="adm-action adm-action-primary" id="btnSalvaCliente"><i class="material-icons" aria-hidden="true">save</i><span>Salva cliente</span></button>
+            </footer>
+        </form>
+    </dialog>
     <dialog class="pet-inbox-dialog" id="pet-admin-order-dialog" aria-labelledby="pet-admin-order-title">
         <header>
             <h2 id="pet-admin-order-title">Richieste d’ordine dei clienti</h2>
@@ -764,115 +892,20 @@
 
                 <!-- PAGINA: RUBRICA CLIENTI -->
                 <div id="gestione-clienti" class="page-content">
-                    <div class="card">
-                        <div class="card-content">
-                            <span class="card-title text-prugna" id="titoloFormCliente"><i class="material-icons left">person_add</i>Aggiungi Nuovo Cliente in Rubrica</span>
-                            <form id="clientForm" style="margin-top: 20px;">
-                                <div class="row">
-                                    <div class="input-field col s12 m8">
-                                        <input id="nuovoNomeCliente" type="text" required>
-                                        <label for="nuovoNomeCliente">Nome e Cognome o Ragione Sociale *</label>
-                                    </div>
-                                    <div class="input-field col s12 m4">
-                                        <select id="nuovoTipoCliente" required>
-                                            <option value="Azienda" selected>Azienda</option>
-                                            <option value="Rivenditore">Rivenditore</option>
-                                        </select>
-                                        <label>Tipo di Cliente *</label>
-                                    </div>
-                                </div>
-                                
-                                <div class="row">
-                                    <div class="input-field col s12 m6">
-                                        <i class="material-icons prefix" style="color: #9e9e9e;">business</i>
-                                        <input id="indirizzoSede" type="text">
-                                        <label for="indirizzoSede">Indirizzo Sede Centrale</label>
-                                    </div>
-                                    <div class="input-field col s12 m6">
-                                        <i class="material-icons prefix" style="color: #9e9e9e;">local_shipping</i>
-                                        <input id="indirizzoSpedizione" type="text">
-                                        <label for="indirizzoSpedizione">Indirizzo di Spedizione (se diverso)</label>
-                                    </div>
-                                </div>
-
-                                <div class="row">
-                                    <div class="input-field col s12 m3">
-                                        <i class="material-icons prefix" style="color: #9e9e9e;">phone</i>
-                                        <input id="telefono" type="text">
-                                        <label for="telefono">Telefono Fisso</label>
-                                    </div>
-                                    <div class="input-field col s12 m3">
-                                        <i class="material-icons prefix" style="color: #9e9e9e;">smartphone</i>
-                                        <input id="cellulare" type="text">
-                                        <label for="cellulare">Cellulare</label>
-                                    </div>
-                                    <div class="input-field col s12 m3">
-                                        <i class="material-icons prefix" style="color: #9e9e9e;">email</i>
-                                        <input id="email" type="email">
-                                        <label for="email">Email</label>
-                                    </div>
-                                    <div class="input-field col s12 m3">
-                                        <i class="material-icons prefix" style="color: #9e9e9e;">person_outline</i>
-                                        <input id="referenteSpedizione" type="text">
-                                        <label for="referenteSpedizione">Referente Spedizione</label>
-                                    </div>
-                                </div>
-
-                                <!-- SEZIONE DATI FATTURAZIONE -->
-                                <div class="row" style="background-color: #f5f5f5; padding: 15px; border-radius: 8px;">
-                                    <div class="col s12"><span class="text-prugna" style="font-weight: bold; font-size: 1.1em; display:block; margin-bottom: 10px;"><i class="material-icons left">receipt</i>Dati per Fatturazione</span></div>
-                                    <div class="input-field col s12 m3">
-                                        <input id="partitaIva" type="text">
-                                        <label for="partitaIva">Partita IVA</label>
-                                    </div>
-                                    <div class="input-field col s12 m3">
-                                        <input id="codiceFiscale" type="text">
-                                        <label for="codiceFiscale">Codice Fiscale</label>
-                                    </div>
-                                    <div class="input-field col s12 m3">
-                                        <input id="codiceUnivoco" type="text">
-                                        <label for="codiceUnivoco">Codice Univoco (SDI)</label>
-                                    </div>
-                                    <div class="input-field col s12 m3">
-                                        <input id="pec" type="email">
-                                        <label for="pec">Indirizzo PEC</label>
-                                    </div>
-                                </div>
-
-                                <div class="row">
-                                    <div class="col s12 right-align">
-                                        <span class="grey-text left" style="font-size: 0.85em; margin-top: 15px;">* Campi obbligatori</span>
-                                        <button class="btn waves-effect waves-light btn-custom" type="submit" id="btnSalvaCliente" style="border-radius: 8px;">
-                                            Salva in Rubrica <i class="material-icons right">save</i>
-                                        </button>
-                                        <button class="btn waves-effect waves-light grey" type="button" id="btnAnnullaModifica" style="border-radius: 8px; margin-right: 10px; display: none;" onclick="annullaModificaCliente()">
-                                            Annulla
-                                        </button>
-                                    </div>
-                                </div>
-                            </form>
+                    <div class="adm-list-head">
+                        <div>
+                            <h4 class="text-prugna">Rubrica clienti</h4>
+                            <p class="adm-note">Clicca un cliente per aprire la sua scheda.</p>
                         </div>
+                        <button type="button" class="btn btn-custom" onclick="admOpenClientForm()"><i class="material-icons left" aria-hidden="true">person_add</i>Nuovo cliente</button>
                     </div>
-
-                    <div class="card">
-                        <div class="card-content">
-                            <span class="card-title text-prugna"><i class="material-icons left">contacts</i>Elenco Clienti Salvati</span>
-                            <table class="highlight responsive-table" style="margin-top: 15px; font-size: 0.9em;">
-                                <thead>
-                                    <tr>
-                                        <th>Cod.</th>
-                                        <th>Nome Cliente</th>
-                                        <th>Tipo</th>
-                                        <th>Spedizione</th>
-                                        <th>Referente</th>
-                                        <th>Contatti</th>
-                                        <th>Azioni</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="clientsTableBody"></tbody>
-                            </table>
-                        </div>
+                    <div class="adm-list-tools">
+                        <div class="adm-filters" role="group" aria-label="Filtra clienti" id="adm-client-filters"></div>
+                        <label class="adm-search"><i class="material-icons" aria-hidden="true">search</i><span class="adm-visually-hidden">Cerca cliente</span>
+                            <input type="search" id="adm-client-search" placeholder="Cerca nome, città, P.IVA o email" autocomplete="off"></label>
                     </div>
+                    <p id="adm-client-count" class="adm-note" role="status"></p>
+                    <div id="adm-client-list" class="adm-client-list"></div>
                 </div>
 
                 <!-- PAGINA: NUOVO ORDINE MULTIPLO -->
@@ -1755,161 +1788,312 @@
     }
 
 
-    // === GESTIONE RUBRICA E MODIFICA CLIENTE ===
-    function preparaModificaCliente(codice) {
-        const client = clients.find(c => c.codice === codice);
-        if(!client) return;
-        clientInModifica = codice; 
-        
-        document.getElementById('nuovoNomeCliente').value = client.nome || '';
-        document.getElementById('nuovoTipoCliente').value = client.tipo || 'Azienda';
-        document.getElementById('indirizzoSede').value = client.indirizzoSede || '';
-        document.getElementById('indirizzoSpedizione').value = client.indirizzoSpedizione || '';
-        document.getElementById('telefono').value = client.telefono || '';
-        document.getElementById('cellulare').value = client.cellulare || '';
-        document.getElementById('email').value = client.email || '';
-        document.getElementById('referenteSpedizione').value = client.referenteSpedizione || '';
-        document.getElementById('partitaIva').value = client.partitaIva || '';
-        document.getElementById('codiceFiscale').value = client.codiceFiscale || '';
-        document.getElementById('codiceUnivoco').value = client.codiceUnivoco || '';
-        document.getElementById('pec').value = client.pec || '';
+    // === RUBRICA CLIENTI ===
+    let admClientFilter = 'all';
+    let admClientAccounts = null;
+    let admClientAccountsLoading = false;
+    const admAddressPattern = /^(.*?)\s*[-–,]?\s*(\d{5})\s+(.+?)\s*\(([A-Za-z]{2})\)\s*$/;
 
-        M.updateTextFields(); 
-        M.FormSelect.init(document.querySelectorAll('#gestione-clienti select'));
-
-        document.getElementById('titoloFormCliente').innerHTML = `<i class="material-icons left">edit</i>Modifica Cliente: ${client.nome || 'Senza Nome'}`;
-        document.getElementById('btnSalvaCliente').innerHTML = 'Aggiorna Cliente <i class="material-icons right">update</i>';
-        document.getElementById('btnSalvaCliente').classList.replace('btn-custom', 'blue');
-        document.getElementById('btnAnnullaModifica').style.display = 'inline-block';
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+    function admParseAddress(text) {
+        const value = String(text || '').trim();
+        const match = value.match(admAddressPattern);
+        return match ? { via: match[1].replace(/[\s,–-]+$/, ''), cap: match[2], comune: match[3], provincia: match[4].toUpperCase() } : { via: value, cap: '', comune: '', provincia: '' };
+    }
+    function admFormatAddress(address, presso) {
+        if (!address) return '';
+        const place = [address.cap, address.comune].filter(Boolean).join(' ') + (address.provincia ? ' (' + address.provincia.toUpperCase() + ')' : '');
+        return [presso, address.via, place.trim()].filter(part => part && String(part).trim()).join(' - ');
+    }
+    function admClientCity(client) {
+        const address = client.fatturazione || admParseAddress(client.indirizzoSede);
+        return address.comune ? address.comune + (address.provincia ? ' (' + address.provincia + ')' : '') : '';
+    }
+    function admFormValue(id) { return document.getElementById(id).value.trim(); }
+    function admSetForm(id, value) { document.getElementById(id).value = value || ''; }
+    function admToggleShipping() {
+        document.getElementById('spedCampi').hidden = document.getElementById('spedUguale').checked;
     }
 
+    function admOpenClientForm(codice) {
+        const form = document.getElementById('clientForm');
+        form.reset();
+        document.getElementById('adm-client-form-error').textContent = '';
+        clientInModifica = null;
+        const client = codice ? clients.find(c => c.codice === codice) : null;
+        if (client) {
+            clientInModifica = codice;
+            admSetForm('nuovoNomeCliente', client.nome);
+            admSetForm('nuovoTipoCliente', client.tipo || 'Azienda');
+            admSetForm('ragioneSociale', client.ragioneSociale);
+            admSetForm('referente', client.referente);
+            admSetForm('telefono', client.telefono);
+            admSetForm('cellulare', client.cellulare);
+            admSetForm('email', client.email);
+            admSetForm('sitoWeb', client.sitoWeb);
+            const billing = client.fatturazione || admParseAddress(client.indirizzoSede);
+            admSetForm('fattVia', billing.via); admSetForm('fattCap', billing.cap); admSetForm('fattComune', billing.comune); admSetForm('fattProvincia', billing.provincia);
+            const hasShipping = client.spedizione ? !client.spedizioneUguale : Boolean(client.indirizzoSpedizione && client.indirizzoSpedizione.trim() && client.indirizzoSpedizione.trim() !== (client.indirizzoSede || '').trim());
+            document.getElementById('spedUguale').checked = !hasShipping;
+            const shipping = client.spedizione || admParseAddress(hasShipping ? client.indirizzoSpedizione : '');
+            admSetForm('spedPresso', client.spedizione ? client.spedizione.presso : '');
+            admSetForm('spedVia', shipping.via); admSetForm('spedCap', shipping.cap); admSetForm('spedComune', shipping.comune); admSetForm('spedProvincia', shipping.provincia);
+            admSetForm('referenteSpedizione', client.referenteSpedizione);
+            admSetForm('telefonoSpedizione', client.telefonoSpedizione);
+            admSetForm('orariConsegna', client.orariConsegna);
+            admSetForm('noteConsegna', client.noteConsegna);
+            admSetForm('partitaIva', client.partitaIva);
+            admSetForm('codiceFiscale', client.codiceFiscale);
+            admSetForm('codiceUnivoco', client.codiceUnivoco);
+            admSetForm('pec', client.pec);
+            admSetForm('noteInterne', client.noteInterne);
+        } else {
+            document.getElementById('spedUguale').checked = true;
+        }
+        admToggleShipping();
+        admLoadCloudBilling(client ? client.codice : null);
+        document.getElementById('titoloFormCliente').textContent = client ? 'Modifica ' + (client.nome || client.codice) + ' · ' + client.codice : 'Nuovo cliente';
+        document.querySelector('#btnSalvaCliente span').textContent = client ? 'Salva modifiche' : 'Salva cliente';
+        const dialog = document.getElementById('adm-client-dialog');
+        if (!dialog.open) dialog.showModal();
+        document.getElementById('nuovoNomeCliente').focus();
+    }
+    async function admLoadCloudBilling(codice) {
+        const hint = document.getElementById('adm-client-cloud-hint');
+        hint.hidden = true;
+        if (!codice || typeof window.petAdminClientCloud !== 'function') return;
+        let billing = null;
+        try { billing = (await window.petAdminClientCloud(codice)).billing; } catch { return; }
+        if (!billing || clientInModifica !== codice) return;
+        document.getElementById('adm-client-cloud-name').textContent = [billing.legal_name, billing.city].filter(Boolean).join(', ');
+        document.getElementById('adm-client-cloud-use').onclick = () => {
+            admSetForm('ragioneSociale', billing.legal_name);
+            admSetForm('partitaIva', billing.vat_number);
+            admSetForm('fattVia', billing.street_address);
+            admSetForm('fattCap', billing.postal_code);
+            admSetForm('fattComune', billing.city);
+            admSetForm('fattProvincia', billing.province);
+            if (billing.tax_code) admSetForm('codiceFiscale', billing.tax_code);
+            if (billing.recipient_code) admSetForm('codiceUnivoco', billing.recipient_code);
+            if (billing.certified_email) admSetForm('pec', billing.certified_email);
+            hint.hidden = true;
+            M.toast({ html: 'Dati fiscali copiati: controlla e salva', classes: 'rounded' });
+        };
+        hint.hidden = false;
+    }
+    function preparaModificaCliente(codice) {
+        showPage('gestione-clienti', document.querySelector('.app-menu a[href="#gestione-clienti"]'));
+        admOpenClientForm(codice);
+    }
     function annullaModificaCliente() {
         clientInModifica = null;
-        document.getElementById('clientForm').reset();
-        document.getElementById('titoloFormCliente').innerHTML = `<i class="material-icons left">person_add</i>Aggiungi Nuovo Cliente in Rubrica`;
-        document.getElementById('btnSalvaCliente').innerHTML = 'Salva in Rubrica <i class="material-icons right">save</i>';
-        document.getElementById('btnSalvaCliente').classList.replace('blue', 'btn-custom');
-        document.getElementById('btnAnnullaModifica').style.display = 'none';
-        M.updateTextFields();
-        M.FormSelect.init(document.querySelectorAll('#gestione-clienti select'));
+        const dialog = document.getElementById('adm-client-dialog');
+        if (dialog.open) dialog.close();
     }
+    document.getElementById('spedUguale').addEventListener('change', admToggleShipping);
 
-    document.getElementById('clientForm').addEventListener('submit', function(e) {
+    document.getElementById('clientForm').addEventListener('submit', function (e) {
         e.preventDefault();
-        const nome = document.getElementById('nuovoNomeCliente').value.trim();
+        const error = document.getElementById('adm-client-form-error');
+        const fail = (message, field) => { error.textContent = message; if (field) document.getElementById(field).focus(); };
+        const nome = admFormValue('nuovoNomeCliente');
+        if (!nome) return fail('Inserisci il nome del cliente.', 'nuovoNomeCliente');
+        if (clients.some(c => (c.nome || '').toLowerCase() === nome.toLowerCase() && c.codice !== clientInModifica)) return fail('Esiste già un cliente con questo nome in rubrica.', 'nuovoNomeCliente');
+        const piva = admFormValue('partitaIva').replace(/\s+/g, '');
+        if (piva && !/^\d{11}$/.test(piva)) return fail('La partita IVA deve avere 11 cifre.', 'partitaIva');
+        const email = admFormValue('email');
+        if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail('Controlla l’indirizzo email.', 'email');
+        const pec = admFormValue('pec');
+        if (pec && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(pec)) return fail('Controlla l’indirizzo PEC.', 'pec');
+        for (const field of ['fattCap', 'spedCap']) {
+            const value = admFormValue(field);
+            if (value && !/^\d{5}$/.test(value)) return fail('Il CAP deve avere 5 cifre.', field);
+        }
+        for (const field of ['fattProvincia', 'spedProvincia']) {
+            const value = admFormValue(field);
+            if (value && !/^[A-Za-z]{2}$/.test(value)) return fail('La provincia va indicata con la sigla di 2 lettere, per esempio MI.', field);
+        }
+        const fatturazione = { via: admFormValue('fattVia'), cap: admFormValue('fattCap'), comune: admFormValue('fattComune'), provincia: admFormValue('fattProvincia').toUpperCase() };
+        const spedizioneUguale = document.getElementById('spedUguale').checked;
+        const spedizione = spedizioneUguale ? null : { presso: admFormValue('spedPresso'), via: admFormValue('spedVia'), cap: admFormValue('spedCap'), comune: admFormValue('spedComune'), provincia: admFormValue('spedProvincia').toUpperCase() };
         const tipo = document.getElementById('nuovoTipoCliente').value;
-        const indirizzoSede = document.getElementById('indirizzoSede').value.trim();
-        const indirizzoSpedizione = document.getElementById('indirizzoSpedizione').value.trim();
-        const telefono = document.getElementById('telefono').value.trim();
-        const cellulare = document.getElementById('cellulare').value.trim();
-        const email = document.getElementById('email').value.trim();
-        const referenteSpedizione = document.getElementById('referenteSpedizione').value.trim();
-        const partitaIva = document.getElementById('partitaIva').value.trim();
-        const codiceFiscale = document.getElementById('codiceFiscale').value.trim();
-        const codiceUnivoco = document.getElementById('codiceUnivoco').value.trim();
-        const pec = document.getElementById('pec').value.trim();
-
+        const data = {
+            nome, tipo,
+            ragioneSociale: admFormValue('ragioneSociale'),
+            referente: admFormValue('referente'),
+            telefono: admFormValue('telefono'), cellulare: admFormValue('cellulare'), email, sitoWeb: admFormValue('sitoWeb'),
+            fatturazione, spedizioneUguale, spedizione,
+            indirizzoSede: admFormatAddress(fatturazione),
+            indirizzoSpedizione: spedizione ? admFormatAddress(spedizione, spedizione.presso) : '',
+            referenteSpedizione: admFormValue('referenteSpedizione'),
+            telefonoSpedizione: admFormValue('telefonoSpedizione'),
+            orariConsegna: admFormValue('orariConsegna'),
+            noteConsegna: admFormValue('noteConsegna'),
+            partitaIva: piva, codiceFiscale: admFormValue('codiceFiscale').toUpperCase(),
+            codiceUnivoco: admFormValue('codiceUnivoco').toUpperCase(), pec,
+            noteInterne: admFormValue('noteInterne')
+        };
         if (clientInModifica) {
-            if(clients.some(c => (c.nome || "").toLowerCase() === nome.toLowerCase() && c.codice !== clientInModifica)) {
-                M.toast({html: 'Un altro cliente ha già questo nome!', classes: 'red rounded'});
-                return;
-            }
-            let idx = clients.findIndex(c => c.codice === clientInModifica);
-            clients[idx] = {
-                codice: clientInModifica, nome: nome, tipo: tipo, indirizzoSede: indirizzoSede, 
-                indirizzoSpedizione: indirizzoSpedizione, telefono: telefono, cellulare: cellulare, 
-                email: email, referenteSpedizione: referenteSpedizione, partitaIva: partitaIva, codiceFiscale: codiceFiscale, codiceUnivoco: codiceUnivoco, pec: pec
-            };
+            const index = clients.findIndex(c => c.codice === clientInModifica);
+            clients[index] = Object.assign({}, clients[index], data, { codice: clientInModifica });
             orders.forEach(o => { if (o.codiceCliente === clientInModifica) { o.cliente = nome; o.tipo = tipo; } });
             localStorage.setItem('24pet_preview_orders', JSON.stringify(orders));
-            M.toast({html: 'Cliente aggiornato con successo!', classes: 'blue rounded'});
-            annullaModificaCliente();
+            M.toast({ html: 'Cliente aggiornato', classes: 'rounded' });
         } else {
-            if(clients.some(c => (c.nome || "").toLowerCase() === nome.toLowerCase())) {
-                M.toast({html: 'Questo cliente è già in rubrica!', classes: 'red rounded'});
-                return;
-            }
-            let maxNum = 0;
-            clients.forEach(c => {
-                if(c.codice) {
-                    let num = parseInt(c.codice.replace('C-', ''));
-                    if(num > maxNum) maxNum = num;
-                }
-            });
-            let nuovoCodice = 'C-' + String(maxNum + 1).padStart(3, '0');
-            clients.push({ 
-                codice: nuovoCodice, nome: nome, tipo: tipo, indirizzoSede: indirizzoSede, 
-                indirizzoSpedizione: indirizzoSpedizione, telefono: telefono, cellulare: cellulare, 
-                email: email, referenteSpedizione: referenteSpedizione, partitaIva: partitaIva, codiceFiscale: codiceFiscale, codiceUnivoco: codiceUnivoco, pec: pec
-            });
-            M.toast({html: 'Cliente aggiunto! Codice: ' + nuovoCodice, classes: 'purple rounded'});
-            this.reset();
+            const maxNum = clients.reduce((max, c) => Math.max(max, parseInt(String(c.codice || '').replace('C-', ''), 10) || 0), 0);
+            const nuovoCodice = 'C-' + String(maxNum + 1).padStart(3, '0');
+            clients.push(Object.assign({ codice: nuovoCodice }, data));
+            M.toast({ html: 'Cliente aggiunto con codice ' + nuovoCodice, classes: 'rounded' });
         }
         localStorage.setItem('24pet_preview_clients', JSON.stringify(clients));
-
+        const edited = clientInModifica;
+        annullaModificaCliente();
         aggiornaRubrica();
-        loadOrders(); 
+        loadOrders();
+        if (edited && document.getElementById('risultatiRicerca').style.display === 'block' && document.getElementById('resCodice').textContent === edited) searchClient(edited);
     });
 
     function eliminaCliente(index) {
-        if(confirm("Sei sicuro di voler eliminare questo cliente?")) {
+        const client = clients[index];
+        if (!client) return;
+        const count = orders.filter(o => o.codiceCliente === client.codice).length;
+        const message = 'Eliminare ' + (client.nome || client.codice) + ' dalla rubrica?' + (count ? '\nI suoi ' + count + ' ordini restano nell’elenco ordini.' : '');
+        if (confirm(message)) {
             clients.splice(index, 1);
             localStorage.setItem('24pet_preview_clients', JSON.stringify(clients));
-
             aggiornaRubrica();
         }
     }
 
+    function admClientRow(c, stats) {
+        const row = admEl('article', 'adm-client-row');
+        row.tabIndex = 0;
+        row.setAttribute('aria-label', 'Apri la scheda di ' + (c.nome || c.codice));
+        const open = () => {
+            showPage('riepilogo-cliente', document.querySelector('.app-menu a[href="#riepilogo-cliente"]'));
+            const label = '[' + c.codice + '] ' + (c.nome || '') + (c.tipo === 'Rivenditore' ? ' (Rivenditore)' : '');
+            document.getElementById('searchClienteInputDisplay').innerText = label;
+            document.getElementById('searchClienteInput').value = label;
+            searchClient(c.codice);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+        row.addEventListener('click', event => { if (!event.target.closest('a, button')) open(); });
+        row.addEventListener('keydown', event => { if ((event.key === 'Enter' || event.key === ' ') && event.target === row) { event.preventDefault(); open(); } });
+
+        const who = admEl('div', 'adm-client-who');
+        const name = admEl('strong', '', c.nome || 'Senza nome');
+        const meta = admEl('span', 'adm-client-meta', c.codice + (admClientCity(c) ? ' · ' + admClientCity(c) : ''));
+        who.append(name);
+        if (c.ragioneSociale && c.ragioneSociale.toLowerCase() !== String(c.nome || '').toLowerCase()) who.append(admEl('span', 'adm-client-legal-small', c.ragioneSociale));
+        who.append(meta);
+
+        const tags = admEl('div', 'adm-client-tags');
+        tags.append(admBadge(c.tipo || 'Azienda', c.tipo === 'Rivenditore' ? 'info' : 'neutral'));
+        const account = admClientAccounts ? (admClientAccounts.get(c.codice) || null) : undefined;
+        if (account !== undefined) {
+            const state = admEl('span', 'adm-access ' + (account?.has_account ? 'is-on' : 'is-off'), account?.has_account ? 'Area clienti attiva' : 'Senza area clienti');
+            tags.append(state);
+        }
+
+        const contact = admEl('div', 'adm-client-contact');
+        if (c.referente || c.referenteSpedizione) contact.append(admEl('span', '', c.referente || c.referenteSpedizione));
+        const phone = c.cellulare || c.telefono;
+        if (phone) { const a = admEl('a', '', phone); a.href = 'tel:' + phone.replace(/\s+/g, ''); contact.append(a); }
+        if (c.email) { const a = admEl('a', '', c.email); a.href = 'mailto:' + c.email; contact.append(a); }
+        if (!contact.childNodes.length) contact.append(admEl('span', 'adm-missing', 'Nessun contatto'));
+
+        const numbers = admEl('div', 'adm-client-numbers');
+        numbers.append(admEl('span', '', stats.count + (stats.count === 1 ? ' ordine' : ' ordini') + ' · ' + admMoney.format(stats.revenue)));
+        if (stats.unpaid > 0.004) numbers.append(admBadge(admMoney.format(stats.unpaid) + ' da saldare', 'warn'));
+        else if (stats.count) numbers.append(admBadge('Tutto saldato', 'ok'));
+
+        const actions = admEl('div', 'adm-client-row-actions');
+        const iconButton = (icon, label, handler, extra) => {
+            const b = admEl('button', 'adm-icon-action' + (extra ? ' ' + extra : ''));
+            b.type = 'button'; b.title = label; b.setAttribute('aria-label', label + ' ' + (c.nome || c.codice));
+            b.append(admIcon(icon));
+            b.addEventListener('click', handler);
+            return b;
+        };
+        actions.append(
+            iconButton('add_shopping_cart', 'Nuovo ordine per', () => admNewOrderFor(c)),
+            iconButton('edit', 'Modifica', () => admOpenClientForm(c.codice)),
+            iconButton('delete', 'Elimina', () => eliminaCliente(clients.findIndex(x => x.codice === c.codice)), 'adm-action-danger')
+        );
+        row.append(who, tags, contact, numbers, actions);
+        return row;
+    }
+
     function aggiornaRubrica() {
-        const tbody = document.getElementById('clientsTableBody');
-        tbody.innerHTML = '';
-        
-        let sortedClients = [...clients].sort((a,b) => {
-            let numA = parseInt((a.codice || "0").replace('C-', ''));
-            let numB = parseInt((b.codice || "0").replace('C-', ''));
-            return numA - numB;
+        const sorted = [...clients].sort((a, b) => (parseInt(String(a.codice || '0').replace('C-', ''), 10) || 0) - (parseInt(String(b.codice || '0').replace('C-', ''), 10) || 0));
+
+        // Barra laterale di selezione rapida (usata da nuovo ordine e scheda cliente)
+        const sidebar = document.getElementById('listaClientiSidebar');
+        sidebar.replaceChildren(...sorted.map(c => {
+            const item = admEl('a', 'collection-item');
+            item.href = '#!';
+            item.setAttribute('data-codice', c.codice);
+            item.setAttribute('data-nome', c.nome || 'Senza Nome');
+            item.setAttribute('data-tipo', c.tipo || 'Azienda');
+            item.style.cssText = 'color:#333;border-radius:4px;margin-bottom:5px;border:1px solid #eee;';
+            item.append(admEl('span', '', c.nome || 'Senza Nome'), document.createElement('br'), admEl('span', '', '[' + c.codice + '] - ' + (c.tipo || 'Azienda')));
+            item.firstChild.style.fontWeight = 'bold';
+            item.lastChild.style.cssText = 'font-size:0.8em;color:#888;';
+            item.addEventListener('click', event => { event.preventDefault(); selezionaClienteDaLista(item); });
+            return item;
+        }));
+
+        const listBox = document.getElementById('adm-client-list');
+        if (!listBox) return;
+        const stats = new Map();
+        for (const o of orders) {
+            const s = stats.get(o.codiceCliente) || { count: 0, revenue: 0, unpaid: 0 };
+            s.count++; s.revenue += o.importo || 0; if (!o.pagato) s.unpaid += o.importo || 0;
+            stats.set(o.codiceCliente, s);
+        }
+        const empty = { count: 0, revenue: 0, unpaid: 0 };
+        const counts = {
+            all: sorted.length,
+            company: sorted.filter(c => c.tipo !== 'Rivenditore').length,
+            reseller: sorted.filter(c => c.tipo === 'Rivenditore').length,
+            unpaid: sorted.filter(c => (stats.get(c.codice) || empty).unpaid > 0.004).length,
+            noaccess: admClientAccounts ? sorted.filter(c => !admClientAccounts.get(c.codice)?.has_account).length : null
+        };
+        const labels = { all: 'Tutti', company: 'Aziende', reseller: 'Rivenditori', unpaid: 'Con saldo aperto', noaccess: 'Senza area clienti' };
+        const filters = document.getElementById('adm-client-filters');
+        filters.replaceChildren();
+        for (const key of Object.keys(labels)) {
+            if (counts[key] === null) continue;
+            const b = admEl('button', 'adm-filter', labels[key] + ' ');
+            b.type = 'button';
+            b.append(admEl('span', 'adm-filter-count', String(counts[key])));
+            b.setAttribute('aria-pressed', String(admClientFilter === key));
+            b.addEventListener('click', () => { admClientFilter = key; aggiornaRubrica(); });
+            filters.append(b);
+        }
+        const search = document.getElementById('adm-client-search');
+        if (!search.dataset.bound) { search.addEventListener('input', () => aggiornaRubrica()); search.dataset.bound = '1'; }
+        const query = search.value.trim().toLowerCase();
+        const visible = sorted.filter(c => {
+            const s = stats.get(c.codice) || empty;
+            if (admClientFilter === 'company' && c.tipo === 'Rivenditore') return false;
+            if (admClientFilter === 'reseller' && c.tipo !== 'Rivenditore') return false;
+            if (admClientFilter === 'unpaid' && !(s.unpaid > 0.004)) return false;
+            if (admClientFilter === 'noaccess' && admClientAccounts?.get(c.codice)?.has_account) return false;
+            if (!query) return true;
+            return [c.nome, c.ragioneSociale, c.codice, c.indirizzoSede, c.indirizzoSpedizione, c.partitaIva, c.email, c.referente, c.referenteSpedizione]
+                .some(value => String(value || '').toLowerCase().includes(query));
         });
-
-        let sidebarHtml = '';
-
-        sortedClients.forEach((c, i) => {
-            let tr = document.createElement('tr');
-            let badge = c.tipo === 'Rivenditore' ? '<span class="new badge" style="background-color: #8c0066;" data-badge-caption="Rivenditore"></span>' : '<span class="new badge" style="background-color: #4a004a;" data-badge-caption="Azienda"></span>';
-            let realIndex = clients.findIndex(orig => orig.codice === c.codice);
-            let nomeSicuro = c.nome || "Senza Nome";
-
-            let arrayContatti = [];
-            if(c.telefono) arrayContatti.push(`📞 ${c.telefono}`);
-            if(c.cellulare) arrayContatti.push(`📱 ${c.cellulare}`);
-            if(c.email) arrayContatti.push(`✉️ ${c.email}`);
-            let contattiStr = arrayContatti.join('<br>') || '-';
-
-            tr.innerHTML = `
-                <td><strong>${c.codice}</strong></td>
-                <td><strong>${nomeSicuro}</strong></td>
-                <td>${badge}</td>
-                <td>${c.indirizzoSpedizione || '-'}</td>
-                <td>${c.referenteSpedizione || '-'}</td>
-                <td>${contattiStr}</td>
-                <td>
-                    <a href="#!" class="blue-text" onclick="preparaModificaCliente('${c.codice}')" title="Modifica" style="margin-right: 15px;"><i class="material-icons">edit</i></a>
-                    <a href="#!" class="red-text" onclick="eliminaCliente(${realIndex})" title="Elimina"><i class="material-icons">delete</i></a>
-                </td>
-            `;
-            tbody.appendChild(tr);
-
-            // Popola colonna Sidebar Rapida
-            let safeNameHTML = nomeSicuro.replace(/"/g, '&quot;');
-            sidebarHtml += `
-                <a href="#!" class="collection-item" style="color: #333; border-radius: 4px; margin-bottom: 5px; border: 1px solid #eee;" data-codice="${c.codice}" data-nome="${safeNameHTML}" data-tipo="${c.tipo}" onclick="selezionaClienteDaLista(this)">
-                    <span style="font-weight:bold;">${nomeSicuro}</span><br>
-                    <span style="font-size:0.8em; color:#888;">[${c.codice}] - ${c.tipo}</span>
-                </a>
-            `;
-        });
-
-        document.getElementById('listaClientiSidebar').innerHTML = sidebarHtml;
+        listBox.replaceChildren(...visible.map(c => admClientRow(c, stats.get(c.codice) || empty)));
+        document.getElementById('adm-client-count').textContent = visible.length
+            ? visible.length + (visible.length === 1 ? ' cliente' : ' clienti')
+            : 'Nessun cliente con questi filtri.';
+        if (admClientAccounts === null && !admClientAccountsLoading && typeof window.petAdminAccounts === 'function') {
+            admClientAccountsLoading = true;
+            window.petAdminAccounts().then(rows => {
+                admClientAccounts = new Map(rows.map(row => [row.client_code, row]));
+                aggiornaRubrica();
+            }).catch(() => {}).finally(() => { admClientAccountsLoading = false; });
+        }
     }
 
 
@@ -2586,6 +2770,7 @@
                         <div style="font-size: 0.75em; color: #888; text-transform: uppercase; margin-bottom: 2px; font-weight: bold;">Intestatario Ordine</div>
                         <div style="font-size: 1.1em; font-weight: bold; color: #17202A;">${o.cliente} ${o.tipo === 'Rivenditore' ? '<span style="font-size: 0.6em; background: #8c0066; color: white; padding: 2px 6px; border-radius: 4px; vertical-align: middle;">RIVENDITORE</span>' : ''}</div>
                         <div style="font-size: 0.85em; margin-top: 2px; line-height: 1.3;">
+                            ${cInfo.ragioneSociale && cInfo.ragioneSociale.toLowerCase() !== String(o.cliente || '').toLowerCase() ? '<strong>' + cInfo.ragioneSociale + '</strong><br>' : ''}
                             ${cInfo.indirizzoSede ? cInfo.indirizzoSede + '<br>' : ''}
                             P.IVA: ${cInfo.partitaIva || 'N/D'} | C.F.: ${cInfo.codiceFiscale || 'N/D'}<br>
                             SDI: ${cInfo.codiceUnivoco || 'N/D'} | PEC: ${cInfo.pec || 'N/D'}
@@ -2596,7 +2781,9 @@
                         <div style="font-size: 0.85em; line-height: 1.3;">
                             ${cInfo.indirizzoSpedizione || cInfo.indirizzoSede || 'Vedi intestatario'}<br>
                             <strong>Referente:</strong> ${cInfo.referenteSpedizione || 'N/D'}<br>
-                            <strong>Tel:</strong> ${cInfo.cellulare || cInfo.telefono || 'N/D'}
+                            <strong>Tel:</strong> ${cInfo.telefonoSpedizione || cInfo.cellulare || cInfo.telefono || 'N/D'}
+                            ${cInfo.orariConsegna ? '<br><strong>Orari:</strong> ' + cInfo.orariConsegna : ''}
+                            ${cInfo.noteConsegna ? '<br><strong>Note:</strong> ' + cInfo.noteConsegna : ''}
                         </div>
                     </div>
                 </div>
@@ -3029,7 +3216,7 @@
         document.getElementById('resCodice').textContent = client.codice;
         document.getElementById('resTipo').textContent = client.tipo || 'Azienda';
         document.getElementById('resNome').textContent = client.nome || 'Senza nome';
-        document.getElementById('resRagione').textContent = '';
+        document.getElementById('resRagione').textContent = client.ragioneSociale || '';
         const first = allOrders[allOrders.length - 1];
         const last = allOrders[0];
         const monthYear = new Intl.DateTimeFormat('it-IT', { month: 'long', year: 'numeric', timeZone: 'UTC' });
@@ -3086,14 +3273,19 @@
 
         // ---- Anagrafica ----
         admFacts(document.getElementById('adm-client-contacts'), [
-            ['Referente', client.referenteSpedizione],
+            ['Referente', client.referente || client.referenteSpedizione],
             ['Telefono', client.telefono, client.telefono ? 'tel:' : ''],
             ['Cellulare', client.cellulare, client.cellulare ? 'tel:' : ''],
             ['Email', client.email, client.email ? 'mailto:' : ''],
-            ['Sede', client.indirizzoSede],
-            ['Spedizione', client.indirizzoSpedizione || (client.indirizzoSede ? 'Come la sede' : '')]
-        ]);
+            ...(client.sitoWeb ? [['Sito web', client.sitoWeb, /^https?:\/\//i.test(client.sitoWeb) ? client.sitoWeb : 'https://' + client.sitoWeb]] : []),
+            ['Fatturazione', client.indirizzoSede],
+            ['Spedizione', client.indirizzoSpedizione || (client.indirizzoSede ? 'Come la fatturazione' : '')],
+            ['Per la consegna', [client.referenteSpedizione, client.telefonoSpedizione].filter(Boolean).join(' · ')],
+            ['Orari e note', [client.orariConsegna, client.noteConsegna].filter(Boolean).join(' · ')],
+            ['Note interne', client.noteInterne]
+        ].filter(row => row[0] === 'Referente' || row[0] === 'Telefono' || row[0] === 'Email' || row[1]));
         admFacts(document.getElementById('adm-client-billing'), [
+            ['Ragione sociale', client.ragioneSociale],
             ['P. IVA', client.partitaIva], ['Codice fiscale', client.codiceFiscale], ['Codice SDI', client.codiceUnivoco], ['PEC', client.pec, client.pec ? 'mailto:' : '']
         ]);
         document.getElementById('adm-client-billing-note').textContent = 'Dati della rubrica. Sto controllando il profilo salvato dal cliente…';
@@ -4030,6 +4222,11 @@
             });
         }
 
+        window.petAdminAccounts = async () => {
+            const { data, error } = await api.rpc('admin_client_accounts');
+            if (error) throw error;
+            return data || [];
+        };
         window.petAdminClientCloud = async code => {
             const [accounts, billing] = await Promise.all([
                 api.rpc('admin_client_accounts'),
