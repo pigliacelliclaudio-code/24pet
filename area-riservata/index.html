@@ -892,6 +892,22 @@
                     </div>
                 </fieldset>
                 <fieldset>
+                    <legend>Sul sito 24pet.it</legend>
+                    <label class="adm-check"><input id="sitoVisibile" type="checkbox" class="filled-in"><span>Mostra tra i punti vendita sul sito (solo con il consenso del cliente)</span></label>
+                    <div class="adm-form-grid" id="sitoCampi" hidden>
+                        <label class="adm-field adm-span-2">Nome da mostrare *<input id="sitoNome" type="text" maxlength="120" autocomplete="off"></label>
+                        <label class="adm-field">Tipo
+                            <select id="sitoTipo" class="browser-default"><option value="agenzia">Agenzia funebre</option><option value="crematorio">Centro di cremazione</option><option value="altro">Altra attività</option></select></label>
+                        <label class="adm-field adm-span-3">Indirizzo del punto vendita<input id="sitoIndirizzo" type="text" maxlength="200" autocomplete="off"></label>
+                        <label class="adm-field">Comune *<input id="sitoComune" type="text" maxlength="100" autocomplete="off"></label>
+                        <label class="adm-field">Provincia<input id="sitoProvincia" type="text" maxlength="2" placeholder="es. MI" autocomplete="off"></label>
+                        <label class="adm-field">Telefono pubblico<input id="sitoTelefono" type="tel" maxlength="40" autocomplete="off"></label>
+                        <label class="adm-field adm-span-2">Email pubblica<input id="sitoEmail" type="email" maxlength="254" autocomplete="off"></label>
+                        <label class="adm-field">Sito web<input id="sitoWeb" type="url" maxlength="200" placeholder="https://" autocomplete="off"></label>
+                        <p class="adm-note adm-span-3">Questi dati sono visibili a chiunque visita 24pet.it, nella sezione «Dove trovarle».</p>
+                    </div>
+                </fieldset>
+                <fieldset>
                     <legend>Note interne</legend>
                     <label class="adm-field adm-span-3"><span class="adm-visually-hidden">Note interne</span><textarea id="noteInterne" rows="3" placeholder="Visibili solo a te e agli amministratori"></textarea></label>
                 </fieldset>
@@ -2653,6 +2669,23 @@
     }
     function admFormValue(id) { return document.getElementById(id).value.trim(); }
     function admSetForm(id, value) { document.getElementById(id).value = value || ''; }
+    function admToggleSite() {
+        document.getElementById('sitoCampi').hidden = !document.getElementById('sitoVisibile').checked;
+    }
+    function admFillSite(client) {
+        const site = client?.sito || {};
+        const billing = client ? (client.fatturazione || admParseAddress(client.indirizzoSede)) : {};
+        document.getElementById('sitoVisibile').checked = Boolean(site.visibile);
+        admSetForm('sitoNome', site.nome ?? (client ? (client.ragioneSociale || client.nome) : ''));
+        admSetForm('sitoTipo', site.tipo || 'agenzia');
+        admSetForm('sitoIndirizzo', site.indirizzo ?? billing.via ?? '');
+        admSetForm('sitoComune', site.comune ?? billing.comune ?? '');
+        admSetForm('sitoProvincia', site.provincia ?? billing.provincia ?? '');
+        admSetForm('sitoTelefono', site.telefono ?? (client ? (client.telefono || client.cellulare) : ''));
+        admSetForm('sitoEmail', site.email ?? (client?.email || ''));
+        admSetForm('sitoWeb', site.web ?? (client?.sitoWeb || ''));
+        admToggleSite();
+    }
     function admToggleShipping() {
         document.getElementById('spedCampi').hidden = document.getElementById('spedUguale').checked;
     }
@@ -2693,6 +2726,7 @@
             document.getElementById('spedUguale').checked = true;
         }
         admToggleShipping();
+        admFillSite(client);
         admLoadCloudBilling(client ? client.codice : null);
         document.getElementById('titoloFormCliente').textContent = client ? 'Modifica ' + (client.nome || client.codice) + ' · ' + client.codice : 'Nuovo cliente';
         document.querySelector('#btnSalvaCliente span').textContent = client ? 'Salva modifiche' : 'Salva cliente';
@@ -2733,6 +2767,14 @@
         if (dialog.open) dialog.close();
     }
     document.getElementById('spedUguale').addEventListener('change', admToggleShipping);
+    document.getElementById('sitoVisibile').addEventListener('change', () => {
+        admToggleSite();
+        if (document.getElementById('sitoVisibile').checked) {
+            for (const [site, source] of [['sitoNome', 'ragioneSociale'], ['sitoComune', 'fattComune'], ['sitoProvincia', 'fattProvincia'], ['sitoIndirizzo', 'fattVia'], ['sitoTelefono', 'telefono'], ['sitoEmail', 'email'], ['sitoWeb', 'sitoWeb']]) {
+                if (!admFormValue(site)) admSetForm(site, admFormValue(source) || (site === 'sitoNome' ? admFormValue('nuovoNomeCliente') : ''));
+            }
+        }
+    });
 
     document.getElementById('clientForm').addEventListener('submit', function (e) {
         e.preventDefault();
@@ -2755,6 +2797,17 @@
             const value = admFormValue(field);
             if (value && !/^[A-Za-z]{2}$/.test(value)) return fail('La provincia va indicata con la sigla di 2 lettere, per esempio MI.', field);
         }
+        const siteOn = document.getElementById('sitoVisibile').checked;
+        let siteWeb = admFormValue('sitoWeb');
+        if (siteWeb && !/^https?:\/\//i.test(siteWeb)) siteWeb = 'https://' + siteWeb;
+        if (siteOn) {
+            if (!admFormValue('sitoNome')) return fail('Per il sito serve il nome da mostrare.', 'sitoNome');
+            if (!admFormValue('sitoComune')) return fail('Per il sito serve il comune del punto vendita.', 'sitoComune');
+            if (admFormValue('sitoProvincia') && !/^[A-Za-z]{2}$/.test(admFormValue('sitoProvincia'))) return fail('La provincia va indicata con la sigla di 2 lettere.', 'sitoProvincia');
+            if (admFormValue('sitoEmail') && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(admFormValue('sitoEmail'))) return fail('Controlla l’email pubblica.', 'sitoEmail');
+        }
+        const sito = { visibile: siteOn, nome: admFormValue('sitoNome'), tipo: document.getElementById('sitoTipo').value, indirizzo: admFormValue('sitoIndirizzo'),
+            comune: admFormValue('sitoComune'), provincia: admFormValue('sitoProvincia').toUpperCase(), telefono: admFormValue('sitoTelefono'), email: admFormValue('sitoEmail'), web: siteWeb };
         const fatturazione = { via: admFormValue('fattVia'), cap: admFormValue('fattCap'), comune: admFormValue('fattComune'), provincia: admFormValue('fattProvincia').toUpperCase() };
         const spedizioneUguale = document.getElementById('spedUguale').checked;
         const spedizione = spedizioneUguale ? null : { presso: admFormValue('spedPresso'), via: admFormValue('spedVia'), cap: admFormValue('spedCap'), comune: admFormValue('spedComune'), provincia: admFormValue('spedProvincia').toUpperCase() };
@@ -2773,7 +2826,8 @@
             noteConsegna: admFormValue('noteConsegna'),
             partitaIva: piva, codiceFiscale: admFormValue('codiceFiscale').toUpperCase(),
             codiceUnivoco: admFormValue('codiceUnivoco').toUpperCase(), pec,
-            noteInterne: admFormValue('noteInterne')
+            noteInterne: admFormValue('noteInterne'),
+            sito
         };
         if (clientInModifica) {
             const index = clients.findIndex(c => c.codice === clientInModifica);
@@ -2856,6 +2910,7 @@
 
         const tags = admEl('div', 'adm-client-tags');
         tags.append(admBadge(c.tipo || 'Azienda', c.tipo === 'Rivenditore' ? 'info' : 'neutral'));
+        if (c.sito?.visibile) tags.append(admBadge('Sul sito', 'ok'));
         const account = admClientAccounts ? (admClientAccounts.get(c.codice) || null) : undefined;
         if (account !== undefined) {
             const state = admEl('span', 'adm-access ' + (account?.has_account ? 'is-on' : 'is-off'), account?.has_account ? 'Area clienti attiva' : 'Senza area clienti');

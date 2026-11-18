@@ -10,16 +10,16 @@ if (location.hostname === 'dashboard.24pet.it' && location.pathname === '/') {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#2e0d42">
 <title>24Pet — Urne commemorative per animali</title>
-<meta name="description" content="Scopri Il Colore della Memoria, la collezione di urne commemorative 24Pet per agenzie funebri e centri di cremazione per animali.">
+<meta name="description" content="Urne commemorative per animali dal design contemporaneo, con portafoto e impronta, per agenzie funebri e centri di cremazione per animali. Scopri la collezione e trova il punto vendita più vicino.">
 <meta property="og:title" content="24Pet — Il Colore della Memoria">
-<meta property="og:description" content="Otto modelli di urne commemorative per custodire il ricordo di un animale di famiglia.">
+<meta property="og:description" content="Otto modelli di urne per animali, con portafoto e impronta, in 17 colori. In vendita presso agenzie funebri e centri di cremazione per animali.">
 <meta property="og:image" content="https://24pet.it/assets/og-copertina.jpg">
 <link rel="canonical" href="https://24pet.it/">
 <link rel="icon" type="image/png" sizes="64x64" href="/assets/favicon-24pet.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Mulish:wght@400..800&amp;display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/landing.css?v=9">
+<link rel="stylesheet" href="/assets/landing.css?v=10">
 <link rel="stylesheet" href="/assets/urn-details.css?v=3">
 </head>
 <body>
@@ -28,6 +28,7 @@ if (location.hostname === 'dashboard.24pet.it' && location.pathname === '/') {
 <a class="brand" href="/" aria-label="24Pet, homepage"><img src="/assets/logo-24pet.png" width="192" height="192" alt="24Pet"></a>
 <nav class="nav" aria-label="Navigazione principale">
 <a class="catalog-link" href="#collezione">Collezione</a>
+<a class="stores-link" href="#dove-trovarle">Dove trovarle</a>
 <a class="about-link" href="#azienda">Chi siamo</a>
 <a href="#professionisti">Professionisti</a>
 <a class="button outline" href="https://dashboard.24pet.it/area-riservata/">Area riservata ↗</a>
@@ -40,11 +41,12 @@ if (location.hostname === 'dashboard.24pet.it' && location.pathname === '/') {
 <div class="hero-story">
 <p class="eyebrow">Urne commemorative per animali</p>
 <h1 id="titolo">Un ricordo che <em>prende colore.</em></h1>
-<p class="hero-copy">Urne dal design contemporaneo per dare un posto, in casa, al ricordo di un animale amato. Una collezione per agenzie funebri e centri di cremazione per animali.</p>
+<p class="hero-copy">Urne dal design contemporaneo per dare un posto, in casa, al ricordo di un animale amato. Le trovi presso agenzie funebri e centri di cremazione per animali.</p>
 <div class="hero-actions">
 <a class="button" href="#collezione">Scopri la collezione <span aria-hidden="true">↓</span></a>
-<a class="text-link" href="#professionisti">Per i professionisti</a>
+<a class="text-link" href="#professionisti">Sei un professionista?</a>
 </div>
+<p class="hero-family">Sei una famiglia? <a href="#dove-trovarle">Trova dove acquistarle</a></p>
 </div>
 </div>
 <figure class="hero-photo">
@@ -61,21 +63,21 @@ if (location.hostname === 'dashboard.24pet.it' && location.pathname === '/') {
 <ul class="benefits wrap" role="list">
 <li>
 <h2>Design da esporre</h2>
-<p>Linee contemporanee, dalle forme essenziali a quelle più morbide, e colori da abbinare al proprio spazio. Ogni urna è pensata per trovare posto su una mensola, in una libreria o accanto a una fotografia.</p>
+<p>Forme contemporanee e 17 colori pensati per la casa: ogni urna trova posto su una mensola, in una libreria o accanto a una fotografia, senza l’aspetto di un oggetto funebre.</p>
 </li>
 <li>
 <h2>Dettagli personali</h2>
-<p>Lo sguardo in una foto, il segno di una zampa, le parole di una dedica. A seconda del modello, puoi scegliere il dettaglio che racconta meglio il vostro legame.</p>
+<p>Una foto, il calco della zampa, una dedica. A seconda del modello, la famiglia sceglie il dettaglio che racconta meglio il suo legame.</p>
 </li>
 <li>
 <h2>Stampa 3D in PLA</h2>
-<p>La stampa 3D in PLA dà forma alle geometrie della collezione. A seconda del modello, la luce mette in risalto le sfaccettature, le curve morbide o i piccoli dettagli in rilievo.</p>
+<p>Realizziamo ogni urna con la stampa 3D in PLA, un materiale di origine vegetale. Le geometrie restano precise e la luce mette in risalto sfaccettature, curve e dettagli in rilievo.</p>
 </li>
 </ul>
 </section>
 <section class="section catalog" id="collezione">
 <div class="wrap">
-<div class="section-head"><div><p class="eyebrow">La collezione 24Pet</p><h2>Il Colore della Memoria</h2></div><p class="intro">Otto modelli, dalle forme essenziali alle urne con portafoto e impronta. Ognuno custodisce il ricordo a modo suo.</p></div>
+<div class="section-head"><div><p class="eyebrow">La collezione 24Pet</p><h2>Il Colore della Memoria</h2></div><p class="intro">Otto modelli in più taglie: forme essenziali, urne con portafoto e impronta, figure di cane e gatto. Tutti disponibili in 17 colori.</p></div>
 <div class="filters" role="group" aria-label="Filtra le urne per tipo" hidden>
 <button class="filter" type="button" data-filter="all" aria-pressed="true">Tutte</button>
 <button class="filter" type="button" data-filter="forme" aria-pressed="false">Forme classiche</button>
@@ -268,20 +270,31 @@ if (location.hostname === 'dashboard.24pet.it' && location.pathname === '/') {
 </div>
 </dialog>
 </section>
+<section class="section stores" id="dove-trovarle" aria-labelledby="titolo-negozi">
+<div class="wrap">
+<div class="section-head"><div><p class="eyebrow">Per le famiglie</p><h2 id="titolo-negozi">Dove trovarle.</h2></div><p class="intro">Le urne 24Pet si acquistano presso le agenzie funebri e i centri di cremazione per animali che le propongono.<span id="stores-intro-search" hidden> Cerca quello più vicino a te.</span></p></div>
+<div class="stores-tools" hidden>
+<label class="stores-search"><span>Cerca per città o provincia</span><input id="stores-search" type="search" placeholder="es. Padova o PD" autocomplete="off"></label>
+<p id="stores-count" class="stores-count" role="status"></p>
+</div>
+<ul id="stores-list" class="stores-list" role="list"></ul>
+<p class="stores-help" id="stores-help"><span id="stores-help-lead" hidden>Non trovi un punto vendita vicino? </span>Chiedi all’agenzia o al centro di cremazione a cui ti sei rivolto: può ordinare le urne 24Pet per te.</p>
+</div>
+</section>
 <section class="section about-shell" id="azienda" aria-labelledby="titolo-azienda">
 <div class="wrap about">
 <div><p class="eyebrow">Chi siamo</p><h2 id="titolo-azienda">Oggetti da tenere vicino.</h2></div>
-<div><p class="intro">24Pet è un progetto di Cloood s.a.s. dedicato alla memoria degli animali di famiglia. Dalla zampa impressa nel cuore alla cornice che accoglie una fotografia, ogni modello parte da un dettaglio che racconta una storia.</p><p class="intro">Lavoriamo con agenzie funebri e centri di cremazione per animali, per offrire alle famiglie una scelta che sentano propria.</p></div>
+<div><p class="intro">24Pet è il progetto di Cloood s.a.s. dedicato alla memoria degli animali di famiglia. Ogni modello nasce da un dettaglio che racconta una storia: una zampa impressa, uno sguardo in cornice, una forma da tenere vicino.</p><p class="intro">Non vendiamo direttamente ai privati. Lavoriamo con agenzie funebri e centri di cremazione per animali, che accompagnano le famiglie nella scelta e consegnano l’urna.</p></div>
 </div>
 </section>
 <section class="section partner-band" id="professionisti">
 <div class="wrap partner-grid">
 <div><p class="eyebrow">Per i professionisti</p><h2>Porta 24Pet<br>nella tua attività.</h2>
-<p class="intro">Gestisci un’agenzia funebre o un centro di cremazione per animali? Richiedi l’accesso professionale per conoscere il listino e le condizioni di fornitura.</p>
+<p class="intro">Gestisci un’agenzia funebre o un centro di cremazione per animali? Richiedi l’accesso all’area riservata: trovi il listino per i professionisti, invii gli ordini online e ritrovi lo storico. Se vuoi, comparirai anche tra i punti vendita su questo sito, così le famiglie della tua zona ti trovano.</p>
 <ol class="partner-details">
 <li><strong>Invia la richiesta</strong><span>Indica il nome dell’attività e l’email a cui possiamo ricontattarti.</span></li>
 <li><strong>Attendi la verifica</strong><span>24Pet verifica la richiesta prima di abilitare l’accesso.</span></li>
-<li><strong>Accedi e ordina</strong><span>Consulta il listino e invia le richieste d’ordine dalla dashboard.</span></li>
+<li><strong>Accedi e ordina</strong><span>Consulta il listino, scegli modelli, taglie e colori e invia l’ordine dall’area riservata.</span></li>
 </ol></div>
 <form id="partner-form" aria-labelledby="partner-form-title">
 <h3 id="partner-form-title">Richiedi l’accesso professionale</h3>
@@ -330,6 +343,48 @@ form.addEventListener('submit', async (event) => {
         button.disabled = false;
     }
 });
+</script>
+<script>
+(() => {
+    const list = document.querySelector('#stores-list');
+    const tools = document.querySelector('.stores-tools');
+    const search = document.querySelector('#stores-search');
+    const count = document.querySelector('#stores-count');
+    const kinds = { agenzia: 'Agenzia funebre', crematorio: 'Centro di cremazione', altro: 'Punto vendita' };
+    let stores = [];
+    const norm = value => String(value || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    function link(href, text) { const a = document.createElement('a'); a.href = href; a.textContent = text; if (/^https?:/.test(href)) { a.target = '_blank'; a.rel = 'noopener'; } return a; }
+    function render() {
+        const query = norm(search.value.trim());
+        const shown = stores.filter(s => !query || norm([s.name, s.city, s.province, s.address].join(' ')).includes(query));
+        list.replaceChildren(...shown.map(s => {
+            const li = document.createElement('li');
+            li.className = 'store';
+            const kind = document.createElement('p'); kind.className = 'store-kind'; kind.textContent = kinds[s.kind] || kinds.altro;
+            const name = document.createElement('h3'); name.textContent = s.name;
+            const place = document.createElement('p'); place.className = 'store-place';
+            place.textContent = [s.address, [s.city, s.province ? '(' + s.province + ')' : ''].filter(Boolean).join(' ')].filter(Boolean).join(' · ');
+            const contacts = document.createElement('p'); contacts.className = 'store-contacts';
+            if (s.phone) contacts.append(link('tel:' + s.phone.replace(/[^+\d]/g, ''), s.phone));
+            if (s.email) contacts.append(link('mailto:' + s.email, s.email));
+            if (s.website) contacts.append(link(s.website, s.website.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')));
+            li.append(kind, name, place);
+            if (contacts.childNodes.length) li.append(contacts);
+            return li;
+        }));
+        count.textContent = query ? (shown.length ? shown.length + (shown.length === 1 ? ' punto vendita' : ' punti vendita') : 'Nessun punto vendita trovato per questa ricerca.') : '';
+    }
+    search.addEventListener('input', render);
+    fetch('https://vacxudtbzpfygkkxmhyz.supabase.co/rest/v1/public_resellers?select=name,kind,address,city,province,phone,email,website&order=province.asc,city.asc,name.asc', {
+        headers: { apikey: 'sb_publishable_Pxz4_0wKSdVx4_sHoyhJlw_jfMSJid8' }
+    }).then(r => r.ok ? r.json() : []).then(rows => {
+        stores = Array.isArray(rows) ? rows : [];
+        tools.hidden = stores.length < 4;
+        document.querySelector('#stores-intro-search').hidden = !stores.length;
+        document.querySelector('#stores-help-lead').hidden = !stores.length;
+        render();
+    }).catch(() => {});
+})();
 </script>
 <script>
 const catalogFilters = document.querySelector('.filters');

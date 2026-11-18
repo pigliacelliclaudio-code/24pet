@@ -224,6 +224,35 @@ h2 { font-size: clamp(36px, 4.1vw, 62px); line-height: 1.08; text-wrap: balance;
 .product .description { margin: 7px 0 13px; color: var(--muted); font-size: .87rem; line-height: 1.45; }
 .product .sizes { margin-top: auto; padding-top: 8px; border-top: 1px solid var(--line); color: var(--accent); font-size: .8rem; font-weight: 700; }
 
+.stores {
+    color-scheme: light;
+    --surface: #fff;
+    --ink: var(--deep);
+    --muted: #583b56;
+    --accent: var(--brand-plum);
+    --line: #e8d9e9;
+    --control-line: #936c95;
+    --focus: var(--brand-plum);
+    --title-gradient: linear-gradient(105deg, var(--brand-purple) 3%, var(--brand-magenta) 57%, var(--brand-plum) 98%);
+    background: #fbf5fa;
+    color: var(--ink);
+}
+.stores-tools { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 8px 20px; margin-bottom: 18px; }
+.stores-search { display: grid; gap: 5px; width: min(100%, 360px); font-size: .9rem; font-weight: 750; }
+.stores-search input { min-height: 46px; padding: 8px 12px; border: 1px solid var(--control-line); border-radius: 8px; background: #fff; color: var(--ink); font: inherit; font-weight: 400; }
+.stores-count { color: var(--muted); font-size: .9rem; }
+.stores-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 0; padding: 0; list-style: none; }
+.stores-list:empty { display: none; }
+.store { display: grid; gap: 4px; align-content: start; padding: 18px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.store-kind { color: var(--accent); font-size: .74rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.store h3 { font-size: 1.15rem; font-weight: 700; line-height: 1.25; letter-spacing: -.02em; }
+.store-place { color: var(--muted); font-size: .92rem; }
+.store-contacts { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 6px; padding-top: 8px; border-top: 1px solid var(--line); font-size: .9rem; font-weight: 700; }
+.store-contacts a { color: var(--accent); text-underline-offset: 4px; overflow-wrap: anywhere; }
+.stores-help { max-width: 70ch; margin-top: 22px; color: var(--muted); }
+.hero-family { margin-top: 18px; color: var(--muted); font-size: .92rem; }
+.hero-family a { color: var(--accent); font-weight: 700; text-underline-offset: 5px; }
+
 .about-shell { background: radial-gradient(ellipse at 10% 10%, var(--brand-purple), var(--deep) 75%); }
 .about { display: grid; grid-template-columns: .85fr 1.15fr; gap: clamp(24px, 6vw, 90px); align-items: start; }
 .about .intro + .intro { margin-top: 12px; }
@@ -280,6 +309,7 @@ h2 { font-size: clamp(36px, 4.1vw, 62px); line-height: 1.08; text-wrap: balance;
 @media (max-width: 1020px) {
     .wrap { width: calc(100% - 56px); }
     .products { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+    .stores-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (max-width: 800px) {
@@ -288,7 +318,7 @@ h2 { font-size: clamp(36px, 4.1vw, 62px); line-height: 1.08; text-wrap: balance;
     .brand img { width: 51px; }
     .nav { gap: 11px; font-size: .8rem; }
     .nav .button { min-height: 44px; padding: 6px 10px; font-size: .8rem; }
-    .nav .about-link { display: none; }
+    .nav .about-link, .nav .stores-link { display: none; }
     .section-head, .about, .partner-grid { grid-template-columns: minmax(0, 1fr); }
     .hero { padding-block: 36px 4px; }
     h1 { font-size: clamp(36px, 9.4vw, 62px); }
@@ -300,6 +330,7 @@ h2 { font-size: clamp(36px, 4.1vw, 62px); line-height: 1.08; text-wrap: balance;
 
 @media (max-width: 650px) {
     .benefits { grid-template-columns: minmax(0, 1fr); }
+    .stores-list { grid-template-columns: minmax(0, 1fr); }
 }
 
 @media (max-width: 350px) {
