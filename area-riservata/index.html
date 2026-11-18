@@ -305,6 +305,20 @@
         .adm-production-colors { color: var(--muted); font-size: .82rem; }
         .adm-production-qty .material-icons { color: var(--plum); font-size: 20px; transition: transform .15s; }
         .adm-production details[open] .adm-production-qty .material-icons { transform: rotate(180deg); }
+        .adm-filament-card { margin-top: 18px; }
+        .adm-filament-card h2 { margin: 0 0 4px; color: var(--plum); font-size: 1.1rem; font-weight: 800; }
+        .adm-filament-status { font-weight: 700; color: #1b6434; }
+        .adm-filaments { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 18px; margin-top: 12px; }
+        .adm-filament-row { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1.3fr); align-items: center; gap: 8px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 10px; }
+        .adm-filament-row.is-missing { border-color: #f2dcae; background: #fffaf0; }
+        .adm-filament-row > .material-icons { color: var(--muted); font-size: 18px; }
+        .adm-filament-urn, .adm-filament-pick { display: flex; align-items: center; gap: 8px; min-width: 0; }
+        .adm-filament-urn strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .adm-filament-dot { flex: 0 0 auto; width: 16px !important; height: 16px !important; border: 1px solid rgba(0,0,0,.12); }
+        .adm-filament-dot.is-empty { border-style: dashed; }
+        .adm-filament-select { height: 36px !important; padding: 4px 6px !important; border: 1px solid #d9cfdc !important; border-radius: 8px !important; font: inherit; font-size: .9rem; min-width: 0; width: 100%; }
+        .adm-bambu { display: block; color: var(--muted); font-size: .76rem; font-weight: 600; }
+        .adm-chip .adm-bambu-code { color: var(--muted); font-size: .72rem; margin-left: 3px; }
         .adm-chips { display: flex; flex-wrap: wrap; gap: 4px 6px; margin: 6px 0 0 42px; }
         .adm-chip { display: inline-flex; align-items: center; gap: 2px; padding: 2px 8px; border-radius: 999px; background: #f6f2f7; color: #403646; font-size: .8rem; }
         .adm-chip .pet-swatch { width: 10px; height: 10px; }
@@ -583,6 +597,9 @@
             .adm-catalog { grid-template-columns: minmax(0, 1fr); }
             .adm-product-table .input-catalogo { width: 70px !important; }
             .adm-form-grid { grid-template-columns: minmax(0, 1fr); }
+            .adm-filaments { grid-template-columns: minmax(0, 1fr); }
+            .adm-filament-row { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+            .adm-filament-row > .material-icons { display: none; }
             .adm-span-2 { grid-column: auto; }
             .pet-client-nav button { justify-content: center; gap: 5px; padding-inline: 6px; }
             .pet-client-nav button .material-icons { font-size: 18px; }
@@ -942,6 +959,15 @@
                         </div>
                     </div>
                     <div id="catalogo-container" class="adm-catalog"></div>
+                    <section class="pet-home-card adm-filament-card" aria-labelledby="adm-filament-title">
+                        <div class="adm-filament-head">
+                            <div>
+                                <h2 id="adm-filament-title">Colori urne e filamenti Bambu Lab</h2>
+                                <p class="adm-note">Solo per la produzione: codice e nome Bambu compaiono nelle schede di produzione e negli ordini, mai ai clienti. <span id="adm-filament-count"></span> <span id="adm-filament-status" class="adm-filament-status" role="status"></span></p>
+                            </div>
+                        </div>
+                        <div id="adm-filaments" class="adm-filaments"></div>
+                    </section>
                 </div>
 
                 <!-- PAGINA: RUBRICA CLIENTI -->
@@ -1328,6 +1354,83 @@
         "Fucsia vivace": "#E91E63", "Amaranto vellutato": "#7B241C", "Lilla carezza": "#C39BD3", "Viola mistero": "#4A235A",
         "Nero elegante": "#17202A", "Caffellatte": "#D4C4B7", "Terracotta": "#CC4E2C"
     };
+
+    // Filamenti Bambu Lab (nomi del negozio italiano, HEX dalle tabelle ufficiali, 18/11/2026)
+    const BAMBU_FILAMENTI = [{"linea": "Matte", "codice": "11100", "nome": "Bianco Avorio", "en": "Ivory White", "hex": "#FFFFFF"}, {"linea": "Matte", "codice": "11103", "nome": "Bianco osso", "en": "Bone White", "hex": "#CBC6B8"}, {"linea": "Matte", "codice": "11102", "nome": "Grigio cenere", "en": "Ash Gray", "hex": "#9B9EA0"}, {"linea": "Matte", "codice": "11104", "nome": "Grigio Nardo", "en": "Nardo Gray", "hex": "#757575"}, {"linea": "Matte", "codice": "11101", "nome": "Antracite", "en": "Charcoal", "hex": "#000000"}, {"linea": "Matte", "codice": "11401", "nome": "Desert Tan", "en": "Desert Tan", "hex": "#E8DBB7"}, {"linea": "Matte", "codice": "11800", "nome": "Marrone Latte", "en": "Latte Brown", "hex": "#D3B7A7"}, {"linea": "Matte", "codice": "11803", "nome": "Caramello", "en": "Caramel", "hex": "#AE835B"}, {"linea": "Matte", "codice": "11203", "nome": "Terracotta", "en": "Terracotta", "hex": "#B15533"}, {"linea": "Matte", "codice": "11801", "nome": "Marrone scuro", "en": "Dark Brown", "hex": "#7D6556"}, {"linea": "Matte", "codice": "11802", "nome": "Cioccolato fondente", "en": "Dark Chocolate", "hex": "#4D3324"}, {"linea": "Matte", "codice": "11201", "nome": "Rosa Sakura", "en": "Sakura Pink", "hex": "#E8AFCF"}, {"linea": "Matte", "codice": "11700", "nome": "Viola lilla", "en": "Lilac Purple", "hex": "#AE96D4"}, {"linea": "Matte", "codice": "11204", "nome": "Prugna", "en": "Plum", "hex": "#950051"}, {"linea": "Matte", "codice": "11200", "nome": "Rosso Scarlatto", "en": "Scarlet Red", "hex": "#DE4343"}, {"linea": "Matte", "codice": "11202", "nome": "Rosso scuro", "en": "Dark Red", "hex": "#BB3D43"}, {"linea": "Matte", "codice": "11400", "nome": "Giallo Limone", "en": "Lemon Yellow", "hex": "#F7D959"}, {"linea": "Matte", "codice": "11300", "nome": "Arancia Mandarino", "en": "Mandarin Orange", "hex": "#F99963"}, {"linea": "Matte", "codice": "11502", "nome": "Verde Mela", "en": "Apple Green", "hex": "#C2E189"}, {"linea": "Matte", "codice": "11500", "nome": "Verde erba", "en": "Grass Green", "hex": "#61C680"}, {"linea": "Matte", "codice": "11501", "nome": "Verde scuro", "en": "Dark Green", "hex": "#68724D"}, {"linea": "Matte", "codice": "11601", "nome": "Blu Ghiaccio", "en": "Ice Blue", "hex": "#A3D8E1"}, {"linea": "Matte", "codice": "11603", "nome": "Azzurro cielo", "en": "Sky Blue", "hex": "#56B7E6"}, {"linea": "Matte", "codice": "11600", "nome": "Blu Marino", "en": "Marine Blue", "hex": "#0078BF"}, {"linea": "Matte", "codice": "11602", "nome": "Blu scuro", "en": "Dark Blue", "hex": "#042F56"}, {"linea": "Basic", "codice": "10100", "nome": "Bianco giada", "en": "Jade White", "hex": "#FFFFFF"}, {"linea": "Basic", "codice": "10104", "nome": "Grigio chiaro", "en": "Light Gray", "hex": "#D1D3D5"}, {"linea": "Basic", "codice": "10102", "nome": "Argento", "en": "Silver", "hex": "#A6A9AA"}, {"linea": "Basic", "codice": "10103", "nome": "Grigio", "en": "Gray", "hex": "#8E9089"}, {"linea": "Basic", "codice": "10105", "nome": "Grigio scuro", "en": "Dark Gray", "hex": "#545454"}, {"linea": "Basic", "codice": "10101", "nome": "Nero", "en": "Black", "hex": "#000000"}, {"linea": "Basic", "codice": "10201", "nome": "Beige", "en": "Beige", "hex": "#F7E6DE"}, {"linea": "Basic", "codice": "10401", "nome": "Oro", "en": "Gold", "hex": "#E4BD68"}, {"linea": "Basic", "codice": "10801", "nome": "Bronzo", "en": "Bronze", "hex": "#847D48"}, {"linea": "Basic", "codice": "10802", "nome": "Marrone cacao", "en": "Cocoa Brown", "hex": "#6F5034"}, {"linea": "Basic", "codice": "10800", "nome": "Marrone", "en": "Brown", "hex": "#9D432C"}, {"linea": "Basic", "codice": "10202", "nome": "Magenta", "en": "Magenta", "hex": "#EC008C"}, {"linea": "Basic", "codice": "10203", "nome": "Rosa", "en": "Pink", "hex": "#F55A74"}, {"linea": "Basic", "codice": "10204", "nome": "Fucsia", "en": "Hot Pink", "hex": "#F5547C"}, {"linea": "Basic", "codice": "10200", "nome": "Rosso", "en": "Red", "hex": "#C12E1F"}, {"linea": "Basic", "codice": "10205", "nome": "Rosso bordeaux", "en": "Maroon Red", "hex": "#9D2235"}, {"linea": "Basic", "codice": "10300", "nome": "Arancione", "en": "Orange", "hex": "#FF6A13"}, {"linea": "Basic", "codice": "10301", "nome": "Arancione zucca", "en": "Pumpkin Orange", "hex": "#FF9016"}, {"linea": "Basic", "codice": "10402", "nome": "Giallo girasole", "en": "Sunflower Yellow", "hex": "#FEC600"}, {"linea": "Basic", "codice": "10400", "nome": "Giallo", "en": "Yellow", "hex": "#F4EE2A"}, {"linea": "Basic", "codice": "10503", "nome": "Verde brillante", "en": "Bright Green", "hex": "#BECF00"}, {"linea": "Basic", "codice": "10501", "nome": "Verde bambù", "en": "Bambu Green", "hex": "#00AE42"}, {"linea": "Basic", "codice": "10502", "nome": "Verde vischio", "en": "Mistletoe Green", "hex": "#3F8E43"}, {"linea": "Basic", "codice": "10605", "nome": "Turchese", "en": "Turquoise", "hex": "#00B1B7"}, {"linea": "Basic", "codice": "10603", "nome": "Ciano", "en": "Cyan", "hex": "#0086D6"}, {"linea": "Basic", "codice": "10604", "nome": "Blu cobalto", "en": "Cobalt Blue", "hex": "#0056B8"}, {"linea": "Basic", "codice": "10601", "nome": "Blu", "en": "Blue", "hex": "#0A2989"}, {"linea": "Basic", "codice": "10602", "nome": "Blu Grigio", "en": "Blue Grey", "hex": "#5B6579"}, {"linea": "Basic", "codice": "10700", "nome": "Viola", "en": "Purple", "hex": "#5E43B7"}, {"linea": "Basic", "codice": "10701", "nome": "Viola indaco", "en": "Indigo Purple", "hex": "#482960"}];
+
+    // === COLORI URNA ↔ FILAMENTO BAMBU (solo produzione, mai visibile ai clienti) ===
+    let petColorBambu = {};
+    function admBambu(colore) {
+        const code = petColorBambu[colore];
+        return code ? BAMBU_FILAMENTI.find(f => f.codice === code) || null : null;
+    }
+    function admBambuLabel(colore) {
+        const f = admBambu(colore);
+        return f ? f.linea + ' ' + f.codice + ' · ' + f.nome : '';
+    }
+    async function petLoadColorMap() {
+        try {
+            if (petStore.mode === 'cloud' && typeof window.petCloud?.getSetting === 'function') {
+                petColorBambu = (await window.petCloud.getSetting('colori_bambu')) || {};
+            } else {
+                petColorBambu = JSON.parse(localStorage.getItem('24pet_colori_bambu') || '{}') || {};
+            }
+        } catch { petColorBambu = {}; }
+        renderColoriBambu();
+        if (typeof aggiornaStatistiche === 'function') aggiornaStatistiche();
+        loadOrders();
+    }
+    async function petSaveColorMap() {
+        const status = document.getElementById('adm-filament-status');
+        try {
+            if (petStore.mode === 'cloud') await window.petCloud.saveSetting('colori_bambu', petColorBambu);
+            else localStorage.setItem('24pet_colori_bambu', JSON.stringify(petColorBambu));
+            if (status) status.textContent = 'Salvato';
+        } catch {
+            if (status) status.textContent = 'Non salvato: riprova';
+        }
+    }
+    function renderColoriBambu() {
+        const box = document.getElementById('adm-filaments');
+        if (!box) return;
+        const mapped = listaColori.filter(c => admBambu(c.nome)).length;
+        document.getElementById('adm-filament-count').textContent = mapped + ' di ' + listaColori.length + ' colori associati';
+        box.replaceChildren(...listaColori.map(c => {
+            const row = admEl('div', 'adm-filament-row');
+            const urn = admEl('div', 'adm-filament-urn');
+            urn.append(admSwatch(c.nome), admEl('strong', '', c.nome));
+            const select = document.createElement('select');
+            select.className = 'browser-default adm-filament-select';
+            select.setAttribute('aria-label', 'Filamento Bambu per ' + c.nome);
+            select.append(new Option('— Non associato —', ''));
+            for (const line of ['Matte', 'Basic']) {
+                const group = document.createElement('optgroup');
+                group.label = 'PLA ' + line;
+                BAMBU_FILAMENTI.filter(f => f.linea === line).forEach(f => group.append(new Option(f.codice + ' · ' + f.nome, f.codice)));
+                select.append(group);
+            }
+            select.value = petColorBambu[c.nome] || '';
+            const fil = admEl('div', 'adm-filament-pick');
+            const dot = admEl('span', 'pet-swatch adm-filament-dot');
+            const paint = () => {
+                const f = admBambu(c.nome);
+                dot.style.backgroundColor = f ? f.hex : 'transparent';
+                dot.classList.toggle('is-empty', !f);
+                row.classList.toggle('is-missing', !f);
+            };
+            select.addEventListener('change', () => {
+                if (select.value) petColorBambu[c.nome] = select.value; else delete petColorBambu[c.nome];
+                paint();
+                document.getElementById('adm-filament-count').textContent = listaColori.filter(x => admBambu(x.nome)).length + ' di ' + listaColori.length + ' colori associati';
+                document.getElementById('adm-filament-status').textContent = 'Salvataggio…';
+                petSaveColorMap();
+            });
+            paint();
+            fil.append(dot, select);
+            row.append(urn, admIcon('arrow_forward'), fil);
+            return row;
+        }));
+    }
 
     const catalogoPrezziDefault = {
         "Cuore": { "Piccolo": { sku: "URN-CUO-PIC", costo: 7.00, prezzo: 20.00 }, "Medio": { sku: "URN-CUO-MED", costo: 9.00, prezzo: 25.00 }, "Grande": { sku: "URN-CUO-GRA", costo: 11.00, prezzo: 30.00 } },
@@ -2814,6 +2917,7 @@
                 const li = admEl('li', '');
                 const color = admEl('span', '');
                 color.append(admSwatch(a.colore), document.createTextNode(a.colore || 'Colore non indicato'));
+                if (admBambuLabel(a.colore)) color.append(admEl('span', 'adm-bambu', admBambuLabel(a.colore)));
                 li.append(color, admEl('strong', '', admQty(a) + ' pz'));
                 list.append(li);
             }
@@ -2944,7 +3048,7 @@
                             </div>
                             <div style="display: flex; align-items: center; gap: 4px; width: 35%;">
                                 <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background-color: ${hexColor}; ${borderStyle}"></span>
-                                <span style="color: #444; font-weight: bold; font-size: 0.8em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${a.colore}</span>
+                                <span style="line-height: 1.1; min-width: 0;"><span style="display: block; color: #444; font-weight: bold; font-size: 0.8em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${a.colore}</span>${admBambuLabel(a.colore) ? `<span style="display: block; color: #4a004a; font-size: 0.7em; font-family: monospace; white-space: nowrap;">${admBambuLabel(a.colore)}</span>` : ''}</span>
                             </div>
                             <div style="font-size: 1.1em; font-weight: 900; color: #b50084; text-align: right; width: 10%;">
                                 ${a.quantita}
@@ -3491,6 +3595,8 @@
                 for (const [color, q] of [...g.colors.entries()].sort((a, b) => b[1] - a[1])) {
                     const chip = admEl('span', 'adm-chip');
                     chip.append(admSwatch(color), document.createTextNode(color + ' ' + q));
+                    const fil = admBambu(color);
+                    if (fil) { chip.append(admEl('span', 'adm-bambu-code', fil.linea + ' ' + fil.codice)); chip.title = admBambuLabel(color); }
                     chips.append(chip);
                 }
                 item.append(head, chips);
@@ -3861,6 +3967,15 @@
                         if (error) throw error;
                     }
                 }
+            },
+            async getSetting(key) {
+                const { data, error } = await api.from('admin_settings').select('value').eq('key', key).maybeSingle();
+                if (error) throw error;
+                return data ? data.value : null;
+            },
+            async saveSetting(key, value) {
+                const { error } = await api.from('admin_settings').upsert({ key, value });
+                if (error) throw error;
             },
             async lastBackup() {
                 const { data, error } = await api.from('admin_backups').select('taken_at,counts').order('taken_at', { ascending: false }).limit(1).maybeSingle();
@@ -4817,6 +4932,7 @@
                     initPetDashboard();
                     adminStarted = true;
                     petShowMigrationBanner();
+                    petLoadColorMap();
                     loadPartnerRequests();
                     loadRequests(adminRequestRows, true);
                 }
