@@ -305,6 +305,43 @@
         .adm-production-colors { color: var(--muted); font-size: .82rem; }
         .adm-production-qty .material-icons { color: var(--plum); font-size: 20px; transition: transform .15s; }
         .adm-production details[open] .adm-production-qty .material-icons { transform: rotate(180deg); }
+        .adm-stock-card { margin-top: 4px; }
+        .adm-stock-card h2, .adm-stock-alert h2 { margin: 0 0 8px; color: var(--plum); font-size: 1.05rem; font-weight: 800; }
+        .adm-stock-list { display: grid; gap: 6px; }
+        .adm-stock-row { display: grid; grid-template-columns: minmax(200px, 1.3fr) minmax(120px, 1fr) minmax(150px, 1fr) auto; align-items: center; gap: 8px 16px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: #fff; }
+        .adm-stock-row.is-short { border-color: #f3c3ca; background: #fff6f7; }
+        .adm-stock-row.is-low { border-color: #f2dcae; background: #fffaf0; }
+        .adm-stock-who { display: grid; gap: 2px; min-width: 0; }
+        .adm-stock-name { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
+        .adm-stock-name > span:last-child { display: grid; min-width: 0; line-height: 1.2; }
+        .adm-stock-name strong { color: var(--ink); font-weight: 700; }
+        .adm-stock-name small { color: var(--muted); font-size: .76rem; }
+        .adm-stock-users { color: var(--muted); font-size: .78rem; padding-left: 24px; }
+        .adm-stock-bar { position: relative; height: 8px; border-radius: 99px; background: #f1ecf3; }
+        .adm-stock-bar > span { position: absolute; inset: 0 auto 0 0; border-radius: 99px; background: var(--accent); }
+        .adm-stock-bar > i { position: absolute; top: -4px; width: 2px; height: 16px; margin-left: -1px; background: var(--ink); }
+        .adm-stock-nums { display: grid; font-size: .86rem; line-height: 1.3; font-variant-numeric: tabular-nums; }
+        .adm-stock-nums strong { color: var(--plum); font-size: 1rem; }
+        .adm-stock-neg { color: #a3122a; font-weight: 700; }
+        .adm-stock-pos { color: #1b6434; }
+        .adm-stock-actions { display: flex; align-items: center; gap: 4px; }
+        .adm-stock-more { margin-top: 12px; }
+        .adm-stock-more summary { cursor: pointer; color: var(--plum); font-weight: 700; padding: 6px 0; }
+        .adm-stock-more .adm-stock-list { margin-top: 6px; }
+        .adm-stock-alert { margin: 0 0 14px; padding: 12px 14px; border: 1px solid #f3c3ca; border-radius: 12px; background: #fff6f7; }
+        .adm-stock-alert.adm-stock-info { border-color: #f2dcae; background: #fffaf0; }
+        .adm-stock-alert ul { display: grid; gap: 6px; margin: 0; }
+        .adm-stock-alert li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 12px; }
+        .adm-stock-moves { display: grid; gap: 4px; margin: 0; max-height: 420px; overflow: auto; }
+        .adm-stock-move { display: grid; grid-template-columns: 92px minmax(0, 1.2fr) minmax(0, 1.4fr) auto 38px; align-items: center; gap: 8px; padding: 4px 0; border-bottom: 1px solid var(--line); font-size: .86rem; }
+        .adm-stock-dialog { width: min(560px, calc(100% - 20px)); }
+        .adm-need { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; margin: 0 0 10px; padding: 8px 10px; border-radius: 10px; background: #f6f2f7; font-size: .88rem; }
+        .adm-need.is-short { background: #fff6f7; color: #7a1020; }
+        .adm-need.is-missing { background: #fffaf0; }
+        .adm-need .adm-stock-name strong { font-weight: 600; }
+        .adm-cart-filament { margin: 0 0 16px; }
+        .adm-product-prod { color: var(--muted); font-size: .84rem; }
+        .adm-product-table .input-catalogo.adm-input-prod { width: 70px !important; }
         .adm-filament-card { margin-top: 18px; }
         .adm-filament-card h2 { margin: 0 0 4px; color: var(--plum); font-size: 1.1rem; font-weight: 800; }
         .adm-filament-status { font-weight: 700; color: #1b6434; }
@@ -599,6 +636,11 @@
             .adm-form-grid { grid-template-columns: minmax(0, 1fr); }
             .adm-filaments { grid-template-columns: minmax(0, 1fr); }
             .adm-filament-row { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+            .adm-stock-row { grid-template-columns: minmax(0, 1fr) auto; }
+            .adm-stock-row > .adm-stock-bar, .adm-stock-row > .adm-stock-nums { grid-column: 1 / -1; }
+            .adm-stock-row > .adm-stock-actions { grid-column: 2; grid-row: 1; }
+            .adm-stock-move { grid-template-columns: minmax(0, 1fr) auto 32px; }
+            .adm-stock-move > :nth-child(1), .adm-stock-move > :nth-child(3) { grid-column: 1 / -1; }
             .adm-filament-row > .material-icons { display: none; }
             .adm-span-2 { grid-column: auto; }
             .pet-client-nav button { justify-content: center; gap: 5px; padding-inline: 6px; }
@@ -747,6 +789,30 @@
             </div><button class="btn btn-custom" type="button" data-pet-sign-out>Esci</button><span class="pet-sign-out-status" role="status"></span></div>
         </div>
     </nav>
+    <dialog class="pet-inbox-dialog adm-client-dialog adm-stock-dialog" id="adm-stock-dialog" aria-labelledby="adm-stock-dialog-title">
+        <header>
+            <h2 id="adm-stock-dialog-title">Magazzino colori</h2>
+            <button class="pet-inbox-close" type="button" aria-label="Chiudi" onclick="document.getElementById('adm-stock-dialog').close()"><i class="material-icons" aria-hidden="true">close</i></button>
+        </header>
+        <form class="adm-form" novalidate onsubmit="admSaveStockDialog(event)">
+            <div class="adm-form-body">
+                <div class="adm-form-grid">
+                    <label class="adm-field adm-span-3">Cosa vuoi fare
+                        <select id="adm-stock-mode" class="browser-default" onchange="admStockDialogMode()"><option value="carico">Carico bobine acquistate</option><option value="rettifica">Correggi il peso (ho pesato le bobine)</option></select></label>
+                    <label class="adm-field adm-span-3">Filamento
+                        <select id="adm-stock-code" class="browser-default" onchange="admStockDialogMode()"></select></label>
+                    <label class="adm-field" id="adm-stock-qty-label">Numero di bobine da 1 kg <input id="adm-stock-qty" type="text" inputmode="decimal" autocomplete="off"></label>
+                    <label class="adm-field adm-span-2">Nota (facoltativa)<input id="adm-stock-note" type="text" maxlength="200" placeholder="es. ordine Bambu del 18/11" autocomplete="off"></label>
+                </div>
+                <p id="adm-stock-hint" class="adm-note"></p>
+                <p id="adm-stock-error" class="adm-form-error" role="alert"></p>
+            </div>
+            <footer class="adm-form-footer">
+                <button type="button" class="adm-action" onclick="document.getElementById('adm-stock-dialog').close()">Annulla</button>
+                <button type="submit" class="adm-action adm-action-primary"><i class="material-icons" aria-hidden="true">save</i><span>Salva</span></button>
+            </footer>
+        </form>
+    </dialog>
     <dialog class="pet-inbox-dialog pet-confirm-dialog" id="pet-confirm" aria-labelledby="pet-confirm-title" aria-describedby="pet-confirm-text">
         <div class="pet-confirm-body">
             <i class="material-icons" aria-hidden="true">delete_forever</i>
@@ -869,6 +935,7 @@
                 <div class="collection">
                     <a href="#dashboard-home" class="collection-item active" onclick="showPage('dashboard-home', this); return false;"><i class="material-icons left">dashboard</i> Panoramica</a>
                     <a href="#catalogo-prodotti" class="collection-item" onclick="showPage('catalogo-prodotti', this); return false;"><i class="material-icons left">storefront</i> Catalogo Prodotti</a>
+                    <a href="#magazzino-colori" class="collection-item" onclick="showPage('magazzino-colori', this); renderMagazzino(); return false;"><i class="material-icons left">inventory_2</i> Magazzino colori</a>
                     <a href="#gestione-clienti" class="collection-item" onclick="showPage('gestione-clienti', this); return false;"><i class="material-icons left">people</i> Clienti</a>
                     <a href="#nuovo-ordine" class="collection-item" onclick="showPage('nuovo-ordine', this); return false;"><i class="material-icons left">add_shopping_cart</i> Nuovo Ordine</a>
                     <a href="#lista-ordini" class="collection-item" onclick="showPage('lista-ordini', this); return false;"><i class="material-icons left">list</i> Elenco Ordini</a>
@@ -968,6 +1035,38 @@
                         </div>
                         <div id="adm-filaments" class="adm-filaments"></div>
                     </section>
+                </div>
+
+                <!-- PAGINA: MAGAZZINO COLORI -->
+                <div id="magazzino-colori" class="page-content">
+                    <div class="adm-list-head">
+                        <div>
+                            <h4 class="text-prugna">Magazzino colori</h4>
+                            <p class="adm-note">Bobine da 1 kg. Quando segni un ordine come evaso, colore e bianco usati si scalano da soli. <span id="adm-stock-state" role="status"></span></p>
+                        </div>
+                        <button type="button" class="btn btn-custom" onclick="admOpenStockDialog(null, 'carico')"><i class="material-icons left" aria-hidden="true">add_shopping_cart</i>Carica bobine</button>
+                    </div>
+                    <div id="adm-stock-kpis" class="pet-kpis adm-kpis"></div>
+                    <div id="adm-stock-alerts"></div>
+                    <section class="pet-home-card adm-stock-card" aria-labelledby="adm-stock-title">
+                        <h2 id="adm-stock-title">Filamenti delle vostre urne</h2>
+                        <div id="adm-stock-list" class="adm-stock-list"></div>
+                        <details class="adm-stock-more">
+                            <summary>Altri filamenti Bambu Lab <span id="adm-stock-others-count" class="adm-muted"></span></summary>
+                            <div id="adm-stock-others" class="adm-stock-list"></div>
+                        </details>
+                    </section>
+                    <div class="pet-home-grid adm-grid">
+                        <section class="pet-home-card" aria-labelledby="adm-stock-moves-title">
+                            <h2 id="adm-stock-moves-title">Ultimi movimenti</h2>
+                            <ul id="adm-stock-moves" class="adm-stock-moves"></ul>
+                        </section>
+                        <section class="pet-home-card" aria-labelledby="adm-stock-white-title">
+                            <h2 id="adm-stock-white-title">Bianco delle urne</h2>
+                            <p class="adm-note">Il filamento usato per la parte bianca di tutte le urne. Si scala insieme al colore quando un ordine è evaso.</p>
+                            <select id="adm-stock-white" class="browser-default adm-filament-select" aria-label="Filamento del bianco"></select>
+                        </section>
+                    </div>
                 </div>
 
                 <!-- PAGINA: RUBRICA CLIENTI -->
@@ -1089,6 +1188,7 @@
                                 
                                 <!-- CONTENITORE SUBTOTALI CARRELLO -->
                                 <div id="subtotaliCarrelloContainer" style="display: none; margin-bottom: 20px;"></div>
+                                <div id="adm-cart-filament" class="adm-cart-filament"></div>
 
                                 <div class="row" style="background-color: #fce4ec; border-radius: 8px; padding: 10px 0; margin-bottom: 10px; margin-top:20px;">
                                     <div class="input-field col s12 m3">
@@ -1377,6 +1477,7 @@
             }
         } catch { petColorBambu = {}; }
         renderColoriBambu();
+        await petLoadFilaments();
         if (typeof aggiornaStatistiche === 'function') aggiornaStatistiche();
         loadOrders();
     }
@@ -1390,6 +1491,279 @@
             if (status) status.textContent = 'Non salvato: riprova';
         }
     }
+
+    // === MAGAZZINO FILAMENTI (bobine da 1 kg; scarico automatico sul server quando un ordine è evaso) ===
+    let petFilamentMoves = [];
+    let petStockSettings = { bianco: '11100' };
+    let petStockLoaded = false;
+    const admKg = new Intl.NumberFormat('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    function admGrams(g) { const a = Math.abs(g); return a >= 1000 ? admKg.format(g / 1000) + ' kg' : Math.round(g) + ' g'; }
+    function admHours(min) { min = Math.round(min || 0); const h = Math.floor(min / 60), m = min % 60; return h ? h + ' h' + (m ? ' ' + String(m).padStart(2, '0') : '') : m + ' min'; }
+    function admFilament(code) { return BAMBU_FILAMENTI.find(f => f.codice === code) || null; }
+    function admWhiteCode() { return petStockSettings.bianco || '11100'; }
+
+    function admOrderNeed(order) {
+        const grams = new Map();
+        const missing = new Set();
+        let minutes = 0;
+        const add = (code, g) => grams.set(code, (grams.get(code) || 0) + g);
+        for (const a of order.articoli || []) {
+            const q = admQty(a);
+            const v = catalogoPrezzi[a.modello]?.[a.dimensione];
+            const gc = Number(v?.grammiColore) || 0, gb = Number(v?.grammiBianco) || 0, t = Number(v?.tempoStampa) || 0;
+            if (!v || (!gc && !gb)) missing.add(a.modello + ' ' + (a.dimensione || '') + ': grammi da inserire nel catalogo');
+            if (gc) {
+                const code = petColorBambu[a.colore];
+                if (code) add(code, q * gc); else missing.add('colore «' + a.colore + '» senza filamento');
+            }
+            if (gb) add(admWhiteCode(), q * gb);
+            minutes += q * t;
+        }
+        return { grams, minutes, missing };
+    }
+    function admStock() {
+        const stock = new Map();
+        for (const m of petFilamentMoves) stock.set(m.code, (stock.get(m.code) || 0) + Number(m.grams));
+        return stock;
+    }
+    // Gli ordini aperti impegnano il materiale in ordine di data: il più vecchio ha la precedenza
+    function admFilamentPlan(extraOrder, skipId) {
+        const stock = admStock();
+        const left = new Map(stock);
+        const committed = new Map();
+        const plan = new Map();
+        let minutes = 0;
+        const open = orders.filter(o => !o.evaso && o.id !== skipId)
+            .sort((a, b) => (a.data || '').localeCompare(b.data || '') || (Number(a.id) - Number(b.id)));
+        const evaluate = order => {
+            const need = admOrderNeed(order);
+            const short = [];
+            for (const [code, g] of need.grams) {
+                const before = left.get(code) || 0;
+                if (before < g - 0.5) short.push({ code, grams: g - Math.max(before, 0) });
+                left.set(code, before - g);
+                committed.set(code, (committed.get(code) || 0) + g);
+            }
+            return { need, short };
+        };
+        for (const o of open) { const r = evaluate(o); plan.set(o.id, r); minutes += r.need.minutes; }
+        const extra = extraOrder ? evaluate(extraOrder) : null;
+        const shortages = new Map();
+        for (const [code, g] of committed) { const s = stock.get(code) || 0; if (g > s + 0.5) shortages.set(code, g - Math.max(s, 0)); }
+        return { stock, committed, plan, shortages, minutes, extra };
+    }
+
+    async function petLoadFilaments() {
+        if (petStore.mode !== 'cloud' || typeof window.petCloud?.filamentMoves !== 'function') return;
+        try {
+            const [moves, settings] = await Promise.all([window.petCloud.filamentMoves(), window.petCloud.getSetting('magazzino')]);
+            petFilamentMoves = moves || [];
+            petStockSettings = Object.assign({ bianco: '11100' }, settings || {});
+            petStockLoaded = true;
+        } catch { return; }
+        renderMagazzino();
+        loadOrders();
+        if (typeof aggiornaUICarrello === 'function' && carrelloCorrente.length) aggiornaUICarrello();
+    }
+
+    function admFilamentLabel(code) {
+        const f = admFilament(code);
+        const box = admEl('span', 'adm-stock-name');
+        const dot = admEl('span', 'pet-swatch adm-filament-dot');
+        dot.style.backgroundColor = f ? f.hex : '#ccc';
+        const text = admEl('span', '');
+        text.append(admEl('strong', '', f ? f.nome : code), admEl('small', '', (f ? 'PLA ' + f.linea + ' · ' : '') + code));
+        box.append(dot, text);
+        return box;
+    }
+
+    function renderMagazzino() {
+        const page = document.getElementById('magazzino-colori');
+        if (!page) return;
+        const list = document.getElementById('adm-stock-list');
+        const note = document.getElementById('adm-stock-state');
+        if (petStore.mode !== 'cloud') { note.textContent = 'Il magazzino funziona con i dati online.'; return; }
+        if (!petStockLoaded) { note.textContent = 'Caricamento del magazzino…'; return; }
+        note.textContent = '';
+        const plan = admFilamentPlan();
+        const used = new Map();
+        for (const [name, code] of Object.entries(petColorBambu)) { if (!used.has(code)) used.set(code, []); used.get(code).push(name); }
+        if (!used.has(admWhiteCode())) used.set(admWhiteCode(), []);
+        used.get(admWhiteCode()).unshift('bianco di tutte le urne');
+
+        // KPI
+        const total = [...plan.stock.values()].reduce((s, g) => s + Math.max(g, 0), 0);
+        const committed = [...plan.committed.values()].reduce((s, g) => s + g, 0);
+        const toBuy = [...plan.shortages.values()].reduce((s, g) => s + Math.ceil(g / 1000), 0);
+        const missingData = new Set();
+        for (const r of plan.plan.values()) r.need.missing.forEach(m => missingData.add(m));
+        const kpis = document.getElementById('adm-stock-kpis');
+        kpis.replaceChildren(
+            admKpi('inventory_2', 'In magazzino', admGrams(total), '≈ ' + admKg.format(total / 1000).replace(/,00$/, '') + ' bobine da 1 kg'),
+            admKpi('pending_actions', 'Impegnato dagli ordini aperti', admGrams(committed), orders.filter(o => !o.evaso).length + ' ordini da evadere'),
+            admKpi('shopping_cart', 'Da comprare', toBuy ? toBuy + (toBuy === 1 ? ' bobina' : ' bobine') : 'Niente', plan.shortages.size ? plan.shortages.size + (plan.shortages.size === 1 ? ' colore manca' : ' colori mancano') : 'Il filamento basta per gli ordini aperti', plan.shortages.size ? 'warn' : ''),
+            admKpi('schedule', 'Stampa da fare', admHours(plan.minutes), 'somma dei tempi delle urne da evadere')
+        );
+
+        // Avvisi
+        const alerts = document.getElementById('adm-stock-alerts');
+        alerts.replaceChildren();
+        if (plan.shortages.size) {
+            const box = admEl('section', 'adm-stock-alert');
+            box.append(admEl('h2', '', 'Da comprare per gli ordini aperti'));
+            const ul = admEl('ul', '');
+            for (const [code, g] of [...plan.shortages.entries()].sort((a, b) => b[1] - a[1])) {
+                const li = admEl('li', '');
+                li.append(admFilamentLabel(code), admEl('span', '', 'mancano ' + admGrams(g) + ' · ' + Math.ceil(g / 1000) + (Math.ceil(g / 1000) === 1 ? ' bobina' : ' bobine')));
+                ul.append(li);
+            }
+            box.append(ul);
+            alerts.append(box);
+        }
+        if (missingData.size) {
+            const box = admEl('section', 'adm-stock-alert adm-stock-info');
+            box.append(admEl('h2', '', 'Dati mancanti: il calcolo non è completo'));
+            const ul = admEl('ul', '');
+            [...missingData].slice(0, 12).forEach(m => ul.append(admEl('li', '', m)));
+            box.append(ul);
+            alerts.append(box);
+        }
+
+        // Righe
+        const row = (code, users) => {
+            const stock = plan.stock.get(code) || 0;
+            const need = plan.committed.get(code) || 0;
+            const after = stock - need;
+            const li = admEl('div', 'adm-stock-row' + (after < -0.5 ? ' is-short' : after < 250 && need ? ' is-low' : ''));
+            const who = admEl('div', 'adm-stock-who');
+            who.append(admFilamentLabel(code));
+            if (users && users.length) who.append(admEl('span', 'adm-stock-users', 'Per: ' + users.join(', ')));
+            const bar = admEl('div', 'adm-stock-bar');
+            const fill = admEl('span', '');
+            fill.style.width = Math.max(0, Math.min(100, stock / Math.max(1000, stock, need) * 100)) + '%';
+            const mark = admEl('i', '');
+            mark.style.left = Math.min(100, need / Math.max(1000, stock, need) * 100) + '%';
+            bar.append(fill); if (need) bar.append(mark);
+            const nums = admEl('div', 'adm-stock-nums');
+            nums.append(admEl('strong', '', admGrams(stock)), admEl('span', '', need ? 'impegnati ' + admGrams(need) : 'nessun ordine aperto'),
+                admEl('span', after < -0.5 ? 'adm-stock-neg' : 'adm-stock-pos', need ? (after < -0.5 ? 'mancano ' + admGrams(-after) : 'restano ' + admGrams(after)) : ''));
+            const actions = admEl('div', 'adm-stock-actions');
+            const plus = admEl('button', 'adm-action');
+            plus.type = 'button'; plus.append(admIcon('add'), admEl('span', '', '1 bobina'));
+            plus.setAttribute('aria-label', 'Aggiungi una bobina da 1 kg di ' + (admFilament(code)?.nome || code));
+            plus.addEventListener('click', () => admAddStock(code, 1000, 'carico', 'Bobina da 1 kg'));
+            const fix = admEl('button', 'adm-icon-action');
+            fix.type = 'button'; fix.title = 'Correggi il peso'; fix.setAttribute('aria-label', 'Correggi il peso di ' + (admFilament(code)?.nome || code));
+            fix.append(admIcon('scale'));
+            fix.addEventListener('click', () => admOpenStockDialog(code, 'rettifica'));
+            actions.append(plus, fix);
+            li.append(who, bar, nums, actions);
+            return li;
+        };
+        const usedCodes = [...used.keys()].sort((a, b) => {
+            const sa = (plan.stock.get(a) || 0) - (plan.committed.get(a) || 0), sb = (plan.stock.get(b) || 0) - (plan.committed.get(b) || 0);
+            return sa - sb;
+        });
+        list.replaceChildren(...usedCodes.map(code => row(code, used.get(code))));
+        const others = document.getElementById('adm-stock-others');
+        const otherCodes = BAMBU_FILAMENTI.map(f => f.codice).filter(c => !used.has(c));
+        others.replaceChildren(...otherCodes.map(code => row(code, [])));
+        document.getElementById('adm-stock-others-count').textContent = otherCodes.filter(c => (plan.stock.get(c) || 0) > 0).length
+            ? otherCodes.filter(c => (plan.stock.get(c) || 0) > 0).length + ' con scorte' : 'nessuna scorta';
+
+        // Bianco
+        const white = document.getElementById('adm-stock-white');
+        if (!white.options.length) {
+            for (const line of ['Matte', 'Basic']) {
+                const g = document.createElement('optgroup'); g.label = 'PLA ' + line;
+                BAMBU_FILAMENTI.filter(f => f.linea === line).forEach(f => g.append(new Option(f.codice + ' · ' + f.nome, f.codice)));
+                white.append(g);
+            }
+            white.addEventListener('change', async () => {
+                petStockSettings.bianco = white.value;
+                try { await window.petCloud.saveSetting('magazzino', petStockSettings); M.toast({ html: 'Bianco aggiornato', classes: 'rounded' }); } catch { M.toast({ html: 'Non salvato: riprova', classes: 'rounded' }); }
+                renderMagazzino(); loadOrders();
+            });
+        }
+        white.value = admWhiteCode();
+
+        // Movimenti
+        const movesBox = document.getElementById('adm-stock-moves');
+        const fmt = new Intl.DateTimeFormat('it-IT', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Rome' });
+        const kindLabel = { carico: 'Carico', rettifica: 'Correzione', scarico: 'Ordine evaso' };
+        const recent = [...petFilamentMoves].sort((a, b) => b.id - a.id).slice(0, 60);
+        movesBox.replaceChildren(...(recent.length ? recent.map(m => {
+            const li = admEl('li', 'adm-stock-move');
+            li.append(admEl('span', 'adm-muted', fmt.format(new Date(m.created_at))), admFilamentLabel(m.code),
+                admEl('span', '', kindLabel[m.kind] + (m.note ? ' · ' + m.note : '')),
+                admEl('strong', Number(m.grams) < 0 ? 'adm-stock-neg' : 'adm-stock-pos', (Number(m.grams) > 0 ? '+' : '−') + admGrams(Math.abs(m.grams))));
+            if (m.kind !== 'scarico') {
+                const del = admEl('button', 'adm-icon-action adm-action-danger');
+                del.type = 'button'; del.title = 'Elimina movimento'; del.setAttribute('aria-label', 'Elimina movimento');
+                del.append(admIcon('delete'));
+                del.addEventListener('click', () => petConfirmDelete('Eliminare questo movimento?', (kindLabel[m.kind]) + ' di ' + admGrams(Math.abs(m.grams)) + ' · ' + (admFilament(m.code)?.nome || m.code) + '. Le scorte vengono ricalcolate.').then(async ok => {
+                    if (!ok) return;
+                    try { await window.petCloud.deleteMove(m.id); await petLoadFilaments(); } catch { M.toast({ html: 'Non eliminato: riprova', classes: 'rounded' }); }
+                }));
+                li.append(del);
+            } else li.append(admEl('span', ''));
+            return li;
+        }) : [admEl('li', 'adm-muted', 'Nessun movimento: inizia caricando le bobine che hai.')]));
+    }
+
+    async function admAddStock(code, grams, kind, note) {
+        if (!grams) return;
+        try {
+            await window.petCloud.addMove({ code, grams: Math.round(grams), kind, note: note || null });
+            await petLoadFilaments();
+            M.toast({ html: (grams > 0 ? 'Aggiunti ' : 'Tolti ') + admGrams(Math.abs(grams)) + ' di ' + (admFilament(code)?.nome || code), classes: 'rounded' });
+        } catch {
+            M.toast({ html: 'Movimento non salvato: riprova', classes: 'rounded' });
+        }
+    }
+    function admOpenStockDialog(code, mode) {
+        const dialog = document.getElementById('adm-stock-dialog');
+        const select = document.getElementById('adm-stock-code');
+        if (!select.options.length) {
+            for (const line of ['Matte', 'Basic']) {
+                const g = document.createElement('optgroup'); g.label = 'PLA ' + line;
+                BAMBU_FILAMENTI.filter(f => f.linea === line).forEach(f => g.append(new Option(f.codice + ' · ' + f.nome, f.codice)));
+                select.append(g);
+            }
+        }
+        select.value = code || [...Object.values(petColorBambu)][0] || '11100';
+        document.getElementById('adm-stock-mode').value = mode || 'carico';
+        document.getElementById('adm-stock-qty').value = mode === 'rettifica' ? Math.max(0, Math.round(admStock().get(select.value) || 0)) : 1;
+        document.getElementById('adm-stock-note').value = '';
+        document.getElementById('adm-stock-error').textContent = '';
+        admStockDialogMode();
+        dialog.showModal();
+        document.getElementById('adm-stock-qty').focus();
+    }
+    function admStockDialogMode() {
+        const mode = document.getElementById('adm-stock-mode').value;
+        document.getElementById('adm-stock-qty-label').firstChild.textContent = mode === 'rettifica' ? 'Peso che hai davvero adesso (grammi) ' : 'Numero di bobine da 1 kg ';
+        document.getElementById('adm-stock-qty').step = mode === 'rettifica' ? '1' : '1';
+        document.getElementById('adm-stock-hint').textContent = mode === 'rettifica'
+            ? 'Pesa le bobine aperte senza il rocchetto e scrivi il totale: la dashboard corregge la differenza.'
+            : 'Le bobine acquistate si sommano a quelle che hai già.';
+        const code = document.getElementById('adm-stock-code').value;
+        if (mode === 'rettifica') document.getElementById('adm-stock-qty').value = Math.max(0, Math.round(admStock().get(code) || 0));
+    }
+    async function admSaveStockDialog(event) {
+        event.preventDefault();
+        const code = document.getElementById('adm-stock-code').value;
+        const mode = document.getElementById('adm-stock-mode').value;
+        const value = Number(String(document.getElementById('adm-stock-qty').value).replace(',', '.'));
+        const note = document.getElementById('adm-stock-note').value.trim();
+        const error = document.getElementById('adm-stock-error');
+        if (!Number.isFinite(value) || value < 0 || (mode === 'carico' && (value <= 0 || value > 200))) { error.textContent = mode === 'carico' ? 'Scrivi quante bobine (da 1 a 200).' : 'Scrivi il peso in grammi (0 o più).'; return; }
+        const grams = mode === 'carico' ? value * 1000 : value - (admStock().get(code) || 0);
+        if (mode === 'rettifica' && Math.abs(grams) < 1) { error.textContent = 'Il peso è già questo: niente da correggere.'; return; }
+        document.getElementById('adm-stock-dialog').close();
+        await admAddStock(code, grams, mode, note || (mode === 'carico' ? value + (value === 1 ? ' bobina da 1 kg' : ' bobine da 1 kg') : 'Peso verificato: ' + Math.round(value) + ' g'));
+    }
+
     function renderColoriBambu() {
         const box = document.getElementById('adm-filaments');
         if (!box) return;
@@ -1571,6 +1945,7 @@
             }
             petStore.failures = 0;
             petSetStatus(petStore.pending.size ? 'saving' : 'synced');
+            if (kinds.includes('orders') || kinds.includes('catalogo')) setTimeout(() => petLoadFilaments(), 400);
         } catch {
             kinds.forEach(kind => petStore.pending.add(kind));
             petStore.failures++;
@@ -2095,7 +2470,9 @@
 
             const table = admEl('table', 'adm-product-table');
             const thead = admEl('thead', '');
-            thead.innerHTML = '<tr><th scope="col">Misura</th><th scope="col">Costo lab.</th><th scope="col">Listino</th><th scope="col">Margine</th></tr>';
+            thead.innerHTML = editing
+                ? '<tr><th scope="col">Misura</th><th scope="col">Costo lab.</th><th scope="col">Listino</th><th scope="col">Stampa (min)</th><th scope="col">Colore (g)</th><th scope="col">Bianco (g)</th></tr>'
+                : '<tr><th scope="col">Misura</th><th scope="col">Costo lab.</th><th scope="col">Listino</th><th scope="col">Margine</th><th scope="col">Produzione</th></tr>';
             const tbody = admEl('tbody', '');
             const dims = Object.keys(variants).sort((a, b) => (sizeOrder.indexOf(a) + 1 || 99) - (sizeOrder.indexOf(b) + 1 || 99));
             for (const dim of dims) {
@@ -2125,12 +2502,25 @@
                         td.append(input);
                         tr.append(td);
                     }
-                    tr.append(admEl('td', 'adm-muted', '—'));
+                    for (const [field, value, label] of [['tempo', v.tempoStampa, 'Minuti di stampa'], ['gcol', v.grammiColore, 'Grammi di colore'], ['gbia', v.grammiBianco, 'Grammi di bianco']]) {
+                        const td = admEl('td', '');
+                        const input = document.createElement('input');
+                        input.type = 'number'; input.step = '1'; input.min = '0';
+                        input.id = 'edit_' + field + '_' + modello + '_' + dim;
+                        input.value = value ?? '';
+                        input.placeholder = '—';
+                        input.className = 'input-catalogo adm-input-prod';
+                        input.setAttribute('aria-label', label + ' ' + modello + ' ' + dim);
+                        td.append(input);
+                        tr.append(td);
+                    }
                 } else {
                     const cost = Number(v.costo) || 0, price = Number(v.prezzo) || 0;
                     const margin = price - cost;
                     tr.append(admEl('td', '', admMoney.format(cost)), admEl('td', 'adm-price', admMoney.format(price)),
                         admEl('td', margin >= 0 ? 'adm-margin' : 'adm-margin-negative', admMoney.format(margin) + (price ? ' · ' + Math.round(margin / price * 100) + '%' : '')));
+                    const gc = Number(v.grammiColore) || 0, gb = Number(v.grammiBianco) || 0, tm = Number(v.tempoStampa) || 0;
+                    tr.append(admEl('td', 'adm-product-prod', (gc || gb || tm) ? [tm ? admHours(tm) : '', gc ? gc + ' g colore' : '', gb ? gb + ' g bianco' : ''].filter(Boolean).join(' · ') : 'Da inserire'));
                 }
                 tbody.append(tr);
             }
@@ -2149,7 +2539,7 @@
                     return b;
                 };
                 bar.append(
-                    button('save', 'Salva prezzi', () => salvaModificaCatalogo(modello), 'adm-action-primary'),
+                    button('save', 'Salva', () => salvaModificaCatalogo(modello), 'adm-action-primary'),
                     button('add', 'Aggiungi misura', () => aggiungiMisura(modello)),
                     button('close', 'Annulla', () => renderCatalogo()),
                     button('delete_forever', 'Elimina modello', () => eliminaModello(modello), 'adm-action-danger')
@@ -2171,10 +2561,17 @@
                 varianti[dim].costo = parseFloat(inputCosto.value) || 0;
                 varianti[dim].prezzo = parseFloat(inputPrezzo.value) || 0;
             }
+            for (const [field, key] of [['tempo', 'tempoStampa'], ['gcol', 'grammiColore'], ['gbia', 'grammiBianco']]) {
+                const input = document.getElementById(`edit_${field}_${modello}_${dim}`);
+                if (!input) continue;
+                const n = Math.round(parseFloat(String(input.value).replace(',', '.')));
+                if (Number.isFinite(n) && n > 0) varianti[dim][key] = n; else delete varianti[dim][key];
+            }
         }
         petSave('catalogo');
-        M.toast({html: `Prezzi per ${modello} aggiornati!`, classes: 'green rounded'});
+        M.toast({html: `${modello} aggiornato`, classes: 'green rounded'});
         renderCatalogo();
+        loadOrders();
     }
 
     function aggiungiNuovoModello() {
@@ -2590,6 +2987,7 @@
 
         if(carrelloCorrente.length === 0) {
             tbody.innerHTML = '<tr><td colspan="6" class="center-align grey-text">Il carrello è vuoto. Aggiungi i prodotti qui sopra.</td></tr>';
+            document.getElementById('adm-cart-filament')?.replaceChildren();
             document.getElementById('importo').value = '';
             document.getElementById('labelUtile').innerText = '';
             document.getElementById('riepilogoScontoContenitore').style.display = 'none';
@@ -2685,6 +3083,23 @@
         document.getElementById('importo').value = importoFinale.toFixed(2);
         document.getElementById('labelUtile').innerText = "Vero Guadagno (Utile Netto): € " + utileNetto.toFixed(2) + " (+ iva)";
         M.updateTextFields();
+        admRenderCartFilament();
+    }
+    function admRenderCartFilament() {
+        const box = document.getElementById('adm-cart-filament');
+        if (!box) return;
+        box.replaceChildren();
+        if (!petStockLoaded || !carrelloCorrente.length) return;
+        const plan = admFilamentPlan({ articoli: carrelloCorrente }, idOrdineInModifica);
+        const r = plan.extra;
+        const line = admEl('div', 'adm-need' + (r.short.length ? ' is-short' : r.need.missing.size ? ' is-missing' : ''));
+        line.append(admIcon(r.short.length ? 'warning' : 'inventory_2'),
+            admEl('strong', '', r.short.length ? 'Il filamento non basta, contando gli ordini già aperti' : r.need.missing.size ? 'Calcolo del filamento incompleto' : 'Filamento sufficiente'),
+            admEl('span', '', r.need.minutes ? 'Stampa ' + admHours(r.need.minutes) : ''));
+        for (const [code, g] of r.need.grams) { const item = admEl('span', ''); item.append(admFilamentLabel(code), document.createTextNode(' ' + admGrams(g))); line.append(item); }
+        if (r.short.length) line.append(admEl('span', 'adm-stock-neg', 'Mancano: ' + r.short.map(x => admGrams(x.grams) + ' di ' + (admFilament(x.code)?.nome || x.code)).join(', ')));
+        if (r.need.missing.size) line.append(admEl('span', 'adm-muted', [...r.need.missing].join(' · ')));
+        box.append(line);
     }
 
     // === GESTIONE MODIFICA E SALVATAGGIO ORDINE ===
@@ -2866,6 +3281,7 @@
         M.toast({ html: field === 'pagato' ? (order.pagato ? 'Ordine segnato come pagato' : 'Ordine segnato come da pagare') : (order.evaso ? 'Ordine segnato come evaso' : 'Ordine segnato come da evadere'), classes: 'rounded' });
     }
 
+    let admOrderPlanCache = null;
     function admOrderRow(o) {
         const pieces = o.articoli.reduce((s, a) => s + admQty(a), 0);
         const details = admEl('details', 'pet-history-order adm-order');
@@ -2875,6 +3291,12 @@
         who.append(admEl('span', 'pet-order-date', '#' + admOrderNumber(o) + ' · ' + (o.data ? admDate.format(new Date(o.data + 'T00:00:00Z')) : '—') + (o.tipo === 'Rivenditore' ? ' · Rivenditore' : '')));
         const state = admEl('span', 'pet-order-state');
         state.append(o.pagato ? admBadge('Pagato', 'ok') : admBadge('Da pagare', 'warn'), o.evaso ? admBadge('Evaso', 'ok') : admBadge('Da evadere', 'neutral'));
+        const stockPlan = !o.evaso && petStockLoaded ? admOrderPlanCache?.plan.get(o.id) : null;
+        if (stockPlan) {
+            if (stockPlan.short.length) state.append(admBadge('Manca filamento', 'warn'));
+            else if (stockPlan.need.missing.size) state.append(admBadge('Dati stampa incompleti', 'neutral'));
+            else state.append(admBadge('Filamento ok', 'ok'));
+        }
         const money = admEl('span', 'pet-order-amount', admMoney.format(o.importo || 0));
         money.append(admEl('span', 'adm-order-profit', 'utile ' + admMoney.format(o.utile || 0)));
         const toggle = admEl('span', 'pet-order-toggle');
@@ -2900,6 +3322,19 @@
             action('delete', 'Elimina', () => eliminaOrdine(o.id), 'adm-action-danger')
         );
         body.append(actions);
+        if (stockPlan || (o.evaso && petStockLoaded)) {
+            const need = stockPlan ? stockPlan.need : admOrderNeed(o);
+            const box = admEl('div', 'adm-need' + (stockPlan?.short.length ? ' is-short' : need.missing.size ? ' is-missing' : ''));
+            box.append(admIcon('precision_manufacturing'), admEl('strong', '', need.minutes ? 'Stampa ' + admHours(need.minutes) : 'Tempo di stampa da inserire'));
+            for (const [code, g] of need.grams) {
+                const item = admEl('span', '');
+                item.append(admFilamentLabel(code), document.createTextNode(' ' + admGrams(g)));
+                box.append(item);
+            }
+            if (stockPlan?.short.length) box.append(admEl('span', 'adm-stock-neg', 'Mancano: ' + stockPlan.short.map(x => admGrams(x.grams) + ' di ' + (admFilament(x.code)?.nome || x.code)).join(', ')));
+            if (need.missing.size) box.append(admEl('span', 'adm-muted', [...need.missing].join(' · ')));
+            body.append(box);
+        }
 
         const groups = new Map();
         for (const a of o.articoli) {
@@ -2946,6 +3381,7 @@
     }
 
     function loadOrders() {
+        admOrderPlanCache = petStockLoaded ? admFilamentPlan() : null;
         const filters = document.getElementById('adm-order-filters');
         const search = document.getElementById('adm-order-search');
         const listBox = document.getElementById('adm-order-list');
@@ -3478,7 +3914,8 @@
         const activity = window.petAdminActivity;
         const items = [
             { icon: 'precision_manufacturing', title: open.length ? open.length + (open.length === 1 ? ' ordine da evadere' : ' ordini da evadere') : 'Nessun ordine da evadere',
-              note: open.length ? openPieces + ' urne da produrre' : 'Produzione in pari', warn: open.length > 0, action: ['Elenco ordini', () => admOpen('lista-ordini')] },
+              note: open.length ? openPieces + ' urne da produrre' + (admOrderPlanCache && admOrderPlanCache.minutes ? ' · ' + admHours(admOrderPlanCache.minutes) + ' di stampa' : '') + (admOrderPlanCache && admOrderPlanCache.shortages.size ? ' · manca filamento per ' + admOrderPlanCache.shortages.size + (admOrderPlanCache.shortages.size === 1 ? ' colore' : ' colori') : '') : 'Produzione in pari',
+              warn: open.length > 0, action: admOrderPlanCache && admOrderPlanCache.shortages.size ? ['Magazzino colori', () => { admOpen('magazzino-colori'); renderMagazzino(); }] : ['Elenco ordini', () => admOpen('lista-ordini')] },
             { icon: 'payments', title: unpaid.length ? admMoney.format(unpaidTotal) + ' da incassare' : 'Tutto incassato',
               note: unpaid.length ? unpaid.length + (unpaid.length === 1 ? ' ordine' : ' ordini') + ' · il più vecchio da ' + oldestUnpaid + ' giorni' : 'Nessun pagamento in sospeso', warn: unpaid.length > 0 },
             { icon: 'receipt_long', title: recent(activity.orderRequests) == null ? 'Richieste d’ordine' : plural(recent(activity.orderRequests), 'richiesta d’ordine', 'richieste d’ordine'),
@@ -4002,6 +4439,23 @@
             },
             async saveSetting(key, value) {
                 const { error } = await api.from('admin_settings').upsert({ key, value });
+                if (error) throw error;
+            },
+            async filamentMoves() {
+                const rows = [];
+                for (let from = 0; ; from += 1000) {
+                    const { data, error } = await api.from('admin_filament_moves').select('id,code,grams,kind,order_id,note,created_at').order('id', { ascending: true }).range(from, from + 999);
+                    if (error) throw error;
+                    rows.push(...(data || []));
+                    if (!data || data.length < 1000) return rows;
+                }
+            },
+            async addMove(row) {
+                const { error } = await api.from('admin_filament_moves').insert(row);
+                if (error) throw error;
+            },
+            async deleteMove(id) {
+                const { error } = await api.from('admin_filament_moves').delete().eq('id', id);
                 if (error) throw error;
             },
             async lastBackup() {
