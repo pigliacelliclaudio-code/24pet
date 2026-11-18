@@ -335,6 +335,51 @@
         .adm-stock-moves { display: grid; gap: 4px; margin: 0; max-height: 420px; overflow: auto; }
         .adm-stock-move { display: grid; grid-template-columns: 92px minmax(0, 1.2fr) minmax(0, 1.4fr) auto 38px; align-items: center; gap: 8px; padding: 4px 0; border-bottom: 1px solid var(--line); font-size: .86rem; }
         .adm-stock-dialog { width: min(560px, calc(100% - 20px)); }
+        .adm-scan-dialog { width: min(560px, calc(100% - 20px)); max-height: min(94vh, 980px); max-height: min(94dvh, 980px); }
+        .adm-scan-body { min-height: 0; overflow-y: auto; padding: 12px clamp(14px, 4vw, 22px) 18px; display: flex; flex-direction: column; gap: 10px; }
+        .adm-scan-body > * { flex-shrink: 0; }
+        .adm-scan-view { position: relative; overflow: hidden; border-radius: 12px; background: #111; aspect-ratio: 4 / 3; max-height: 46vh; max-height: 46dvh; }
+        .adm-scan-view video { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .adm-scan-frame { position: absolute; left: 8%; right: 8%; top: 32%; bottom: 32%; border: 3px solid #ffffffd9; border-radius: 10px; box-shadow: 0 0 0 999px #0000004d; transition: border-color .2s; }
+        .adm-scan-frame.is-ok { animation: adm-scan-ok .7s; }
+        .adm-scan-frame.is-warn { animation: adm-scan-warn .7s; }
+        .adm-scan-frame.is-bad { animation: adm-scan-bad .9s; }
+        @keyframes adm-scan-ok { 0%, 60% { border-color: #2ecc71; background: #2ecc7133; } }
+        @keyframes adm-scan-warn { 0%, 60% { border-color: #f39c12; background: #f39c1233; } }
+        @keyframes adm-scan-bad { 0%, 70% { border-color: #e74c3c; background: #e74c3c40; } }
+        .adm-scan-status { margin: 0; color: var(--muted); font-size: .9rem; }
+        .adm-scan-card { padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: #fff; }
+        .adm-scan-card.is-ok { border-color: #b8dfc5; background: #eef7f1; }
+        .adm-scan-card.is-warn { border-color: #f2dcae; background: #fffaf0; }
+        .adm-scan-card.is-bad { border-color: #f3c3ca; background: #fff6f7; }
+        .adm-scan-card-head { display: flex; align-items: center; gap: 6px; color: var(--plum); font-size: 1.05rem; }
+        .adm-scan-card p { margin: 6px 0 0; font-weight: 600; }
+        .adm-scan-code { display: block; margin-top: 2px; color: var(--muted); font-size: .8rem; }
+        .adm-scan-orders { display: grid; gap: 6px; margin: 6px 0 0; }
+        .adm-scan-orders li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 10px; }
+        .adm-scan-check { display: grid; gap: 8px; }
+        .adm-scan-progress { display: grid; gap: 6px; padding: 10px 12px; border-radius: 10px; background: #f6f2f7; color: var(--plum); }
+        .adm-scan-progress.is-complete { background: #e4f3e8; color: #1b6434; }
+        .adm-scan-bar { display: block; height: 8px; border-radius: 99px; background: #fff; overflow: hidden; }
+        .adm-scan-bar i { display: block; height: 100%; background: currentColor; transition: width .2s; }
+        .adm-scan-list { display: grid; gap: 4px; margin: 0; }
+        .adm-scan-list li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; font-size: .92rem; }
+        .adm-scan-list li .material-icons { color: #b9adbd; font-size: 20px; }
+        .adm-scan-list li.has-tick { grid-template-columns: auto minmax(0, 1fr) auto auto; }
+        .adm-scan-list li.is-done { background: #eef7f1; border-color: #b8dfc5; }
+        .adm-scan-list li.is-done .material-icons { color: #1b6434; }
+        .adm-scan-item { display: flex; align-items: center; gap: 4px; min-width: 0; }
+        .adm-scan-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+        .adm-scan-manual { display: flex; gap: 8px; }
+        .adm-scan-manual input::placeholder { text-transform: none; }
+        .adm-scan-dialog .pet-inbox-close:focus { background: transparent; }
+        .adm-scan-dialog .pet-inbox-close:focus-visible { outline: 2px solid var(--plum); outline-offset: 2px; }
+        .adm-scan-manual input { flex: 1; min-width: 0; height: 42px !important; margin: 0 !important; padding: 6px 10px !important; border: 1px solid #d9cfdc !important; border-radius: 8px !important; box-sizing: border-box; font: inherit; text-transform: uppercase; }
+        .pet-admin-actions .pet-scan-button { color: #fff; background: var(--plum); border-color: var(--plum); }
+        .pet-admin-actions .pet-scan-button:hover { background: #3a003b; border-color: #3a003b; }
+        @media (max-width: 650px) {
+            .adm-scan-dialog { width: 100%; max-width: 100%; height: 100dvh; max-height: 100dvh; margin: 0; border-radius: 0; }
+        }
         .adm-logo-field { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; margin-top: 8px; }
         .adm-logo-preview { display: grid; place-items: center; width: 220px; min-height: 80px; padding: 8px; border: 1px dashed #d9cfdc; border-radius: 10px; background: #fff; text-align: center; font-size: .85rem; }
         .adm-logo-preview img { max-width: 100%; max-height: 90px; object-fit: contain; }
@@ -802,7 +847,8 @@
             <a href="#dashboard-home" class="app-brand" onclick="showPage('dashboard-home', document.querySelector('.app-menu .collection-item')); return false;">
                 <img class="app-brand-logo" src="/assets/logo-24pet.png" width="38" height="38" alt=""><span>24Pet</span>
             </a>
-            <div class="pet-admin-actions" role="group" aria-label="Richieste ricevute">
+            <div class="pet-admin-actions" role="group" aria-label="Azioni rapide">
+                <button type="button" class="pet-scan-button" onclick="admOpenScanner()" aria-haspopup="dialog" aria-controls="adm-scan-dialog"><i class="material-icons" aria-hidden="true">qr_code_scanner</i> Scansiona</button>
                 <button type="button" data-admin-inbox aria-haspopup="dialog" aria-controls="pet-admin-order-dialog"><i class="material-icons" aria-hidden="true">receipt_long</i> Richieste d’ordine<span class="pet-inbox-dot" data-inbox-dot="orders" hidden></span></button>
                 <button type="button" data-admin-inbox aria-haspopup="dialog" aria-controls="partner-inbox-dialog"><i class="material-icons" aria-hidden="true">how_to_reg</i> Richieste di accesso<span class="pet-inbox-dot" data-inbox-dot="partners" hidden></span></button>
             </div>
@@ -857,6 +903,26 @@
                 <button type="submit" class="adm-action adm-action-primary"><i class="material-icons" aria-hidden="true">save</i><span>Salva</span></button>
             </footer>
         </form>
+    </dialog>
+    <dialog class="pet-inbox-dialog adm-scan-dialog" id="adm-scan-dialog" aria-labelledby="adm-scan-title">
+        <header>
+            <h2 id="adm-scan-title">Scansiona</h2>
+            <button class="pet-inbox-close" type="button" aria-label="Chiudi" onclick="admCloseScanner()"><i class="material-icons" aria-hidden="true">close</i></button>
+        </header>
+        <div class="adm-scan-body">
+            <div class="adm-scan-view">
+                <video id="adm-scan-video" playsinline muted autoplay></video>
+                <div id="adm-scan-frame" class="adm-scan-frame" aria-hidden="true"></div>
+            </div>
+            <p id="adm-scan-status" class="adm-scan-status" role="status"></p>
+            <form class="adm-scan-manual" onsubmit="event.preventDefault(); admHandleScan(document.getElementById('adm-scan-manual').value, true); this.reset();">
+                <label class="adm-visually-hidden" for="adm-scan-manual">Codice prodotto</label>
+                <input id="adm-scan-manual" type="text" placeholder="Oppure scrivi il codice, es. URN-OTT-PIC-V2" autocomplete="off" autocapitalize="characters" spellcheck="false">
+                <button type="submit" class="adm-action">Cerca</button>
+            </form>
+            <div id="adm-scan-result" aria-live="polite"></div>
+            <div id="adm-scan-check" class="adm-scan-check" hidden></div>
+        </div>
     </dialog>
     <dialog class="pet-inbox-dialog pet-confirm-dialog" id="pet-confirm" aria-labelledby="pet-confirm-title" aria-describedby="pet-confirm-text">
         <div class="pet-confirm-body">
@@ -3093,6 +3159,7 @@
         if (dialog.open) dialog.close();
     }
     document.getElementById('spedUguale').addEventListener('change', admToggleShipping);
+    document.getElementById('adm-scan-dialog').addEventListener('close', () => { admStopCamera(); admScanState = null; });
     document.getElementById('adm-logo-file').addEventListener('change', event => { admReadLogo(event.target.files[0]); event.target.value = ''; });
     document.getElementById('adm-logo-remove').addEventListener('click', () => petConfirmDelete('Togliere il logo del cliente?', 'Sulle etichette comparirà il nome del cliente. La modifica vale quando salvi la scheda.').then(ok => { if (ok) { admClientLogoDraft = null; admRenderLogoField(); } }));
     document.getElementById('sitoVisibile').addEventListener('change', () => {
@@ -3715,6 +3782,7 @@
             action('receipt', 'Conferma d’ordine', () => stampaRiepilogoCliente(o.id)),
             action('print', 'Scheda produzione', () => stampaSchedaProduzioneSingola(o.id)),
             action('label', 'Etichette', () => stampaEtichetteOrdine(o.id)),
+            action('fact_check', 'Controlla spedizione', () => admOpenScanner(o.id)),
             action('edit', 'Modifica', () => preparaModificaOrdine(o.id)),
             action('delete', 'Elimina', () => eliminaOrdine(o.id), 'adm-action-danger')
         );
@@ -4047,6 +4115,239 @@
         };
         img.onerror = () => { URL.revokeObjectURL(url); error.textContent = 'Non riesco a leggere questa immagine.'; };
         img.src = url;
+    }
+
+
+    // === SCANSIONE CODICI A BARRE (fotocamera del telefono) ===
+    let admScanState = null;
+    let admScannerLib = null;
+    function admLoadScanner() {
+        if (admScannerLib) return admScannerLib;
+        admScannerLib = new Promise((resolve, reject) => {
+            const s = document.createElement('script');
+            s.src = '/assets/scanner/barcode-detector.js?v=1';
+            s.onload = () => {
+                const api = window.BarcodeDetectionAPI;
+                if (!api) { reject(new Error('scanner')); return; }
+                api.prepareZXingModule({ overrides: { locateFile: (path, prefix) => path.endsWith('.wasm') ? '/assets/scanner/zxing_reader.wasm?v=1' : prefix + path }, fireImmediately: true })
+                    .then(() => resolve(new api.BarcodeDetector({ formats: ['code_128', 'qr_code'] })), reject);
+            };
+            s.onerror = () => reject(new Error('scanner'));
+            document.head.append(s);
+        });
+        admScannerLib.catch(() => { admScannerLib = null; });
+        return admScannerLib;
+    }
+    function admParseCode(raw) {
+        const code = String(raw || '').trim().toUpperCase();
+        const m = code.match(/^(.*)-([A-Z]\d)$/);
+        const base = m ? m[1] : code;
+        const color = m ? listaColori.find(c => c.code === m[2]) : null;
+        let modello = null, dimensione = null;
+        for (const [model, sizes] of Object.entries(catalogoPrezzi)) for (const [size, v] of Object.entries(sizes)) if ((v.sku || '').toUpperCase() === base) { modello = model; dimensione = size; }
+        return { code, modello, dimensione, colore: color ? color.nome : null };
+    }
+    function admOpenScanner(orderId) {
+        const dialog = document.getElementById('adm-scan-dialog');
+        const order = orderId ? orders.find(o => o.id === orderId) : null;
+        admScanState = { order, counts: new Map(), last: '', lastAt: 0, stream: null, timer: null, done: false };
+        document.getElementById('adm-scan-title').textContent = order ? 'Controllo spedizione · ' + admOrderNumber(order) : 'Scansiona';
+        document.getElementById('adm-scan-result').replaceChildren();
+        document.getElementById('adm-scan-manual').value = '';
+        admRenderScanCheck();
+        dialog.showModal();
+        admStartCamera();
+    }
+    function admCloseScanner() {
+        admStopCamera();
+        const dialog = document.getElementById('adm-scan-dialog');
+        if (dialog.open) dialog.close();
+        admScanState = null;
+    }
+    function admStopCamera() {
+        if (!admScanState) return;
+        clearTimeout(admScanState.timer);
+        admScanState.timer = null;
+        admScanState.stream?.getTracks().forEach(t => t.stop());
+        admScanState.stream = null;
+        const video = document.getElementById('adm-scan-video');
+        video.srcObject = null;
+    }
+    async function admStartCamera() {
+        const status = document.getElementById('adm-scan-status');
+        const state = admScanState;
+        if (!navigator.mediaDevices?.getUserMedia) { status.textContent = 'Questo browser non può usare la fotocamera: scrivi il codice qui sotto.'; return; }
+        status.textContent = 'Avvio della fotocamera…';
+        let detector;
+        try {
+            const [stream, det] = await Promise.all([
+                navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } } }),
+                admLoadScanner()
+            ]);
+            if (admScanState !== state) { stream.getTracks().forEach(t => t.stop()); return; }
+            state.stream = stream;
+            detector = det;
+            const video = document.getElementById('adm-scan-video');
+            video.srcObject = stream;
+            await video.play().catch(() => {});
+        } catch (e) {
+            if (admScanState !== state) return;
+            status.textContent = e && e.name === 'NotAllowedError'
+                ? 'Accesso alla fotocamera negato. Consentilo nelle impostazioni del browser, oppure scrivi il codice qui sotto.'
+                : 'Non riesco ad avviare la fotocamera. Puoi scrivere il codice qui sotto.';
+            return;
+        }
+        status.textContent = 'Inquadra il codice a barre dell’etichetta.';
+        const video = document.getElementById('adm-scan-video');
+        const tick = async () => {
+            if (admScanState !== state || !state.stream) return;
+            try {
+                if (video.readyState >= 2) {
+                    const found = await detector.detect(video);
+                    if (found && found.length && admScanState === state) admHandleScan(found[0].rawValue);
+                }
+            } catch {}
+            if (admScanState === state && state.stream) state.timer = setTimeout(tick, 180);
+        };
+        tick();
+    }
+    function admScanFeedback(kind) {
+        const frame = document.getElementById('adm-scan-frame');
+        frame.classList.remove('is-ok', 'is-warn', 'is-bad');
+        void frame.offsetWidth;
+        frame.classList.add('is-' + kind);
+        try { navigator.vibrate?.(kind === 'ok' ? 60 : [80, 60, 80]); } catch {}
+    }
+    function admHandleScan(raw, manual) {
+        const state = admScanState;
+        if (!state) return;
+        const code = String(raw || '').trim().toUpperCase();
+        if (!code) return;
+        const now = Date.now();
+        if (!manual && code === state.last && now - state.lastAt < 1800) return;
+        state.last = code; state.lastAt = now;
+        const info = admParseCode(code);
+        const result = document.getElementById('adm-scan-result');
+        const card = admEl('div', 'adm-scan-card');
+        const title = info.modello ? info.modello + ' · ' + info.dimensione + (info.colore ? ' · ' + info.colore : '') : 'Codice non riconosciuto';
+        const head = admEl('div', 'adm-scan-card-head');
+        if (info.colore) head.append(swatchAdmin(info.colore));
+        head.append(admEl('strong', '', title));
+        card.append(head, admEl('code', 'adm-scan-code', code));
+        if (state.order) {
+            const need = admOrderCodeNeed(state.order);
+            const want = need.get(code);
+            const have = state.counts.get(code) || 0;
+            if (!want) { card.classList.add('is-bad'); card.append(admEl('p', '', 'Questa urna non fa parte dell’ordine. Toglila dal cartone.')); admScanFeedback('bad'); }
+            else if (have >= want.qty) { card.classList.add('is-warn'); card.append(admEl('p', '', 'Già contate tutte (' + want.qty + '): questa è in più.')); admScanFeedback('warn'); }
+            else { state.counts.set(code, have + 1); card.classList.add('is-ok'); card.append(admEl('p', '', 'Ok: ' + (have + 1) + ' di ' + want.qty)); admScanFeedback('ok'); }
+            admRenderScanCheck();
+        } else {
+            if (!info.modello) { card.classList.add('is-bad'); admScanFeedback('bad'); }
+            else admScanFeedback('ok');
+            const open = orders.filter(o => !o.evaso && (o.articoli || []).some(a => admItemCode(a) === code));
+            if (info.modello) {
+                if (open.length) {
+                    card.append(admEl('p', '', 'Serve in ' + open.length + (open.length === 1 ? ' ordine da evadere:' : ' ordini da evadere:')));
+                    const ul = admEl('ul', 'adm-scan-orders');
+                    for (const o of open) {
+                        const q = o.articoli.filter(a => admItemCode(a) === code).reduce((s, a) => s + admQty(a), 0);
+                        const li = admEl('li', '');
+                        const btn = admEl('button', 'pet-link-button', (o.cliente || o.codiceCliente) + ' · ' + admOrderNumber(o) + ' · ' + q + ' pz');
+                        btn.type = 'button';
+                        btn.addEventListener('click', () => { admCloseScanner(); admOpenOrder(o.id); });
+                        const check = admEl('button', 'adm-action');
+                        check.type = 'button';
+                        check.append(admIcon('fact_check'), admEl('span', '', 'Controlla'));
+                        check.addEventListener('click', () => { admStopCamera(); admOpenScanner(o.id); });
+                        li.append(btn, check);
+                        ul.append(li);
+                    }
+                    card.append(ul);
+                } else card.append(admEl('p', 'adm-muted', 'Nessun ordine da evadere contiene questa urna.'));
+            } else card.append(admEl('p', '', 'Il codice letto non corrisponde a nessun prodotto del catalogo.'));
+        }
+        result.replaceChildren(card);
+    }
+    function swatchAdmin(colore) {
+        const dot = admEl('span', 'pet-swatch');
+        dot.setAttribute('aria-hidden', 'true');
+        dot.style.backgroundColor = mappaColoriHex[colore] || '#ccc';
+        return dot;
+    }
+    function admOrderCodeNeed(order) {
+        const need = new Map();
+        for (const a of order.articoli || []) {
+            const code = admItemCode(a).toUpperCase() || ('SENZA-CODICE:' + [a.modello, a.dimensione, a.colore].join('|'));
+            const cur = need.get(code) || { qty: 0, item: a };
+            cur.qty += admQty(a);
+            need.set(code, cur);
+        }
+        return need;
+    }
+    function admRenderScanCheck() {
+        const box = document.getElementById('adm-scan-check');
+        const state = admScanState;
+        box.replaceChildren();
+        box.hidden = !state?.order;
+        if (!state?.order) return;
+        const need = admOrderCodeNeed(state.order);
+        let tot = 0, got = 0;
+        const ul = admEl('ul', 'adm-scan-list');
+        const isDone = ([code, v]) => (state.counts.get(code) || 0) >= v.qty;
+        const label = ([, v]) => [v.item.modello, v.item.dimensione, v.item.colore].join(' ');
+        for (const [code, { qty, item }] of [...need].sort((a, b) => (isDone(a) - isDone(b)) || label(a).localeCompare(label(b), 'it'))) {
+            const have = Math.min(state.counts.get(code) || 0, qty);
+            tot += qty; got += have;
+            const li = admEl('li', have >= qty ? 'is-done' : '');
+            const name = admEl('span', 'adm-scan-item');
+            name.append(swatchAdmin(item.colore), document.createTextNode(item.modello + ' ' + (item.dimensione || '') + ' · ' + (item.colore || '')));
+            li.append(admIcon(have >= qty ? 'check_circle' : 'radio_button_unchecked'), name, admEl('strong', '', have + '/' + qty));
+            if (code.startsWith('SENZA-CODICE:') && have < qty) {
+                const tick = admEl('button', 'adm-action');
+                tick.type = 'button';
+                tick.title = 'Questa urna non ha codice nel catalogo: controllala a vista e segnala';
+                tick.append(admIcon('add'), admEl('span', '', 'Segna'));
+                tick.addEventListener('click', () => { state.counts.set(code, (state.counts.get(code) || 0) + 1); admRenderScanCheck(); });
+                li.append(tick);
+                li.classList.add('has-tick');
+            }
+            ul.append(li);
+        }
+        const complete = tot > 0 && got >= tot;
+        const head = admEl('div', 'adm-scan-progress' + (complete ? ' is-complete' : ''));
+        head.append(admEl('strong', '', complete ? 'Ordine completo: tutte le urne ci sono' : 'Urne controllate: ' + got + ' di ' + tot));
+        const bar = admEl('span', 'adm-scan-bar');
+        const fill = admEl('i', '');
+        fill.style.width = (tot ? got / tot * 100 : 0) + '%';
+        bar.append(fill);
+        head.append(bar);
+        box.append(head, ul);
+        const actions = admEl('div', 'adm-scan-actions');
+        const reset = admEl('button', 'adm-action');
+        reset.type = 'button';
+        reset.append(admIcon('restart_alt'), admEl('span', '', 'Ricomincia'));
+        reset.addEventListener('click', () => { state.counts.clear(); state.last = ''; document.getElementById('adm-scan-result').replaceChildren(); admRenderScanCheck(); });
+        actions.append(reset);
+        if (complete && !state.order.evaso) {
+            const ship = admEl('button', 'adm-action adm-action-primary');
+            ship.type = 'button';
+            ship.append(admIcon('local_shipping'), admEl('span', '', 'Segna come evaso'));
+            ship.addEventListener('click', () => { const id = state.order.id; admCloseScanner(); admToggleOrder(id, 'evaso'); });
+            actions.append(ship);
+        }
+        if (complete && !state.done) { state.done = true; admScanFeedback('ok'); }
+        box.append(actions);
+    }
+    function admOpenOrder(id) {
+        const o = orders.find(x => x.id === id);
+        if (!o) return;
+        admOpen('lista-ordini');
+        admOrderFilter = 'all';
+        document.getElementById('adm-order-search').value = admOrderNumber(o);
+        loadOrders();
+        const row = document.querySelector('#adm-order-list details[data-id="' + CSS.escape(String(id)) + '"]');
+        if (row) { row.open = true; row.scrollIntoView({ block: 'start', behavior: 'smooth' }); }
     }
 
     function petPrint(html, title, pageCss) {
