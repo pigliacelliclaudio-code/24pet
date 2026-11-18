@@ -97,6 +97,7 @@ Deno.serve(async (req) => {
   }
 
   let delivered = 0;
+  const problems: string[] = [];
   for (const chat of chats) {
     const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: "POST",
@@ -104,10 +105,14 @@ Deno.serve(async (req) => {
       body: JSON.stringify({ chat_id: chat, text, disable_web_page_preview: true }),
     });
     if (response.ok) delivered++;
+    else {
+      const detail = await response.json().catch(() => null);
+      problems.push(String(detail?.description ?? response.status));
+    }
   }
   if (!delivered) {
     await db.from("notification_log").delete().eq("source", table).eq("record_id", id);
-    return json({ error: "telegram" }, 502);
+    return json({ error: "telegram", detail: problems }, 502);
   }
   return json({ sent: delivered });
 });
