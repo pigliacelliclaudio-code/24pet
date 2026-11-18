@@ -290,6 +290,59 @@
         .pet-inbox-dot[hidden] { display: none; }
         .pet-is-new { border-color: #f1a7bd !important; background: #fff6f8 !important; }
         .pet-new-label { display: inline-block; margin-left: 8px; padding: 1px 8px; border-radius: 999px; background: #d1123f; color: #fff; font-size: .72rem; font-weight: 800; vertical-align: middle; }
+        .adm-client-tools { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px 20px; margin-bottom: 18px; }
+        .adm-client-picker { display: flex; align-items: center; gap: 10px; flex: 1 1 380px; max-width: 560px; min-height: 50px; padding: 8px 14px; border: 1px solid var(--accent); border-radius: 10px; background: #fff; color: var(--plum); font: inherit; font-weight: 700; text-align: left; cursor: pointer; }
+        .adm-client-picker span { flex: 1; }
+        .adm-client-picker .material-icons { color: var(--accent); }
+        .adm-year-field { flex: 0 1 220px; margin: 0 !important; }
+        .adm-client-hero { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 14px 24px; margin-bottom: 16px; padding: 18px 20px; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+        .adm-client-code { display: flex; align-items: center; gap: 8px; margin: 0; color: var(--accent); font-weight: 800; }
+        .adm-client-name { margin: 4px 0 2px; color: var(--plum); font-size: 2rem; font-weight: 800; line-height: 1.15; }
+        .adm-client-legal { margin: 0; color: #403646; font-weight: 700; }
+        .adm-client-history { margin: 6px 0 0; color: var(--muted); }
+        .adm-client-actions { margin: 0; }
+        .adm-action { text-decoration: none; }
+        .adm-action-primary { background: var(--plum); border-color: var(--plum); color: #fff; }
+        .adm-action-primary:hover { background: #3a003b; }
+        .adm-facts { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 14px; margin: 0; }
+        .adm-facts dt { color: var(--muted); }
+        .adm-facts dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
+        .adm-facts a { color: var(--accent); }
+        .adm-facts .adm-missing { color: #b3a7b8; font-weight: 400; }
+        .adm-billing-note { margin: 10px 0 0; }
+        .adm-billing-warn { color: #9a3d00; font-weight: 700; }
+        .adm-list-head .adm-note { margin: 4px 0 0; }
+        .adm-catalog-tools { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px 16px; }
+        .adm-catalog-tools .btn { border-radius: 8px; text-transform: none; }
+        .adm-catalog { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 16px; }
+        .adm-product { display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+        .adm-product.is-editing { border-color: var(--accent); box-shadow: 0 0 0 2px #f2c7e3; }
+        .adm-product-media { display: grid; place-items: center; aspect-ratio: 16 / 10; overflow: hidden; background: #f6eef6; }
+        .adm-product-media img { width: 100%; height: 100%; object-fit: cover; }
+        .adm-product-placeholder { display: grid; place-items: center; gap: 6px; color: var(--muted); font-size: .85rem; }
+        .adm-product-placeholder svg { width: 72px; height: 72px; opacity: .35; }
+        .adm-product-body { display: flex; flex-direction: column; gap: 10px; padding: 14px 16px 16px; }
+        .adm-product-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+        .adm-product-head > div { flex: 1; min-width: 0; }
+        .adm-product-head h3 { margin: 0; color: var(--plum); font-size: 1.3rem; font-weight: 800; }
+        .adm-product-stats { margin: 2px 0 0; color: #403646; font-size: .9rem; font-weight: 700; }
+        .adm-product-fav { margin: 2px 0 0; color: var(--muted); font-size: .85rem; }
+        .adm-product-fav .pet-swatch { margin: 0 4px 0 2px; vertical-align: -1px; }
+        .adm-table-wrap { overflow-x: auto; }
+        .adm-product-table { width: 100%; border-collapse: collapse; font-size: .88rem; font-variant-numeric: tabular-nums; }
+        .adm-product-table th, .adm-product-table td { padding: 7px 6px; border-bottom: 1px solid var(--line); border-radius: 0; text-align: left; white-space: nowrap; }
+        .adm-product-table th { background: transparent; color: var(--muted); font-weight: 700; }
+        .adm-product-table td small { display: block; color: var(--muted); font-size: .74rem; font-weight: 400; }
+        .adm-product-table tr:last-child td { border-bottom: 0; }
+        .adm-sku { color: var(--muted); font-size: .8rem; }
+        .adm-price { color: var(--plum); font-weight: 800; }
+        .adm-margin { color: #1b6434; font-weight: 700; }
+        .adm-margin-negative { color: #a3122a; font-weight: 700; }
+        .adm-muted { color: var(--muted); }
+        .adm-product-table .input-catalogo { width: 86px !important; height: 34px !important; margin: 0 !important; }
+        .adm-icon-button { padding: 2px 4px; border: 0; background: none; color: #a3122a; vertical-align: middle; cursor: pointer; }
+        .adm-icon-button .material-icons { font-size: 18px; }
+        .adm-product-edit { margin: 0; }
         .adm-list-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 20px; padding: 8px 0 14px; }
         .adm-list-head h4 { margin: 0; font-weight: 800; }
         .adm-list-head .btn { text-transform: none; border-radius: 8px; }
@@ -443,6 +496,11 @@
             .adm-order summary { grid-template-columns: minmax(0, 1fr) auto auto; }
             .adm-order summary > span:nth-child(2) { display: none; }
             .adm-search { width: 100%; }
+            .adm-client-name { font-size: 1.5rem; }
+            .adm-client-hero { padding: 14px; }
+            .adm-year-field { flex: 1 1 100%; }
+            .adm-catalog { grid-template-columns: minmax(0, 1fr); }
+            .adm-product-table .input-catalogo { width: 70px !important; }
             .pet-client-nav button { justify-content: center; gap: 5px; padding-inline: 6px; }
             .pet-client-nav button .material-icons { font-size: 18px; }
             .pet-compose-fields { grid-template-columns:minmax(0,1fr); gap:8px; }
@@ -686,24 +744,22 @@
 
                 <!-- PAGINA: CATALOGO PRODOTTI MODIFICABILE -->
                 <div id="catalogo-prodotti" class="page-content">
-                    <div class="row" style="margin-bottom: 0;">
-                        <div class="col s12 m8">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                                <h4 class="text-prugna" style="font-weight: bold; margin: 0;"><i class="material-icons left" style="font-size: 1.2em;">storefront</i>Catalogo Prodotti</h4>
-                                <button class="btn waves-effect waves-light btn-custom" style="border-radius: 8px;" onclick="aggiungiNuovoModello()">
-                                    <i class="material-icons left">add</i> Nuovo Modello
-                                </button>
-                            </div>
-                            <p class="grey-text">Crea nuovi modelli o usa la matita su una scheda esistente per modificarne le misure e i prezzi.</p>
+                    <div class="adm-list-head">
+                        <div>
+                            <h4 class="text-prugna">Catalogo prodotti</h4>
+                            <p class="adm-note">Prezzi di listino e costi di laboratorio, IVA esclusa. Usa «Modifica» su un modello per cambiare prezzi e misure.</p>
                         </div>
-                        <div class="input-field col s12 m4" style="margin-top: 20px;">
-                            <select id="catalogoAnno" onchange="renderCatalogo()">
-                                <option value="Tutti" selected>Tutti gli anni</option>
-                            </select>
-                            <label>Filtra vendite per Anno</label>
+                        <div class="adm-catalog-tools">
+                            <div class="input-field adm-year-field">
+                                <select id="catalogoAnno" onchange="renderCatalogo()">
+                                    <option value="Tutti" selected>Tutti gli anni</option>
+                                </select>
+                                <label>Vendite del periodo</label>
+                            </div>
+                            <button type="button" class="btn btn-custom" onclick="aggiungiNuovoModello()"><i class="material-icons left" aria-hidden="true">add</i>Nuovo modello</button>
                         </div>
                     </div>
-                    <div id="catalogo-container"></div>
+                    <div id="catalogo-container" class="adm-catalog"></div>
                 </div>
 
                 <!-- PAGINA: RUBRICA CLIENTI -->
@@ -1016,108 +1072,65 @@
 
                 <!-- PAGINA: RIEPILOGO / SCHEDA CLIENTE -->
                 <div id="riepilogo-cliente" class="page-content">
-                    <div class="card">
-                        <div class="card-content">
-                            <span class="card-title text-prugna"><i class="material-icons left">person_search</i>Cerca Scheda Cliente</span>
-                            
-                            <div class="row">
-                                <div class="col s12 m6">
-                                    <span style="font-size: 0.85rem; color: #9e9e9e;">Seleziona Cliente</span>
-                                    <div class="card-panel hoverable" style="padding: 10px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; border: 1px solid #b50084; margin-top: 5px; box-shadow: none;" onclick="apriSidebarClienti('searchClienteInputDisplay')">
-                                        <div style="display: flex; align-items: center;">
-                                            <i class="material-icons text-fucsia" style="margin-right: 10px;">person_search</i>
-                                            <span id="searchClienteInputDisplay" style="font-weight: bold; color: #4a004a;">Clicca per cercare in rubrica...</span>
-                                        </div>
-                                        <i class="material-icons grey-text">keyboard_arrow_right</i>
-                                    </div>
-                                    <input type="hidden" id="searchClienteInput">
-                                </div>
+                    <div class="adm-list-head">
+                        <h4 class="text-prugna">Scheda cliente</h4>
+                    </div>
+                    <div class="adm-client-tools">
+                        <button type="button" class="adm-client-picker" onclick="apriSidebarClienti('searchClienteInputDisplay')">
+                            <i class="material-icons" aria-hidden="true">person_search</i>
+                            <span id="searchClienteInputDisplay">Scegli un cliente dalla rubrica…</span>
+                            <i class="material-icons" aria-hidden="true">chevron_right</i>
+                        </button>
+                        <input type="hidden" id="searchClienteInput">
+                        <div class="input-field adm-year-field">
+                            <select id="searchAnno" onchange="searchClient(null)">
+                                <option value="Tutti" selected>Tutti gli anni</option>
+                            </select>
+                            <label>Periodo</label>
+                        </div>
+                    </div>
 
-                                <div class="input-field col s12 m6">
-                                    <i class="material-icons prefix text-fucsia">date_range</i>
-                                    <select id="searchAnno" onchange="searchClient(null)">
-                                        <option value="Tutti" selected>Tutti gli anni</option>
-                                    </select>
-                                    <label>Filtra per Anno</label>
-                                </div>
+                    <div id="risultatiRicerca" style="display: none;">
+                        <section class="adm-client-hero" aria-labelledby="resNome">
+                            <div>
+                                <p class="adm-client-code"><span id="resCodice"></span><span id="resTipo" class="pet-badge pet-badge-neutral"></span></p>
+                                <h2 id="resNome" class="adm-client-name"></h2>
+                                <p id="resRagione" class="adm-client-legal"></p>
+                                <p id="resStoria" class="adm-client-history"></p>
                             </div>
-                            
-                            <div id="risultatiRicerca" style="display: none; margin-top: 20px;">
-                                <hr style="border: 0; border-top: 1px solid #eee; margin-bottom: 20px;">
-                                
-                                <h4 class="text-prugna" style="font-weight: 900; margin-bottom: 0;">
-                                    <span id="resCodice" style="color: #b50084; font-size: 0.6em; vertical-align: middle;"></span> 
-                                    <span id="resNome"></span> 
-                                    <span id="resTipo" style="font-size: 0.5em; background: #eee; padding: 4px 8px; border-radius: 4px; vertical-align: middle; font-weight: normal; margin-left: 10px;"></span>
-                                </h4>
-
-                                <!-- KPI DEL CLIENTE -->
-                                <div class="row" style="margin-top: 20px;">
-                                    <div class="col s12 m6 l3">
-                                        <div class="card-panel white-text center hoverable nav-custom" style="border-radius: 12px; background-color: #8c0066 !important;">
-                                            <i class="material-icons medium">shopping_cart</i>
-                                            <h3 id="resOrdini" style="margin: 10px 0;">0</h3>
-                                            <h6>Ordini Totali</h6>
-                                        </div>
-                                    </div>
-                                    <div class="col s12 m6 l3">
-                                        <div class="card-panel white-text center hoverable nav-custom" style="border-radius: 12px;">
-                                            <i class="material-icons medium">euro_symbol</i>
-                                            <h3 id="resSpesa" style="margin: 10px 0;">0.00</h3>
-                                            <h6>Fatturato Generato (+ iva)</h6>
-                                        </div>
-                                    </div>
-                                    <div class="col s12 m6 l3">
-                                        <div class="card-panel white-text center hoverable" style="border-radius: 12px; background-color: #2e7d32;">
-                                            <i class="material-icons medium">trending_up</i>
-                                            <h3 id="resUtile" style="margin: 10px 0;">0.00</h3>
-                                            <h6>Guadagno Netto (+ iva)</h6>
-                                        </div>
-                                    </div>
-                                    <div class="col s12 m6 l3">
-                                        <div class="card-panel orange darken-2 white-text center hoverable" style="border-radius: 12px;">
-                                            <i class="material-icons medium">warning</i>
-                                            <h3 id="resDaPagare" style="margin: 10px 0;">0.00</h3>
-                                            <h6>Ancora da Saldare (+ iva)</h6>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="row">
-                                    <div class="col s12">
-                                        <div class="card" style="background-color: #f9f9f9; border: 1px solid #ddd;">
-                                            <div class="card-content">
-                                                <span class="card-title" style="font-size: 1.2em; font-weight: bold; color: #4a004a;"><i class="material-icons left">assignment_ind</i>Dati Anagrafici e Fatturazione</span>
-                                                <div class="row" style="margin-top: 15px; margin-bottom: 0;">
-                                                    <div class="col s12 m4">
-                                                        <p><strong>Sede Centrale:</strong> <span id="schedaIndirizzo">-</span></p>
-                                                        <p style="margin-top: 10px;"><strong>Indir. Spedizione:</strong> <span id="schedaSpedizione">-</span></p>
-                                                        <p style="margin-top: 10px;"><strong>Referente Sped.:</strong> <span id="schedaReferente">-</span></p>
-                                                    </div>
-                                                    <div class="col s12 m4">
-                                                        <p><strong>Telefono:</strong> <span id="schedaTelefono">-</span></p>
-                                                        <p style="margin-top: 10px;"><strong>Cellulare:</strong> <span id="schedaCellulare">-</span></p>
-                                                        <p style="margin-top: 10px;"><strong>Email:</strong> <span id="schedaEmail">-</span></p>
-                                                    </div>
-                                                    <div class="col s12 m4">
-                                                        <p><strong>P. IVA:</strong> <span id="schedaPiva">-</span></p>
-                                                        <p style="margin-top: 10px;"><strong>C.F.:</strong> <span id="schedaCf">-</span></p>
-                                                        <p style="margin-top: 10px;"><strong>SDI / PEC:</strong> <span id="schedaSdiPec">-</span></p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="row">
-                                    <div class="col s12">
-                                        <span class="card-title" style="font-size: 1.2em; font-weight: bold; color: #4a004a; margin-top: 20px; display: block;"><i class="material-icons left">history</i>Storico Ordini Cliente</span>
-<div id="clientOrdersTableBody" class="adm-order-list adm-client-orders"></div>
-                                    </div>
-                                </div>
-
-                            </div>
+                            <div id="resAzioni" class="adm-order-actions adm-client-actions"></div>
+                        </section>
+                        <div id="adm-client-kpis" class="pet-kpis adm-kpis"></div>
+                        <div class="pet-home-grid adm-grid">
+                            <section class="pet-home-card" aria-labelledby="adm-client-contacts-title">
+                                <h2 id="adm-client-contacts-title">Contatti e spedizione</h2>
+                                <dl id="adm-client-contacts" class="adm-facts"></dl>
+                            </section>
+                            <section class="pet-home-card" aria-labelledby="adm-client-billing-title">
+                                <h2 id="adm-client-billing-title">Fatturazione</h2>
+                                <dl id="adm-client-billing" class="adm-facts"></dl>
+                                <p id="adm-client-billing-note" class="adm-note adm-billing-note"></p>
+                            </section>
+                            <section class="pet-home-card" aria-labelledby="adm-client-access-title">
+                                <h2 id="adm-client-access-title">Area clienti</h2>
+                                <dl id="adm-client-access" class="adm-facts"></dl>
+                            </section>
+                            <section class="pet-home-card" aria-labelledby="adm-client-models-title">
+                                <h2 id="adm-client-models-title">Modelli più acquistati</h2>
+                                <ul id="adm-client-models" class="pet-bars"></ul>
+                            </section>
+                            <section class="pet-home-card" aria-labelledby="adm-client-colors-title">
+                                <h2 id="adm-client-colors-title">Colori più acquistati</h2>
+                                <ul id="adm-client-colors" class="pet-bars"></ul>
+                            </section>
+                            <section class="pet-home-card" aria-labelledby="adm-client-sizes-title">
+                                <h2 id="adm-client-sizes-title">Misure</h2>
+                                <ul id="adm-client-sizes" class="pet-bars"></ul>
+                            </section>
+                            <section class="pet-home-card pet-home-wide" aria-labelledby="adm-client-orders-title">
+                                <h2 id="adm-client-orders-title">Storico ordini</h2>
+                                <div id="clientOrdersTableBody" class="adm-order-list adm-client-orders"></div>
+                            </section>
                         </div>
                     </div>
                 </div>
@@ -1545,80 +1558,132 @@
     // === GENERAZIONE CATALOGO ===
     function renderCatalogo(modelloInModifica = null) {
         const container = document.getElementById('catalogo-container');
-        let html = '<div class="row">';
-        const selectCatAnno = document.getElementById('catalogoAnno');
-        let annoScelto = selectCatAnno ? selectCatAnno.value : 'Tutti';
-
-        let venditeModelli = {};
-        orders.forEach(o => {
-            if (annoScelto === 'Tutti' || (o.data && o.data.startsWith(annoScelto))) {
-                o.articoli.forEach(a => { venditeModelli[a.modello] = (venditeModelli[a.modello] || 0) + parseInt(a.quantita); });
+        const year = document.getElementById('catalogoAnno')?.value || 'Tutti';
+        const sales = new Map();
+        for (const o of orders) {
+            if (year !== 'Tutti' && !(o.data && o.data.startsWith(year))) continue;
+            for (const a of o.articoli) {
+                const entry = sales.get(a.modello) || { pieces: 0, list: 0, colors: new Map() };
+                const q = admQty(a);
+                entry.pieces += q;
+                entry.list += (parseFloat(a.prezzoUnitario) || 0) * q;
+                if (a.colore) entry.colors.set(a.colore, (entry.colors.get(a.colore) || 0) + q);
+                sales.set(a.modello, entry);
             }
-        });
-        
-        for (let modello in catalogoPrezzi) {
-            let svgIcon = iconeProdotti[modello] || iconeProdotti["Default"];
-            let varianti = catalogoPrezzi[modello];
-            let isModifica = (modello === modelloInModifica);
-            let venduti = venditeModelli[modello] || 0;
-            let testoVenduti = annoScelto === 'Tutti' ? 'venduti in tot.' : 'venduti nel ' + annoScelto;
-            
-            let tableRows = '';
-            for (let dim in varianti) {
-                if(isModifica) {
-                    tableRows += `
-                    <tr>
-                        <td style="padding: 5px;">
-                            <a href="#!" class="red-text" onclick="eliminaMisura('${modello}', '${dim}')" title="Elimina Misura" style="margin-right: 5px;"><i class="material-icons" style="font-size: 16px; vertical-align: middle;">delete</i></a>
-                            ${dim}
-                        </td>
-                        <td style="padding: 5px;">${varianti[dim].sku}</td>
-                        <td style="padding: 5px;"><input type="number" step="0.01" id="edit_costo_${modello}_${dim}" value="${varianti[dim].costo}" class="input-catalogo"></td>
-                        <td style="padding: 5px;"><input type="number" step="0.01" id="edit_prezzo_${modello}_${dim}" value="${varianti[dim].prezzo}" class="input-catalogo" style="font-weight:bold; color:#b50084;"></td>
-                    </tr>`;
-                } else {
-                    tableRows += `
-                    <tr>
-                        <td style="padding: 5px;">${dim}</td>
-                        <td style="padding: 5px;">${varianti[dim].sku}</td>
-                        <td style="padding: 5px;">€ ${varianti[dim].costo.toFixed(2)}</td>
-                        <td style="padding: 5px; font-weight: bold;">€ ${varianti[dim].prezzo.toFixed(2)}</td>
-                    </tr>`;
-                }
-            }
-
-            let btnHtml = isModifica ? `
-                <button class="btn-floating btn-small red waves-effect waves-light" onclick="eliminaModello('${modello}')" title="Elimina intero modello"><i class="material-icons">delete_forever</i></button>
-                <button class="btn-floating btn-small yellow darken-3 waves-effect waves-light" onclick="aggiungiMisura('${modello}')" title="Aggiungi Misura" style="margin-left:5px;"><i class="material-icons">add</i></button>
-                <button class="btn-floating btn-small green darken-1 waves-effect waves-light" onclick="salvaModificaCatalogo('${modello}')" style="margin-left:5px;"><i class="material-icons">save</i></button>
-                <button class="btn-floating btn-small grey waves-effect waves-light" onclick="renderCatalogo()" style="margin-left:5px;"><i class="material-icons">close</i></button>
-            ` : `<button class="btn-floating btn-small blue waves-effect waves-light" onclick="renderCatalogo('${modello}')" title="Modifica Prezzi o Aggiungi Misure"><i class="material-icons">edit</i></button>`;
-
-            html += `
-            <div class="col s12 m6 l6">
-                <div class="card hoverable" style="border-radius: 12px; overflow: hidden;">
-                    <div class="card-image" style="background-color: #faebf7; height: 120px; display: flex; align-items: center; justify-content: center; position: relative;">
-                        <img src="${modello}.jpg" alt="${modello}" style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; z-index: 1;" onerror="this.style.display='none'">
-                        <div style="z-index: 0; opacity: 0.2; transform: scale(3);">${svgIcon}</div>
-                        <div style="background: rgba(74, 0, 74, 0.85); width: 100%; padding: 10px 15px; z-index: 2; display: flex; justify-content: space-between; align-items: center; position: absolute; bottom: 0;">
-                            <div style="display:flex; flex-direction:column; align-items:flex-start; line-height: 1.2;">
-                                <span style="font-weight: bold; font-size: 1.3rem; color: white;">${modello}</span>
-                                <span style="color:#a5d6a7; font-size:0.85em; font-weight:bold;"><i class="material-icons" style="font-size:12px; vertical-align:middle;">shopping_cart</i> ${venduti} ${testoVenduti}</span>
-                            </div>
-                            <div style="display:flex;">${btnHtml}</div>
-                        </div>
-                    </div>
-                    <div class="card-content" style="padding: 15px; overflow-x: auto;">
-                        <table class="striped" style="font-size: 0.85em;">
-                            <thead><tr><th style="padding: 5px;">Misura</th><th style="padding: 5px;">SKU Base</th><th style="padding: 5px;">Costo Lab.</th><th style="padding: 5px;">Prezzo Listino</th></tr></thead>
-                            <tbody>${tableRows}</tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>`;
         }
-        html += '</div>';
-        container.innerHTML = html;
+        const periodText = year === 'Tutti' ? 'in totale' : 'nel ' + year;
+        const sizeOrder = ['Piccolo', 'Piccola', 'Medio', 'Media', 'Grande', 'Unica'];
+        const cards = [];
+        const modelNames = Object.keys(catalogoPrezzi).sort((a, b) => (sales.get(b)?.pieces || 0) - (sales.get(a)?.pieces || 0) || a.localeCompare(b, 'it'));
+        for (const modello of modelNames) {
+            const variants = catalogoPrezzi[modello];
+            const editing = modello === modelloInModifica;
+            const sold = sales.get(modello) || { pieces: 0, list: 0, colors: new Map() };
+            const card = admEl('article', 'adm-product' + (editing ? ' is-editing' : ''));
+
+            const media = admEl('div', 'adm-product-media');
+            if (admModelPhotos[modello]) {
+                const img = document.createElement('img');
+                img.src = '/assets/' + admModelPhotos[modello];
+                img.alt = 'Urna ' + modello;
+                img.loading = 'lazy';
+                media.append(img);
+            } else {
+                const placeholder = admEl('div', 'adm-product-placeholder');
+                placeholder.innerHTML = iconeProdotti[modello] || iconeProdotti['Default'];
+                placeholder.append(admEl('span', '', 'Foto non disponibile'));
+                media.append(placeholder);
+            }
+
+            const body = admEl('div', 'adm-product-body');
+            const head = admEl('div', 'adm-product-head');
+            const titles = admEl('div', '');
+            titles.append(admEl('h3', '', modello));
+            const topColor = [...sold.colors.entries()].sort((a, b) => b[1] - a[1])[0];
+            const stats = admEl('p', 'adm-product-stats', sold.pieces + ' pz ' + periodText + (sold.pieces ? ' · ' + admMoney.format(sold.list) + ' di listino' : ''));
+            titles.append(stats);
+            if (topColor) {
+                const fav = admEl('p', 'adm-product-fav');
+                fav.append(document.createTextNode('Colore più scelto: '), admSwatch(topColor[0]), document.createTextNode(topColor[0]));
+                titles.append(fav);
+            }
+            head.append(titles);
+            if (!editing) {
+                const edit = admEl('button', 'adm-action');
+                edit.type = 'button';
+                edit.append(admIcon('edit'), admEl('span', '', 'Modifica'));
+                edit.addEventListener('click', () => renderCatalogo(modello));
+                head.append(edit);
+            }
+            body.append(head);
+
+            const table = admEl('table', 'adm-product-table');
+            const thead = admEl('thead', '');
+            thead.innerHTML = '<tr><th scope="col">Misura</th><th scope="col">Costo lab.</th><th scope="col">Listino</th><th scope="col">Margine</th></tr>';
+            const tbody = admEl('tbody', '');
+            const dims = Object.keys(variants).sort((a, b) => (sizeOrder.indexOf(a) + 1 || 99) - (sizeOrder.indexOf(b) + 1 || 99));
+            for (const dim of dims) {
+                const v = variants[dim];
+                const tr = admEl('tr', '');
+                const sizeCell = admEl('td', '');
+                if (editing) {
+                    const remove = admEl('button', 'adm-icon-button');
+                    remove.type = 'button';
+                    remove.title = 'Elimina la misura ' + dim;
+                    remove.setAttribute('aria-label', 'Elimina la misura ' + dim);
+                    remove.append(admIcon('delete'));
+                    remove.addEventListener('click', () => eliminaMisura(modello, dim));
+                    sizeCell.append(remove);
+                }
+                sizeCell.append(document.createTextNode(dim), admEl('small', '', v.sku));
+                tr.append(sizeCell);
+                if (editing) {
+                    for (const [field, value, label] of [['costo', v.costo, 'Costo'], ['prezzo', v.prezzo, 'Listino']]) {
+                        const td = admEl('td', '');
+                        const input = document.createElement('input');
+                        input.type = 'number'; input.step = '0.01'; input.min = '0';
+                        input.id = 'edit_' + field + '_' + modello + '_' + dim;
+                        input.value = value;
+                        input.className = 'input-catalogo';
+                        input.setAttribute('aria-label', label + ' ' + modello + ' ' + dim);
+                        td.append(input);
+                        tr.append(td);
+                    }
+                    tr.append(admEl('td', 'adm-muted', '—'));
+                } else {
+                    const cost = Number(v.costo) || 0, price = Number(v.prezzo) || 0;
+                    const margin = price - cost;
+                    tr.append(admEl('td', '', admMoney.format(cost)), admEl('td', 'adm-price', admMoney.format(price)),
+                        admEl('td', margin >= 0 ? 'adm-margin' : 'adm-margin-negative', admMoney.format(margin) + (price ? ' · ' + Math.round(margin / price * 100) + '%' : '')));
+                }
+                tbody.append(tr);
+            }
+            table.append(thead, tbody);
+            const wrap = admEl('div', 'adm-table-wrap');
+            wrap.append(table);
+            body.append(wrap);
+
+            if (editing) {
+                const bar = admEl('div', 'adm-order-actions adm-product-edit');
+                const button = (icon, label, handler, extra) => {
+                    const b = admEl('button', 'adm-action' + (extra ? ' ' + extra : ''));
+                    b.type = 'button';
+                    b.append(admIcon(icon), admEl('span', '', label));
+                    b.addEventListener('click', handler);
+                    return b;
+                };
+                bar.append(
+                    button('save', 'Salva prezzi', () => salvaModificaCatalogo(modello), 'adm-action-primary'),
+                    button('add', 'Aggiungi misura', () => aggiungiMisura(modello)),
+                    button('close', 'Annulla', () => renderCatalogo()),
+                    button('delete_forever', 'Elimina modello', () => eliminaModello(modello), 'adm-action-danger')
+                );
+                body.append(bar);
+            }
+            card.append(media, body);
+            cards.push(card);
+        }
+        container.replaceChildren(...cards);
     }
 
     function salvaModificaCatalogo(modello) {
@@ -2909,73 +2974,195 @@
         admBars(document.getElementById('adm-sizes'), [...sizes.entries()].sort((a, b) => (sizeOrder.indexOf(a[0]) + 1 || 99) - (sizeOrder.indexOf(b[0]) + 1 || 99)), { total: pieces });
     }
 
-    function searchClient(valoreCerca) {
-        let codiceRicerca = "";
-        
-        if (valoreCerca) {
-            if(valoreCerca.startsWith('C-')) {
-                codiceRicerca = valoreCerca;
+    function admFacts(target, rows) {
+        target.replaceChildren();
+        for (const [label, value, href] of rows) {
+            target.append(admEl('dt', '', label));
+            const dd = admEl('dd', '');
+            const text = value && String(value).trim() ? String(value).trim() : '';
+            if (text && href) {
+                const link = admEl('a', '', text);
+                link.href = href + (href.endsWith(':') ? text.replace(/\s+/g, '') : '');
+                dd.append(link);
             } else {
-                let match = valoreCerca.match(/\[(C-\d+)\]/);
-                if(match) codiceRicerca = match[1];
+                dd.textContent = text || '—';
+                if (!text) dd.classList.add('adm-missing');
             }
+            target.append(dd);
+        }
+    }
+    function admClientAction(icon, label, handler, href) {
+        const element = admEl(href ? 'a' : 'button', 'adm-action');
+        if (href) element.href = href; else { element.type = 'button'; element.addEventListener('click', handler); }
+        element.append(admIcon(icon), admEl('span', '', label));
+        return element;
+    }
+    function admNewOrderFor(client) {
+        showPage('nuovo-ordine', document.querySelector('.app-menu a[href="#nuovo-ordine"]'));
+        targetInputForClient = 'clienteSearchDisplay';
+        const pick = document.createElement('a');
+        pick.setAttribute('data-codice', client.codice);
+        pick.setAttribute('data-nome', client.nome || '');
+        pick.setAttribute('data-tipo', client.tipo || 'Azienda');
+        selezionaClienteDaLista(pick);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function searchClient(valoreCerca) {
+        let codiceRicerca = '';
+        if (valoreCerca) {
+            if (valoreCerca.startsWith('C-')) codiceRicerca = valoreCerca;
+            else { const match = valoreCerca.match(/\[(C-\d+)\]/); if (match) codiceRicerca = match[1]; }
         } else {
-            let text = document.getElementById('searchClienteInputDisplay').innerText;
-            let match = text.match(/\[(C-\d+)\]/);
-            if(match) codiceRicerca = match[1];
+            const match = document.getElementById('searchClienteInputDisplay').innerText.match(/\[(C-\d+)\]/);
+            if (match) codiceRicerca = match[1];
         }
+        if (!codiceRicerca) return;
 
-        if(!codiceRicerca) return;
+        const year = document.getElementById('searchAnno').value || 'Tutti';
+        const client = clients.find(c => c.codice === codiceRicerca) || { codice: codiceRicerca, nome: codiceRicerca };
+        const allOrders = orders.filter(o => o.codiceCliente === codiceRicerca).sort((a, b) => (b.data || '').localeCompare(a.data || '') || b.id - a.id);
+        const period = year === 'Tutti' ? allOrders : allOrders.filter(o => o.data && o.data.startsWith(year));
+        const periodLabel = year === 'Tutti' ? 'in totale' : 'nel ' + year;
 
-        const annoRicerca = document.getElementById('searchAnno').value;
+        // ---- Intestazione ----
+        document.getElementById('resCodice').textContent = client.codice;
+        document.getElementById('resTipo').textContent = client.tipo || 'Azienda';
+        document.getElementById('resNome').textContent = client.nome || 'Senza nome';
+        document.getElementById('resRagione').textContent = '';
+        const first = allOrders[allOrders.length - 1];
+        const last = allOrders[0];
+        const monthYear = new Intl.DateTimeFormat('it-IT', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+        document.getElementById('resStoria').textContent = allOrders.length
+            ? 'Cliente da ' + monthYear.format(new Date(first.data + 'T00:00:00Z')) + ' · ultimo ordine ' + (admDays(last.data) === 0 ? 'oggi' : admDays(last.data) === 1 ? 'ieri' : admDays(last.data) + ' giorni fa') + ' (' + admDate.format(new Date(last.data + 'T00:00:00Z')) + ')'
+            : 'Nessun ordine registrato';
+        const actions = document.getElementById('resAzioni');
+        actions.replaceChildren(
+            admClientAction('add_shopping_cart', 'Nuovo ordine', () => admNewOrderFor(client)),
+            admClientAction('edit', 'Modifica in rubrica', () => { showPage('gestione-clienti', document.querySelector('.app-menu a[href="#gestione-clienti"]')); preparaModificaCliente(client.codice); window.scrollTo({ top: 0, behavior: 'smooth' }); })
+        );
+        if (client.email) actions.append(admClientAction('mail', 'Scrivi', null, 'mailto:' + client.email.trim()));
+        const phone = (client.cellulare || client.telefono || '').replace(/\s+/g, '');
+        if (phone) actions.append(admClientAction('call', 'Chiama', null, 'tel:' + phone));
 
-        let clientOrders = orders.filter(o => o.codiceCliente === codiceRicerca);
-        
-        if(annoRicerca && annoRicerca !== "Tutti") {
-            clientOrders = clientOrders.filter(o => o.data && o.data.startsWith(annoRicerca));
+        // ---- Numeri ----
+        let revenue = 0, profit = 0, unpaid = 0, pieces = 0, discounts = 0, listCents = 0;
+        const models = new Map(), colors = new Map(), sizes = new Map();
+        for (const o of period) {
+            revenue += o.importo || 0;
+            profit += o.utile || 0;
+            if (!o.pagato) unpaid += o.importo || 0;
+            const orderList = admListCents(o);
+            listCents += orderList;
+            const reseller = o.tipo === 'Rivenditore' ? Math.round(orderList * 0.25) : 0;
+            discounts += (reseller + Math.round((orderList - reseller) * (parseFloat(o.scontoExtraPerc) || 0) / 100)) / 100;
+            for (const a of o.articoli) {
+                const q = admQty(a);
+                pieces += q;
+                models.set(a.modello, (models.get(a.modello) || 0) + q);
+                if (a.colore) colors.set(a.colore, (colors.get(a.colore) || 0) + q);
+                if (a.dimensione) sizes.set(admSize(a.dimensione), (sizes.get(admSize(a.dimensione)) || 0) + q);
+            }
         }
-
-        const totalOrdini = clientOrders.length;
-        const totalSpesa = clientOrders.reduce((sum, o) => sum + o.importo, 0);
-        const totalUtile = clientOrders.reduce((sum, o) => sum + (o.utile || 0), 0);
-        const daPagare = clientOrders.filter(o => !o.pagato).reduce((sum, o) => sum + o.importo, 0);
-
-        const clienteInfo = clients.find(c => c.codice === codiceRicerca);
-
-        document.getElementById('resCodice').innerText = clienteInfo ? clienteInfo.codice : "";
-        document.getElementById('resNome').innerText = (clienteInfo ? (clienteInfo.nome || 'Senza Nome') : "").toUpperCase();
-        
-        if(clienteInfo && clienteInfo.tipo === 'Rivenditore') {
-            document.getElementById('resTipo').innerText = "(Rivenditore)";
-        } else {
-            document.getElementById('resTipo').innerText = "";
+        const unpaidOrders = period.filter(o => !o.pagato);
+        const oldestUnpaid = unpaidOrders.reduce((max, o) => o.data ? Math.max(max, admDays(o.data)) : max, 0);
+        let rhythm = '—', rhythmNote = 'servono almeno 2 ordini';
+        if (allOrders.length > 1) {
+            const span = admDays(first.data) - admDays(last.data);
+            rhythm = Math.round(span / (allOrders.length - 1)) + ' gg';
+            rhythmNote = 'tra un ordine e l’altro, in media';
         }
+        const margin = revenue ? Math.round(profit / revenue * 100) : 0;
+        document.getElementById('adm-client-kpis').replaceChildren(
+            admKpi('receipt_long', 'Ordini', String(period.length), period.length ? 'Valore medio ' + admMoney.format(revenue / period.length) : 'Nessun ordine ' + periodLabel),
+            admKpi('euro', 'Fatturato', admMoney.format(revenue), periodLabel),
+            admKpi('trending_up', 'Utile netto', admMoney.format(profit), 'Margine ' + margin + '%', 'good'),
+            admKpi('hourglass_bottom', 'Da saldare', admMoney.format(unpaid), unpaidOrders.length ? unpaidOrders.length + (unpaidOrders.length === 1 ? ' ordine' : ' ordini') + ' · da ' + oldestUnpaid + ' giorni' : 'Tutto saldato', unpaid > 0.004 ? 'warn' : ''),
+            admKpi('inventory_2', 'Urne acquistate', String(pieces), pieces ? 'Prezzo medio ' + admMoney.format(revenue / pieces) : '—'),
+            admKpi('event_repeat', 'Ogni quanto ordina', rhythm, rhythmNote),
+            admKpi('sell', 'Sconti concessi', admMoney.format(discounts), listCents ? Math.round(discounts * 100 / listCents * 100) + '% del listino' : '—'),
+            admKpi('local_shipping', 'Da evadere', String(period.filter(o => !o.evaso).length), period.filter(o => !o.evaso).reduce((s, o) => s + o.articoli.reduce((t, a) => t + admQty(a), 0), 0) + ' urne da produrre')
+        );
 
-        document.getElementById('resOrdini').innerText = totalOrdini;
-        document.getElementById('resSpesa').innerText = '€ ' + totalSpesa.toFixed(2);
-        document.getElementById('resUtile').innerText = '€ ' + totalUtile.toFixed(2);
-        document.getElementById('resDaPagare').innerText = '€ ' + daPagare.toFixed(2);
-        
-        document.getElementById('schedaIndirizzo').innerText = clienteInfo ? (clienteInfo.indirizzoSede || '-') : '-';
-        document.getElementById('schedaSpedizione').innerText = clienteInfo ? (clienteInfo.indirizzoSpedizione || '-') : '-';
-        document.getElementById('schedaTelefono').innerText = clienteInfo ? (clienteInfo.telefono || '-') : '-';
-        document.getElementById('schedaCellulare').innerText = clienteInfo ? (clienteInfo.cellulare || '-') : '-';
-        document.getElementById('schedaEmail').innerText = clienteInfo ? (clienteInfo.email || '-') : '-';
-        document.getElementById('schedaReferente').innerText = clienteInfo ? (clienteInfo.referenteSpedizione || '-') : '-';
-        document.getElementById('schedaPiva').innerText = clienteInfo ? (clienteInfo.partitaIva || '-') : '-';
-        document.getElementById('schedaCf').innerText = clienteInfo ? (clienteInfo.codiceFiscale || '-') : '-';
-        
-        let sdi = clienteInfo ? (clienteInfo.codiceUnivoco || '-') : '-';
-        let pec = clienteInfo ? (clienteInfo.pec || '-') : '-';
-        document.getElementById('schedaSdiPec').innerText = sdi + " / " + pec;
+        // ---- Anagrafica ----
+        admFacts(document.getElementById('adm-client-contacts'), [
+            ['Referente', client.referenteSpedizione],
+            ['Telefono', client.telefono, client.telefono ? 'tel:' : ''],
+            ['Cellulare', client.cellulare, client.cellulare ? 'tel:' : ''],
+            ['Email', client.email, client.email ? 'mailto:' : ''],
+            ['Sede', client.indirizzoSede],
+            ['Spedizione', client.indirizzoSpedizione || (client.indirizzoSede ? 'Come la sede' : '')]
+        ]);
+        admFacts(document.getElementById('adm-client-billing'), [
+            ['P. IVA', client.partitaIva], ['Codice fiscale', client.codiceFiscale], ['Codice SDI', client.codiceUnivoco], ['PEC', client.pec, client.pec ? 'mailto:' : '']
+        ]);
+        document.getElementById('adm-client-billing-note').textContent = 'Dati della rubrica. Sto controllando il profilo salvato dal cliente…';
+        admFacts(document.getElementById('adm-client-access'), [['Stato', 'Caricamento…']]);
 
+        // ---- Preferenze ----
+        const byCount = map => [...map.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'it'));
+        admBars(document.getElementById('adm-client-models'), byCount(models).slice(0, 6), { photo: true, total: pieces });
+        admBars(document.getElementById('adm-client-colors'), byCount(colors).slice(0, 6), { swatch: true, total: pieces });
+        const sizeOrder = ['Piccolo', 'Medio', 'Grande', 'Unica'];
+        admBars(document.getElementById('adm-client-sizes'), [...sizes.entries()].sort((a, b) => (sizeOrder.indexOf(a[0]) + 1 || 99) - (sizeOrder.indexOf(b[0]) + 1 || 99)), { total: pieces });
+
+        // ---- Storico ----
         const clientList = document.getElementById('clientOrdersTableBody');
-        const sortedClientOrders = [...clientOrders].sort((a, b) => (b.data || '').localeCompare(a.data || '') || b.id - a.id);
-        clientList.replaceChildren(...(sortedClientOrders.length
-            ? sortedClientOrders.map(o => admOrderRow(o))
-            : [admEl('p', 'pet-home-empty', 'Nessun ordine trovato per questo cliente in questo periodo.')]));
+        clientList.replaceChildren(...(period.length
+            ? period.map(o => admOrderRow(o))
+            : [admEl('p', 'pet-home-empty', 'Nessun ordine per questo cliente nel periodo scelto.')]));
 
         document.getElementById('risultatiRicerca').style.display = 'block';
+        admLoadClientCloud(client);
+    }
+
+    async function admLoadClientCloud(client) {
+        const access = document.getElementById('adm-client-access');
+        const note = document.getElementById('adm-client-billing-note');
+        if (typeof window.petAdminClientCloud !== 'function') {
+            admFacts(access, [['Stato', 'Non disponibile in questa anteprima']]);
+            note.textContent = 'Dati della rubrica.';
+            return;
+        }
+        const code = client.codice;
+        let cloud;
+        try { cloud = await window.petAdminClientCloud(code); } catch { cloud = null; }
+        if (document.getElementById('resCodice').textContent !== code) return;
+        if (!cloud) {
+            admFacts(access, [['Stato', 'Dati non disponibili. Ricarica per riprovare.']]);
+            note.textContent = 'Dati della rubrica.';
+            return;
+        }
+        const account = cloud.account;
+        const lastLogin = account?.last_sign_in_at ? new Date(account.last_sign_in_at) : null;
+        admFacts(access, account ? [
+            ['Stato', account.has_account ? 'Account attivo' : 'Invito non ancora accettato'],
+            ['Email di accesso', account.login_email, account.login_email ? 'mailto:' : ''],
+            ['Ultimo accesso', lastLogin ? admDate.format(lastLogin) + ' · ' + (admDays(lastLogin.toISOString().slice(0, 10)) === 0 ? 'oggi' : admDays(lastLogin.toISOString().slice(0, 10)) + ' giorni fa') : (account.has_account ? 'Mai entrato' : '')],
+            ['Profilo fiscale', cloud.billing ? 'Completo' : 'Da compilare: non può ancora inviare ordini']
+        ] : [['Stato', 'Nessun accesso all’area clienti']]);
+
+        const billing = cloud.billing;
+        if (billing?.legal_name) document.getElementById('resRagione').textContent = billing.legal_name;
+        if (!billing) {
+            note.textContent = 'Dati della rubrica. Il cliente non ha ancora salvato il profilo fiscale nella sua area.';
+            return;
+        }
+        const clean = value => String(value || '').replace(/\s+/g, '').toUpperCase();
+        const differences = [];
+        if (clean(client.partitaIva) && clean(client.partitaIva) !== clean(billing.vat_number)) differences.push('P. IVA');
+        if (clean(client.codiceUnivoco) && billing.recipient_code && clean(client.codiceUnivoco) !== clean(billing.recipient_code)) differences.push('codice SDI');
+        if (clean(client.pec) && billing.certified_email && clean(client.pec) !== clean(billing.certified_email)) differences.push('PEC');
+        admFacts(document.getElementById('adm-client-billing'), [
+            ['Ragione sociale', billing.legal_name],
+            ['P. IVA', billing.vat_number], ['Codice fiscale', billing.tax_code || client.codiceFiscale],
+            ['Codice SDI', billing.recipient_code || client.codiceUnivoco], ['PEC', billing.certified_email || client.pec, (billing.certified_email || client.pec) ? 'mailto:' : ''],
+            ['Sede legale', [billing.street_address, [billing.postal_code, billing.city].filter(Boolean).join(' '), billing.province ? '(' + billing.province + ')' : ''].filter(Boolean).join(', ').replace(', (', ' (')]
+        ]);
+        note.textContent = differences.length
+            ? 'Attenzione: ' + differences.join(', ') + ' diversi tra rubrica e profilo salvato dal cliente. Per fatturare vale il profilo.'
+            : 'Dal profilo fiscale salvato dal cliente nella sua area.';
+        note.classList.toggle('adm-billing-warn', differences.length > 0);
     }
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.89.0/dist/umd/supabase.js"></script>
@@ -3842,6 +4029,15 @@
                 markInboxSeen(kind);
             });
         }
+
+        window.petAdminClientCloud = async code => {
+            const [accounts, billing] = await Promise.all([
+                api.rpc('admin_client_accounts'),
+                api.from('client_billing_profiles').select('*').eq('client_code', code).maybeSingle()
+            ]);
+            if (accounts.error || billing.error) throw accounts.error || billing.error;
+            return { account: (accounts.data || []).find(row => row.client_code === code) || null, billing: billing.data };
+        };
 
         let inboxChannel = null;
         let inboxPoll = null;
