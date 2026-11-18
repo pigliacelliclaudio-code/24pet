@@ -102,7 +102,7 @@
         .app-header .sync-status { position: static; display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: 13px; background: var(--canvas); border: 1px solid var(--line); border-radius: 999px; padding: 5px 10px; }
         .app-header .sync-status i { height: auto; line-height: 1; font-size: 16px; }
         .pet-admin-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
-        .pet-admin-actions button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 40px; padding: 7px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--plum); font: inherit; font-size: .92rem; font-weight: 700; cursor: pointer; }
+        .pet-admin-actions button { position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 40px; padding: 7px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--plum); font: inherit; font-size: .92rem; font-weight: 700; cursor: pointer; }
         .pet-admin-actions button:hover { background: #f1e5f4; border-color: #d6bddc; }
         .pet-admin-actions .material-icons { height: auto; line-height: 1; font-size: 18px; }
 
@@ -286,6 +286,10 @@
         .pet-bar-fill-good { background: #2e7d4f; }
         .adm-segments { margin: 12px 0 0; color: var(--muted); font-size: .88rem; }
         .adm-subtitle { margin-top: 18px !important; }
+        .pet-inbox-dot { position: absolute; top: -8px; right: -8px; display: grid; place-items: center; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 999px; background: #d1123f; color: #fff; font-size: .76rem; font-weight: 800; line-height: 1; box-shadow: 0 0 0 2px #fff; }
+        .pet-inbox-dot[hidden] { display: none; }
+        .pet-is-new { border-color: #f1a7bd !important; background: #fff6f8 !important; }
+        .pet-new-label { display: inline-block; margin-left: 8px; padding: 1px 8px; border-radius: 999px; background: #d1123f; color: #fff; font-size: .72rem; font-weight: 800; vertical-align: middle; }
         .adm-list-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 20px; padding: 8px 0 14px; }
         .adm-list-head h4 { margin: 0; font-weight: 800; }
         .adm-list-head .btn { text-transform: none; border-radius: 8px; }
@@ -577,8 +581,8 @@
                 <img class="app-brand-logo" src="/assets/logo-24pet.png" width="38" height="38" alt=""><span>24Pet</span>
             </a>
             <div class="pet-admin-actions" role="group" aria-label="Richieste ricevute">
-                <button type="button" data-admin-inbox aria-haspopup="dialog" aria-controls="pet-admin-order-dialog"><i class="material-icons" aria-hidden="true">receipt_long</i> Richieste d’ordine</button>
-                <button type="button" data-admin-inbox aria-haspopup="dialog" aria-controls="partner-inbox-dialog"><i class="material-icons" aria-hidden="true">how_to_reg</i> Richieste di accesso</button>
+                <button type="button" data-admin-inbox aria-haspopup="dialog" aria-controls="pet-admin-order-dialog"><i class="material-icons" aria-hidden="true">receipt_long</i> Richieste d’ordine<span class="pet-inbox-dot" data-inbox-dot="orders" hidden></span></button>
+                <button type="button" data-admin-inbox aria-haspopup="dialog" aria-controls="partner-inbox-dialog"><i class="material-icons" aria-hidden="true">how_to_reg</i> Richieste di accesso<span class="pet-inbox-dot" data-inbox-dot="partners" hidden></span></button>
             </div>
             <div class="pet-account"><div class="sync-status" id="cloudSyncInfo">
                 <i class="material-icons" aria-hidden="true">storage</i> <span id="dashboard-data-status">Dati locali</span>
@@ -2709,9 +2713,9 @@
             { icon: 'payments', title: unpaid.length ? admMoney.format(unpaidTotal) + ' da incassare' : 'Tutto incassato',
               note: unpaid.length ? unpaid.length + (unpaid.length === 1 ? ' ordine' : ' ordini') + ' · il più vecchio da ' + oldestUnpaid + ' giorni' : 'Nessun pagamento in sospeso', warn: unpaid.length > 0 },
             { icon: 'receipt_long', title: recent(activity.orderRequests) == null ? 'Richieste d’ordine' : plural(recent(activity.orderRequests), 'richiesta d’ordine', 'richieste d’ordine'),
-              note: recent(activity.orderRequests) == null ? 'Caricamento…' : 'negli ultimi 30 giorni', action: ['Apri', () => document.getElementById('pet-admin-order-dialog').showModal()] },
+              note: recent(activity.orderRequests) == null ? 'Caricamento…' : 'negli ultimi 30 giorni', action: ['Apri', () => document.querySelector('[aria-controls="pet-admin-order-dialog"]').click()] },
             { icon: 'how_to_reg', title: recent(activity.partnerRequests) == null ? 'Richieste di accesso' : plural(recent(activity.partnerRequests), 'richiesta di accesso', 'richieste di accesso'),
-              note: recent(activity.partnerRequests) == null ? 'Caricamento…' : 'negli ultimi 30 giorni', action: ['Apri', () => document.getElementById('partner-inbox-dialog').showModal()] }
+              note: recent(activity.partnerRequests) == null ? 'Caricamento…' : 'negli ultimi 30 giorni', action: ['Apri', () => document.querySelector('[aria-controls="partner-inbox-dialog"]').click()] }
         ];
         for (const item of items) {
             const box = admEl('div', 'adm-todo-item' + (item.warn ? ' adm-todo-warn' : ''));
@@ -3000,6 +3004,8 @@
         let signedOutMessage = '';
 
         function showLogin(message = '') {
+            if (typeof stopInboxWatch === 'function') stopInboxWatch();
+            document.title = document.title.replace(/^\(\d+\+?\) /, '');
             for (const dialog of admin.querySelectorAll('.pet-inbox-dialog[open]')) dialog.close();
             document.body.classList.remove('pet-admin');
             admin.hidden = true;
@@ -3699,6 +3705,39 @@
             return details;
         }
 
+        const inboxSeenKeys = { orders: '24pet_seen_order_requests', partners: '24pet_seen_partner_requests' };
+        const inboxTimes = { orders: [], partners: [] };
+        const inboxRenderSeen = {};
+        const baseTitle = document.title;
+        function inboxSeen(kind) {
+            let value = null;
+            try { value = localStorage.getItem(inboxSeenKeys[kind]); } catch {}
+            if (!value) {
+                value = new Date().toISOString();
+                try { localStorage.setItem(inboxSeenKeys[kind], value); } catch {}
+            }
+            return value;
+        }
+        function markInboxSeen(kind) {
+            const latest = inboxTimes[kind].reduce((max, time) => time > max ? time : max, new Date().toISOString());
+            try { localStorage.setItem(inboxSeenKeys[kind], latest); } catch {}
+            updateInboxBadges();
+        }
+        function updateInboxBadges() {
+            let total = 0;
+            for (const kind of Object.keys(inboxTimes)) {
+                const seen = inboxSeen(kind);
+                const count = inboxTimes[kind].filter(time => time > seen).length;
+                total += count;
+                const dot = document.querySelector('[data-inbox-dot="' + kind + '"]');
+                if (!dot) continue;
+                dot.hidden = !count;
+                dot.textContent = count > 99 ? '99+' : String(count);
+                dot.setAttribute('aria-label', count === 1 ? '1 nuova' : count + ' nuove');
+            }
+            document.title = (total ? '(' + total + ') ' : '') + baseTitle;
+        }
+
         function renderRequests(target, requests, adminView) {
             target.replaceChildren();
             if (!adminView) {
@@ -3717,6 +3756,9 @@
             }
             window.petAdminActivity.orderRequests = requests.map(request => request.submitted_at);
             if (typeof aggiornaStatistiche === 'function') aggiornaStatistiche();
+            inboxTimes.orders = requests.map(request => new Date(request.submitted_at).toISOString());
+            inboxRenderSeen.orders = inboxSeen('orders');
+            updateInboxBadges();
             for (const request of requests) {
                 const card = document.createElement('article');
                 card.className = 'pet-client-order';
@@ -3727,6 +3769,10 @@
                 const names = legalName && legalName.trim().toLowerCase() !== String(buyer).trim().toLowerCase()
                     ? buyer + ' · ' + legalName : buyer;
                 heading.textContent = names + ' · ' + requestDate.format(new Date(request.submitted_at));
+                if (new Date(request.submitted_at).toISOString() > inboxRenderSeen.orders) {
+                    card.classList.add('pet-is-new');
+                    heading.append(labeledText('span', 'pet-new-label', 'Nuova'));
+                }
                 const status = document.createElement('p');
                 status.textContent = request.id + ' · Termini ' + request.terms_version;
                 const list = document.createElement('ul');
@@ -3790,7 +3836,32 @@
 
         for (const button of admin.querySelectorAll('[data-admin-inbox]')) {
             const dialog = document.getElementById(button.getAttribute('aria-controls'));
-            button.addEventListener('click', () => dialog.showModal());
+            const kind = button.getAttribute('aria-controls') === 'partner-inbox-dialog' ? 'partners' : 'orders';
+            button.addEventListener('click', () => {
+                dialog.showModal();
+                markInboxSeen(kind);
+            });
+        }
+
+        let inboxChannel = null;
+        let inboxPoll = null;
+        function startInboxWatch() {
+            stopInboxWatch();
+            inboxChannel = api.channel('pet-admin-inbox')
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'client_order_requests' }, () => loadRequests(adminRequestRows, true))
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'partner_requests' }, () => loadPartnerRequests())
+                .subscribe();
+            inboxPoll = setInterval(() => {
+                if (document.hidden || admin.hidden) return;
+                loadRequests(adminRequestRows, true);
+                loadPartnerRequests();
+            }, 120000);
+        }
+        function stopInboxWatch() {
+            if (inboxChannel) api.removeChannel(inboxChannel);
+            inboxChannel = null;
+            if (inboxPoll) clearInterval(inboxPoll);
+            inboxPoll = null;
         }
         document.getElementById('pet-refresh-admin-orders').addEventListener('click', () => loadRequests(adminRequestRows, true));
 
@@ -3883,6 +3954,7 @@
                     loadPartnerRequests();
                     loadRequests(adminRequestRows, true);
                 }
+                if (!inboxChannel) startInboxWatch();
                 return;
             }
 
@@ -3928,10 +4000,14 @@
                 if (error) throw error;
                 window.petAdminActivity.partnerRequests = data.map(request => request.created_at);
                 if (typeof aggiornaStatistiche === 'function') aggiornaStatistiche();
+                inboxTimes.partners = data.map(request => new Date(request.created_at).toISOString());
+                const partnersSeen = inboxSeen('partners');
+                updateInboxBadges();
                 inbox.replaceChildren();
                 for (const request of data) {
                     const row = document.createElement('li');
                     row.className = 'collection-item';
+                    if (new Date(request.created_at).toISOString() > partnersSeen) row.classList.add('pet-is-new');
                     row.textContent = [
                         request.business_name, businessTypes[request.business_type], request.email,
                         new Date(request.created_at).toLocaleDateString('it-IT')
