@@ -3104,12 +3104,43 @@
         return printHtml;
     }
 
+
+    // === STAMPA IN UNA PAGINA SEPARATA (affidabile anche su Safari) ===
+    function petPrint(html, title) {
+        document.getElementById('pet-print-frame')?.remove();
+        const frame = document.createElement('iframe');
+        frame.id = 'pet-print-frame';
+        frame.title = 'Stampa';
+        frame.setAttribute('aria-hidden', 'true');
+        frame.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden;';
+        document.body.append(frame);
+        const doc = frame.contentDocument;
+        doc.open();
+        doc.write('<!DOCTYPE html><html lang="it"><head><meta charset="utf-8"><title></title>'
+            + '<style>@page { size: A4; margin: 10mm; } html, body { margin: 0; background: #fff; }'
+            + ' body { font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #333; }'
+            + ' * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; }'
+            + ' .print-box-break { -webkit-box-decoration-break: clone; box-decoration-break: clone; break-inside: auto; }</style></head><body></body></html>');
+        doc.close();
+        doc.title = title || '24Pet';
+        doc.body.innerHTML = html;
+        const go = async () => {
+            try { await doc.fonts?.ready; } catch {}
+            await new Promise(resolve => setTimeout(resolve, 150));
+            const win = frame.contentWindow;
+            win.addEventListener('afterprint', () => setTimeout(() => frame.remove(), 500), { once: true });
+            win.focus();
+            win.print();
+        };
+        const images = [...doc.images].filter(img => !img.complete);
+        if (images.length) Promise.all(images.map(img => new Promise(r => { img.onload = img.onerror = r; }))).then(go);
+        else go();
+    }
+
     function stampaSchedaProduzioneSingola(idOrdine) {
         const o = orders.find(ord => ord.id === idOrdine);
         if(!o) return;
-        const printContainer = document.getElementById('print-section');
-        printContainer.innerHTML = costruisciHtmlSchedeProduzione([o], "SCHEDA DI PRODUZIONE (LABORATORIO)");
-        setTimeout(() => { window.print(); }, 200);
+        petPrint(costruisciHtmlSchedeProduzione([o], "SCHEDA DI PRODUZIONE (LABORATORIO)"), 'Scheda di produzione ' + admOrderNumber(o));
     }
 
     function stampaSchedaProduzione() {
@@ -3118,9 +3149,7 @@
             M.toast({html: 'Nessun ordine da produrre! (Tutti già evasi)', classes: 'orange rounded'});
             return;
         }
-        const printContainer = document.getElementById('print-section');
-        printContainer.innerHTML = costruisciHtmlSchedeProduzione(daEvadere, "PRODUZIONE MASSIVA (NON EVASI)");
-        setTimeout(() => { window.print(); }, 200);
+        petPrint(costruisciHtmlSchedeProduzione(daEvadere, "PRODUZIONE MASSIVA (NON EVASI)"), 'Produzione ordini da evadere');
     }
 
     // === GENERAZIONE RIEPILOGO CLIENTE COMPATTO ===
@@ -3311,9 +3340,7 @@
             </div>
         `;
 
-        const printContainer = document.getElementById('print-section');
-        printContainer.innerHTML = printHtml;
-        setTimeout(() => { window.print(); }, 200);
+        petPrint(printHtml, 'Conferma ordine');
     }
 
     function aggiornaFiltroAnni() {
