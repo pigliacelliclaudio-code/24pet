@@ -335,6 +335,20 @@
         .adm-stock-moves { display: grid; gap: 4px; margin: 0; max-height: 420px; overflow: auto; }
         .adm-stock-move { display: grid; grid-template-columns: 92px minmax(0, 1.2fr) minmax(0, 1.4fr) auto 38px; align-items: center; gap: 8px; padding: 4px 0; border-bottom: 1px solid var(--line); font-size: .86rem; }
         .adm-stock-dialog { width: min(560px, calc(100% - 20px)); }
+        .adm-box-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+        .adm-box-head h2 { margin: 0; }
+        .adm-box-icon { color: #8a6a3b; font-size: 18px !important; }
+        .adm-box-settings { display: flex; flex-wrap: wrap; gap: 10px 18px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+        .adm-box-settings .adm-field { min-width: 220px; }
+        .adm-box-select { height: 34px !important; padding: 2px 4px !important; border: 1px solid #d9cfdc !important; border-radius: 6px !important; font: inherit; font-size: .85rem; min-width: 110px; }
+        .adm-ship-boxes { display: grid; gap: 6px; margin: 0 0 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: #fff; }
+        .adm-ship-boxes:empty { display: none; }
+        .adm-ship-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+        .adm-ship-head strong { color: var(--plum); }
+        .adm-ship-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+        .adm-ship-row select { max-width: 280px; }
+        .adm-ship-qty { width: 76px !important; height: 36px !important; margin: 0 !important; padding: 4px 8px !important; border: 1px solid #d9cfdc !important; border-radius: 8px !important; box-sizing: border-box; font: inherit; }
+        .adm-ship-boxes > .adm-action, .adm-ship-boxes > .pet-link-button { justify-self: start; }
         .adm-need { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; margin: 0 0 10px; padding: 8px 10px; border-radius: 10px; background: #f6f2f7; font-size: .88rem; }
         .adm-need.is-short { background: #fff6f7; color: #7a1020; }
         .adm-need.is-missing { background: #fffaf0; }
@@ -813,6 +827,29 @@
             </footer>
         </form>
     </dialog>
+    <dialog class="pet-inbox-dialog adm-client-dialog adm-stock-dialog" id="adm-box-dialog" aria-labelledby="adm-box-dialog-title">
+        <header>
+            <h2 id="adm-box-dialog-title">Scatole</h2>
+            <button class="pet-inbox-close" type="button" aria-label="Chiudi" onclick="document.getElementById('adm-box-dialog').close()"><i class="material-icons" aria-hidden="true">close</i></button>
+        </header>
+        <form class="adm-form" novalidate onsubmit="admSaveBoxDialog(event)">
+            <div class="adm-form-body">
+                <div class="adm-form-grid">
+                    <label class="adm-field adm-span-3">Cosa vuoi fare
+                        <select id="adm-box-mode" class="browser-default" onchange="admBoxDialogMode()"><option value="carico">Carico scatole acquistate</option><option value="rettifica">Correggi il conteggio (le ho contate)</option></select></label>
+                    <label class="adm-field adm-span-3">Scatola
+                        <select id="adm-box-id" class="browser-default" onchange="admBoxDialogMode()"></select></label>
+                    <label class="adm-field" id="adm-box-qty-label">Quante ne hai comprate <input id="adm-box-qty" type="number" min="0" step="1" autocomplete="off"></label>
+                    <label class="adm-field adm-span-2">Nota (facoltativa)<input id="adm-box-note" type="text" maxlength="200" autocomplete="off"></label>
+                </div>
+                <p id="adm-box-error" class="adm-form-error" role="alert"></p>
+            </div>
+            <footer class="adm-form-footer">
+                <button type="button" class="adm-action" onclick="document.getElementById('adm-box-dialog').close()">Annulla</button>
+                <button type="submit" class="adm-action adm-action-primary"><i class="material-icons" aria-hidden="true">save</i><span>Salva</span></button>
+            </footer>
+        </form>
+    </dialog>
     <dialog class="pet-inbox-dialog pet-confirm-dialog" id="pet-confirm" aria-labelledby="pet-confirm-title" aria-describedby="pet-confirm-text">
         <div class="pet-confirm-body">
             <i class="material-icons" aria-hidden="true">delete_forever</i>
@@ -951,7 +988,7 @@
                 <div class="collection">
                     <a href="#dashboard-home" class="collection-item active" onclick="showPage('dashboard-home', this); return false;"><i class="material-icons left">dashboard</i> Panoramica</a>
                     <a href="#catalogo-prodotti" class="collection-item" onclick="showPage('catalogo-prodotti', this); return false;"><i class="material-icons left">storefront</i> Catalogo Prodotti</a>
-                    <a href="#magazzino-colori" class="collection-item" onclick="showPage('magazzino-colori', this); renderMagazzino(); return false;"><i class="material-icons left">inventory_2</i> Magazzino colori</a>
+                    <a href="#magazzino-colori" class="collection-item" onclick="showPage('magazzino-colori', this); renderMagazzino(); return false;"><i class="material-icons left">inventory_2</i> Magazzino</a>
                     <a href="#gestione-clienti" class="collection-item" onclick="showPage('gestione-clienti', this); return false;"><i class="material-icons left">people</i> Clienti</a>
                     <a href="#nuovo-ordine" class="collection-item" onclick="showPage('nuovo-ordine', this); return false;"><i class="material-icons left">add_shopping_cart</i> Nuovo Ordine</a>
                     <a href="#lista-ordini" class="collection-item" onclick="showPage('lista-ordini', this); return false;"><i class="material-icons left">list</i> Elenco Ordini</a>
@@ -1057,20 +1094,35 @@
                 <div id="magazzino-colori" class="page-content">
                     <div class="adm-list-head">
                         <div>
-                            <h4 class="text-prugna">Magazzino colori</h4>
-                            <p class="adm-note">Bobine da 1 kg. Quando segni un ordine come evaso, colore e bianco usati si scalano da soli. <span id="adm-stock-state" role="status"></span></p>
+                            <h4 class="text-prugna">Magazzino</h4>
+                            <p class="adm-note">Filamento (bobine da 1 kg) e scatole. Quando segni un ordine come evaso, colore, bianco e scatole usati si scalano da soli. <span id="adm-stock-state" role="status"></span></p>
                         </div>
-                        <button type="button" class="btn btn-custom" onclick="admOpenStockDialog(null, 'carico')"><i class="material-icons left" aria-hidden="true">add_shopping_cart</i>Carica bobine</button>
+                        <div class="adm-catalog-tools">
+                            <button type="button" class="btn btn-custom" onclick="admOpenStockDialog(null, 'carico')"><i class="material-icons left" aria-hidden="true">add_shopping_cart</i>Carica bobine</button>
+                            <button type="button" class="btn btn-custom" onclick="admOpenBoxDialog(null, 'carico')"><i class="material-icons left" aria-hidden="true">inventory_2</i>Carica scatole</button>
+                        </div>
                     </div>
                     <div id="adm-stock-kpis" class="pet-kpis adm-kpis"></div>
                     <div id="adm-stock-alerts"></div>
                     <section class="pet-home-card adm-stock-card" aria-labelledby="adm-stock-title">
-                        <h2 id="adm-stock-title">Filamenti delle vostre urne</h2>
+                        <h2 id="adm-stock-title">Filamento delle vostre urne</h2>
                         <div id="adm-stock-list" class="adm-stock-list"></div>
                         <details class="adm-stock-more">
                             <summary>Altri filamenti Bambu Lab <span id="adm-stock-others-count" class="adm-muted"></span></summary>
                             <div id="adm-stock-others" class="adm-stock-list"></div>
                         </details>
+                    </section>
+                    <section class="pet-home-card adm-stock-card" aria-labelledby="adm-box-title">
+                        <div class="adm-filament-head adm-box-head">
+                            <h2 id="adm-box-title">Scatole</h2>
+                            <button type="button" class="adm-action" onclick="admNewBox()"><i class="material-icons" aria-hidden="true">add</i><span>Nuova misura</span></button>
+                        </div>
+                        <p class="adm-note">Ogni urna usa la scatola indicata nel Catalogo; in più ogni ordine indica le scatole di spedizione.</p>
+                        <div id="adm-box-list" class="adm-stock-list"></div>
+                        <div class="adm-box-settings">
+                            <label class="adm-field">Cartone di spedizione predefinito<select id="adm-box-cartone" class="browser-default adm-filament-select" onchange="admSaveCartonSettings()"></select></label>
+                            <label class="adm-field">Urne per cartone<input id="adm-box-per" type="number" min="1" max="100" step="1" class="browser-default adm-ship-qty" onchange="admSaveCartonSettings()"></label>
+                        </div>
                     </section>
                     <div class="pet-home-grid adm-grid">
                         <section class="pet-home-card" aria-labelledby="adm-stock-moves-title">
@@ -1204,6 +1256,7 @@
                                 
                                 <!-- CONTENITORE SUBTOTALI CARRELLO -->
                                 <div id="subtotaliCarrelloContainer" style="display: none; margin-bottom: 20px;"></div>
+                                <div id="adm-ship-boxes" class="adm-ship-boxes"></div>
                                 <div id="adm-cart-filament" class="adm-cart-filament"></div>
 
                                 <div class="row" style="background-color: #fce4ec; border-radius: 8px; padding: 10px 0; margin-bottom: 10px; margin-top:20px;">
@@ -1547,6 +1600,9 @@
         const stock = admStock();
         const left = new Map(stock);
         const committed = new Map();
+        const boxStock = admBoxStock();
+        const boxLeft = new Map(boxStock);
+        const boxCommitted = new Map();
         const plan = new Map();
         let minutes = 0;
         const open = orders.filter(o => !o.evaso && o.id !== skipId)
@@ -1560,26 +1616,40 @@
                 left.set(code, before - g);
                 committed.set(code, (committed.get(code) || 0) + g);
             }
-            return { need, short };
+            const boxNeed = admOrderBoxNeed(order);
+            const boxShort = [];
+            for (const [id, q] of boxNeed.boxes) {
+                const before = boxLeft.get(id) || 0;
+                if (before < q) boxShort.push({ id, qty: q - Math.max(before, 0) });
+                boxLeft.set(id, before - q);
+                boxCommitted.set(id, (boxCommitted.get(id) || 0) + q);
+            }
+            const missing = new Set([...need.missing, ...boxNeed.missing]);
+            return { need, short, boxNeed, boxShort, missing, anyShort: short.length + boxShort.length > 0 };
         };
         for (const o of open) { const r = evaluate(o); plan.set(o.id, r); minutes += r.need.minutes; }
         const extra = extraOrder ? evaluate(extraOrder) : null;
         const shortages = new Map();
-        for (const [code, g] of committed) { const s = stock.get(code) || 0; if (g > s + 0.5) shortages.set(code, g - Math.max(s, 0)); }
-        return { stock, committed, plan, shortages, minutes, extra };
+        for (const [code, g] of committed) { const st = stock.get(code) || 0; if (g > st + 0.5) shortages.set(code, g - Math.max(st, 0)); }
+        const boxShortages = new Map();
+        for (const [id, q] of boxCommitted) { const st = boxStock.get(id) || 0; if (q > st) boxShortages.set(id, q - Math.max(st, 0)); }
+        return { stock, committed, plan, shortages, minutes, extra, boxStock, boxCommitted, boxShortages };
     }
 
     async function petLoadFilaments() {
         if (petStore.mode !== 'cloud' || typeof window.petCloud?.filamentMoves !== 'function') return;
         try {
-            const [moves, settings] = await Promise.all([window.petCloud.filamentMoves(), window.petCloud.getSetting('magazzino')]);
+            const [moves, settings, boxMoves, boxSettings] = await Promise.all([window.petCloud.filamentMoves(), window.petCloud.getSetting('magazzino'), window.petCloud.boxMoves(), window.petCloud.getSetting('scatole')]);
             petFilamentMoves = moves || [];
             petStockSettings = Object.assign({ bianco: '11100' }, settings || {});
+            petBoxMoves = boxMoves || [];
+            petBoxSettings = Object.assign({ lista: [], cartone: '', perCartone: 8 }, boxSettings || {});
             petStockLoaded = true;
         } catch { return; }
         renderMagazzino();
         loadOrders();
-        if (typeof aggiornaUICarrello === 'function' && carrelloCorrente.length) aggiornaUICarrello();
+        renderCatalogo();
+        if (typeof aggiornaUICarrello === 'function') aggiornaUICarrello();
     }
 
     function admFilamentLabel(code) {
@@ -1611,13 +1681,14 @@
         const total = [...plan.stock.values()].reduce((s, g) => s + Math.max(g, 0), 0);
         const committed = [...plan.committed.values()].reduce((s, g) => s + g, 0);
         const toBuy = [...plan.shortages.values()].reduce((s, g) => s + Math.ceil(g / 1000), 0);
+        const boxesToBuy = [...plan.boxShortages.values()].reduce((s, q) => s + q, 0);
         const missingData = new Set();
-        for (const r of plan.plan.values()) r.need.missing.forEach(m => missingData.add(m));
+        for (const r of plan.plan.values()) r.missing.forEach(m => missingData.add(m));
         const kpis = document.getElementById('adm-stock-kpis');
         kpis.replaceChildren(
             admKpi('inventory_2', 'In magazzino', admGrams(total), '≈ ' + admKg.format(total / 1000).replace(/,00$/, '') + ' bobine da 1 kg'),
             admKpi('pending_actions', 'Impegnato dagli ordini aperti', admGrams(committed), orders.filter(o => !o.evaso).length + ' ordini da evadere'),
-            admKpi('shopping_cart', 'Da comprare', toBuy ? toBuy + (toBuy === 1 ? ' bobina' : ' bobine') : 'Niente', plan.shortages.size ? plan.shortages.size + (plan.shortages.size === 1 ? ' colore manca' : ' colori mancano') : 'Il filamento basta per gli ordini aperti', plan.shortages.size ? 'warn' : ''),
+            admKpi('shopping_cart', 'Da comprare', (toBuy || boxesToBuy) ? [toBuy ? toBuy + (toBuy === 1 ? ' bobina' : ' bobine') : '', boxesToBuy ? boxesToBuy + ' scatole' : ''].filter(Boolean).join(' · ') : 'Niente', (plan.shortages.size || plan.boxShortages.size) ? 'per gli ordini aperti' : 'Materiale sufficiente per gli ordini aperti', (plan.shortages.size || plan.boxShortages.size) ? 'warn' : ''),
             admKpi('schedule', 'Stampa da fare', admHours(plan.minutes), 'somma dei tempi delle urne da evadere')
         );
 
@@ -1631,6 +1702,18 @@
             for (const [code, g] of [...plan.shortages.entries()].sort((a, b) => b[1] - a[1])) {
                 const li = admEl('li', '');
                 li.append(admFilamentLabel(code), admEl('span', '', 'mancano ' + admGrams(g) + ' · ' + Math.ceil(g / 1000) + (Math.ceil(g / 1000) === 1 ? ' bobina' : ' bobine')));
+                ul.append(li);
+            }
+            box.append(ul);
+            alerts.append(box);
+        }
+        if (plan.boxShortages.size) {
+            const box = admEl('section', 'adm-stock-alert');
+            box.append(admEl('h2', '', 'Scatole da comprare per gli ordini aperti'));
+            const ul = admEl('ul', '');
+            for (const [id, q] of [...plan.boxShortages.entries()].sort((a, b) => b[1] - a[1])) {
+                const li = admEl('li', '');
+                li.append(admBoxLabel(id), admEl('span', '', 'mancano ' + q + (q === 1 ? ' scatola' : ' scatole')));
                 ul.append(li);
             }
             box.append(ul);
@@ -1703,28 +1786,80 @@
         }
         white.value = admWhiteCode();
 
+        renderMagazzinoScatole(plan);
+
         // Movimenti
         const movesBox = document.getElementById('adm-stock-moves');
         const fmt = new Intl.DateTimeFormat('it-IT', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Rome' });
         const kindLabel = { carico: 'Carico', rettifica: 'Correzione', scarico: 'Ordine evaso' };
-        const recent = [...petFilamentMoves].sort((a, b) => b.id - a.id).slice(0, 60);
+        const recent = [...petFilamentMoves.map(m => ({ ...m, kindOf: 'f' })), ...petBoxMoves.map(m => ({ ...m, kindOf: 'b' }))]
+            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at) || b.id - a.id).slice(0, 60);
         movesBox.replaceChildren(...(recent.length ? recent.map(m => {
             const li = admEl('li', 'adm-stock-move');
-            li.append(admEl('span', 'adm-muted', fmt.format(new Date(m.created_at))), admFilamentLabel(m.code),
+            const isBox = m.kindOf === 'b';
+            const amount = isBox ? Number(m.qty) : Number(m.grams);
+            const amountText = isBox ? Math.abs(amount) + ' pz' : admGrams(Math.abs(amount));
+            li.append(admEl('span', 'adm-muted', fmt.format(new Date(m.created_at))), isBox ? admBoxLabel(m.box_id) : admFilamentLabel(m.code),
                 admEl('span', '', kindLabel[m.kind] + (m.note ? ' · ' + m.note : '')),
-                admEl('strong', Number(m.grams) < 0 ? 'adm-stock-neg' : 'adm-stock-pos', (Number(m.grams) > 0 ? '+' : '−') + admGrams(Math.abs(m.grams))));
+                admEl('strong', amount < 0 ? 'adm-stock-neg' : 'adm-stock-pos', (amount > 0 ? '+' : '−') + amountText));
             if (m.kind !== 'scarico') {
                 const del = admEl('button', 'adm-icon-action adm-action-danger');
                 del.type = 'button'; del.title = 'Elimina movimento'; del.setAttribute('aria-label', 'Elimina movimento');
                 del.append(admIcon('delete'));
-                del.addEventListener('click', () => petConfirmDelete('Eliminare questo movimento?', (kindLabel[m.kind]) + ' di ' + admGrams(Math.abs(m.grams)) + ' · ' + (admFilament(m.code)?.nome || m.code) + '. Le scorte vengono ricalcolate.').then(async ok => {
+                del.addEventListener('click', () => petConfirmDelete('Eliminare questo movimento?', (kindLabel[m.kind]) + ' di ' + amountText + ' · ' + (isBox ? admBoxName(m.box_id) : (admFilament(m.code)?.nome || m.code)) + '. Le scorte vengono ricalcolate.').then(async ok => {
                     if (!ok) return;
-                    try { await window.petCloud.deleteMove(m.id); await petLoadFilaments(); } catch { M.toast({ html: 'Non eliminato: riprova', classes: 'rounded' }); }
+                    try { if (isBox) await window.petCloud.deleteBoxMove(m.id); else await window.petCloud.deleteMove(m.id); await petLoadFilaments(); } catch { M.toast({ html: 'Non eliminato: riprova', classes: 'rounded' }); }
                 }));
                 li.append(del);
             } else li.append(admEl('span', ''));
             return li;
         }) : [admEl('li', 'adm-muted', 'Nessun movimento: inizia caricando le bobine che hai.')]));
+    }
+
+    function renderMagazzinoScatole(plan) {
+        const list = document.getElementById('adm-box-list');
+        if (!list) return;
+        const boxes = admBoxes();
+        list.replaceChildren(...(boxes.length ? boxes.map(b => {
+            const stock = plan.boxStock.get(b.id) || 0;
+            const need = plan.boxCommitted.get(b.id) || 0;
+            const after = stock - need;
+            const row = admEl('div', 'adm-stock-row' + (after < 0 ? ' is-short' : need && after < 5 ? ' is-low' : ''));
+            const who = admEl('div', 'adm-stock-who');
+            who.append(admBoxLabel(b.id));
+            const users = [];
+            for (const [model, sizes] of Object.entries(catalogoPrezzi)) for (const [size, v] of Object.entries(sizes)) if (v.scatola === b.id) users.push(model + ' ' + size);
+            const roles = [users.length ? 'Per: ' + users.join(', ') : '', petBoxSettings.cartone === b.id ? 'cartone di spedizione predefinito' : ''].filter(Boolean);
+            if (roles.length) who.append(admEl('span', 'adm-stock-users', roles.join(' · ')));
+            const bar = admEl('div', 'adm-stock-bar');
+            const top = Math.max(20, stock, need);
+            const fill = admEl('span', ''); fill.style.width = Math.max(0, Math.min(100, stock / top * 100)) + '%';
+            bar.append(fill);
+            if (need) { const mark = admEl('i', ''); mark.style.left = Math.min(100, need / top * 100) + '%'; bar.append(mark); }
+            const nums = admEl('div', 'adm-stock-nums');
+            nums.append(admEl('strong', '', stock + ' pz'), admEl('span', '', need ? 'impegnate ' + need : 'nessun ordine aperto'),
+                admEl('span', after < 0 ? 'adm-stock-neg' : 'adm-stock-pos', need ? (after < 0 ? 'mancano ' + (-after) : 'restano ' + after) : ''));
+            const actions = admEl('div', 'adm-stock-actions');
+            const plus = admEl('button', 'adm-action'); plus.type = 'button'; plus.append(admIcon('add'), admEl('span', '', 'Carica'));
+            plus.setAttribute('aria-label', 'Carica scatole ' + b.nome);
+            plus.addEventListener('click', () => admOpenBoxDialog(b.id, 'carico'));
+            const fix = admEl('button', 'adm-icon-action'); fix.type = 'button'; fix.title = 'Correggi il conteggio'; fix.setAttribute('aria-label', 'Correggi il conteggio di ' + b.nome);
+            fix.append(admIcon('edit_note')); fix.addEventListener('click', () => admOpenBoxDialog(b.id, 'rettifica'));
+            const del = admEl('button', 'adm-icon-action adm-action-danger'); del.type = 'button'; del.title = 'Elimina misura'; del.setAttribute('aria-label', 'Elimina la scatola ' + b.nome);
+            del.append(admIcon('delete')); del.addEventListener('click', () => admDeleteBox(b.id));
+            actions.append(plus, fix, del);
+            row.append(who, bar, nums, actions);
+            return row;
+        }) : [admEl('p', 'adm-muted', 'Nessuna scatola: crea le misure che usi con «Nuova misura».')]));
+        const cartone = document.getElementById('adm-box-cartone');
+        cartone.replaceChildren(new Option('— Nessuno —', ''), ...boxes.map(b => new Option(b.nome, b.id)));
+        cartone.value = petBoxSettings.cartone || '';
+        document.getElementById('adm-box-per').value = parseInt(petBoxSettings.perCartone, 10) || 8;
+    }
+    async function admSaveCartonSettings() {
+        petBoxSettings.cartone = document.getElementById('adm-box-cartone').value;
+        petBoxSettings.perCartone = Math.max(1, Math.min(100, parseInt(document.getElementById('adm-box-per').value, 10) || 8));
+        if (await admSaveBoxSettings()) { M.toast({ html: 'Impostazioni di spedizione salvate', classes: 'rounded' }); renderMagazzino(); }
     }
 
     async function admAddStock(code, grams, kind, note) {
@@ -1778,6 +1913,164 @@
         if (mode === 'rettifica' && Math.abs(grams) < 1) { error.textContent = 'Il peso è già questo: niente da correggere.'; return; }
         document.getElementById('adm-stock-dialog').close();
         await admAddStock(code, grams, mode, note || (mode === 'carico' ? value + (value === 1 ? ' bobina da 1 kg' : ' bobine da 1 kg') : 'Peso verificato: ' + Math.round(value) + ' g'));
+    }
+
+
+    // === MAGAZZINO SCATOLE (una per urna dal catalogo + cartoni di spedizione indicati nell'ordine) ===
+    let petBoxMoves = [];
+    let petBoxSettings = { lista: [], cartone: '', perCartone: 8 };
+    let carrelloScatole = [];
+    let carrelloScatoleManuale = false;
+    function admBoxes() { return Array.isArray(petBoxSettings.lista) ? petBoxSettings.lista : []; }
+    function admBox(id) { return admBoxes().find(b => b.id === id) || null; }
+    function admBoxName(id) { return admBox(id)?.nome || id; }
+    function admBoxStock() {
+        const stock = new Map();
+        for (const m of petBoxMoves) stock.set(m.box_id, (stock.get(m.box_id) || 0) + Number(m.qty));
+        return stock;
+    }
+    function admOrderBoxNeed(order) {
+        const boxes = new Map();
+        const missing = new Set();
+        let pieces = 0;
+        for (const a of order.articoli || []) {
+            const q = admQty(a);
+            pieces += q;
+            const box = catalogoPrezzi[a.modello]?.[a.dimensione]?.scatola;
+            if (box) boxes.set(box, (boxes.get(box) || 0) + q);
+            else missing.add(a.modello + ' ' + (a.dimensione || '') + ': scatola da assegnare nel catalogo');
+        }
+        const ship = Array.isArray(order.scatoleSpedizione) ? order.scatoleSpedizione : [];
+        for (const s of ship) { const q = parseInt(s.qta, 10) || 0; if (s.id && q > 0) boxes.set(s.id, (boxes.get(s.id) || 0) + q); }
+        if (pieces && !ship.some(s => (parseInt(s.qta, 10) || 0) > 0)) missing.add('scatole di spedizione non indicate');
+        return { boxes, missing };
+    }
+    function admSuggestedCartons(pieces) {
+        const per = Math.max(1, parseInt(petBoxSettings.perCartone, 10) || 8);
+        return pieces ? Math.ceil(pieces / per) : 0;
+    }
+    function admBoxLabel(id) {
+        const box = admEl('span', 'adm-stock-name');
+        const icon = admIcon('inventory_2');
+        icon.classList.add('adm-box-icon');
+        const text = admEl('span', '');
+        text.append(admEl('strong', '', admBoxName(id)), admEl('small', '', 'Scatola'));
+        box.append(icon, text);
+        return box;
+    }
+    async function admAddBoxMove(boxId, qty, kind, note) {
+        if (!qty) return;
+        try {
+            await window.petCloud.addBoxMove({ box_id: boxId, qty: Math.round(qty), kind, note: note || null });
+            await petLoadFilaments();
+            M.toast({ html: (qty > 0 ? 'Aggiunte ' : 'Tolte ') + Math.abs(Math.round(qty)) + ' scatole ' + admBoxName(boxId), classes: 'rounded' });
+        } catch { M.toast({ html: 'Movimento non salvato: riprova', classes: 'rounded' }); }
+    }
+    async function admSaveBoxSettings() {
+        try { await window.petCloud.saveSetting('scatole', petBoxSettings); return true; }
+        catch { M.toast({ html: 'Non salvato: riprova', classes: 'rounded' }); return false; }
+    }
+    async function admNewBox() {
+        const text = (prompt('Misura della scatola in cm (es. 15x15x15), oppure un nome (es. Cartone grande 40x40x40):') || '').trim();
+        if (!text) return;
+        const id = 's-' + text.toLowerCase().replace(/×/g, 'x').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 36);
+        if (id === 's-') return;
+        if (admBox(id)) { M.toast({ html: 'Questa scatola esiste già', classes: 'rounded' }); return; }
+        const nome = /^\d+\s*[x×]\s*\d+\s*[x×]\s*\d+$/i.test(text) ? text.replace(/\s*[x×]\s*/gi, '×') + ' cm' : text.replace(/(\d)\s*[x×]\s*(\d)/gi, '$1×$2');
+        petBoxSettings.lista = [...admBoxes(), { id, nome }];
+        if (await admSaveBoxSettings()) { renderMagazzino(); renderCatalogo(); }
+    }
+    function admDeleteBox(id) {
+        const stock = admBoxStock().get(id) || 0;
+        const used = Object.values(catalogoPrezzi).some(sizes => Object.values(sizes).some(v => v.scatola === id));
+        if (stock || used) { M.toast({ html: used ? 'Prima togli questa scatola dai prodotti del catalogo' : 'Prima porta a zero le scorte di questa scatola', classes: 'rounded' }); return; }
+        petConfirmDelete('Eliminare la scatola ' + admBoxName(id) + '?', 'Sparisce dall’elenco delle scatole. Gli ordini già fatti non cambiano.').then(async ok => {
+            if (!ok) return;
+            petBoxSettings.lista = admBoxes().filter(b => b.id !== id);
+            if (petBoxSettings.cartone === id) petBoxSettings.cartone = '';
+            if (await admSaveBoxSettings()) { renderMagazzino(); renderCatalogo(); }
+        });
+    }
+    function admOpenBoxDialog(id, mode) {
+        if (!admBoxes().length) { admNewBox(); return; }
+        const dialog = document.getElementById('adm-box-dialog');
+        const select = document.getElementById('adm-box-id');
+        select.replaceChildren(...admBoxes().map(b => new Option(b.nome, b.id)));
+        select.value = id || admBoxes()[0].id;
+        document.getElementById('adm-box-mode').value = mode || 'carico';
+        document.getElementById('adm-box-note').value = '';
+        document.getElementById('adm-box-error').textContent = '';
+        admBoxDialogMode();
+        dialog.showModal();
+        document.getElementById('adm-box-qty').focus();
+    }
+    function admBoxDialogMode() {
+        const mode = document.getElementById('adm-box-mode').value;
+        const id = document.getElementById('adm-box-id').value;
+        document.getElementById('adm-box-qty-label').firstChild.textContent = mode === 'rettifica' ? 'Quante ne hai davvero adesso ' : 'Quante ne hai comprate ';
+        document.getElementById('adm-box-qty').value = mode === 'rettifica' ? Math.max(0, admBoxStock().get(id) || 0) : '';
+    }
+    async function admSaveBoxDialog(event) {
+        event.preventDefault();
+        const id = document.getElementById('adm-box-id').value;
+        const mode = document.getElementById('adm-box-mode').value;
+        const value = parseInt(document.getElementById('adm-box-qty').value, 10);
+        const note = document.getElementById('adm-box-note').value.trim();
+        const error = document.getElementById('adm-box-error');
+        if (!Number.isFinite(value) || value < 0 || (mode === 'carico' && (value <= 0 || value > 10000))) { error.textContent = mode === 'carico' ? 'Scrivi quante scatole (da 1 a 10000).' : 'Scrivi quante ne hai (0 o più).'; return; }
+        const qty = mode === 'carico' ? value : value - (admBoxStock().get(id) || 0);
+        if (mode === 'rettifica' && !qty) { error.textContent = 'Il conteggio è già questo: niente da correggere.'; return; }
+        document.getElementById('adm-box-dialog').close();
+        await admAddBoxMove(id, qty, mode, note || (mode === 'carico' ? value + ' scatole acquistate' : 'Conteggio verificato: ' + value));
+    }
+
+    // Scatole di spedizione nel modulo ordine
+    function admCartPieces() { return carrelloCorrente.reduce((s, a) => s + admQty(a), 0); }
+    function admRenderShipBoxes() {
+        const box = document.getElementById('adm-ship-boxes');
+        if (!box) return;
+        const pieces = admCartPieces();
+        if (!carrelloScatoleManuale && petBoxSettings.cartone) {
+            const n = admSuggestedCartons(pieces);
+            carrelloScatole = n ? [{ id: petBoxSettings.cartone, qta: n }] : [];
+        }
+        box.replaceChildren();
+        const head = admEl('div', 'adm-ship-head');
+        head.append(admEl('strong', '', 'Scatole di spedizione'));
+        const suggested = admSuggestedCartons(pieces);
+        if (pieces) head.append(admEl('span', 'adm-muted', 'Suggerite: ' + suggested + ' (1 ogni ' + (parseInt(petBoxSettings.perCartone, 10) || 8) + ' urne)'));
+        box.append(head);
+        if (!admBoxes().length) { box.append(admEl('p', 'adm-muted', 'Crea le misure delle scatole nella pagina Magazzino.')); return; }
+        carrelloScatole.forEach((s, i) => {
+            const row = admEl('div', 'adm-ship-row');
+            const select = document.createElement('select');
+            select.className = 'browser-default adm-filament-select';
+            select.setAttribute('aria-label', 'Scatola di spedizione');
+            select.append(...admBoxes().map(b => new Option(b.nome, b.id)));
+            select.value = s.id;
+            select.addEventListener('change', () => { s.id = select.value; carrelloScatoleManuale = true; admRenderCartFilament(); });
+            const qty = document.createElement('input');
+            qty.type = 'number'; qty.min = '0'; qty.step = '1'; qty.value = s.qta; qty.className = 'browser-default adm-ship-qty';
+            qty.setAttribute('aria-label', 'Quantità');
+            qty.addEventListener('input', () => { s.qta = Math.max(0, parseInt(qty.value, 10) || 0); carrelloScatoleManuale = true; admRenderCartFilament(); });
+            const del = admEl('button', 'adm-icon-action adm-action-danger');
+            del.type = 'button'; del.title = 'Togli'; del.setAttribute('aria-label', 'Togli questa scatola');
+            del.append(admIcon('close'));
+            del.addEventListener('click', () => { carrelloScatole.splice(i, 1); carrelloScatoleManuale = true; admRenderShipBoxes(); admRenderCartFilament(); });
+            row.append(select, qty, admEl('span', 'adm-muted', 'pz'), del);
+            box.append(row);
+        });
+        const add = admEl('button', 'adm-action');
+        add.type = 'button';
+        add.append(admIcon('add'), admEl('span', '', 'Aggiungi scatola'));
+        add.addEventListener('click', () => { carrelloScatole.push({ id: petBoxSettings.cartone || admBoxes()[0].id, qta: 1 }); carrelloScatoleManuale = true; admRenderShipBoxes(); admRenderCartFilament(); });
+        box.append(add);
+        if (carrelloScatoleManuale && petBoxSettings.cartone && pieces) {
+            const reset = admEl('button', 'pet-link-button', 'Usa il suggerimento');
+            reset.type = 'button';
+            reset.addEventListener('click', () => { carrelloScatoleManuale = false; admRenderShipBoxes(); admRenderCartFilament(); });
+            box.append(reset);
+        }
     }
 
     function renderColoriBambu() {
@@ -2487,7 +2780,7 @@
             const table = admEl('table', 'adm-product-table');
             const thead = admEl('thead', '');
             thead.innerHTML = editing
-                ? '<tr><th scope="col">Misura</th><th scope="col">Costo lab.</th><th scope="col">Listino</th><th scope="col">Stampa (min)</th><th scope="col">Colore (g)</th><th scope="col">Bianco (g)</th></tr>'
+                ? '<tr><th scope="col">Misura</th><th scope="col">Costo lab.</th><th scope="col">Listino</th><th scope="col">Stampa (min)</th><th scope="col">Colore (g)</th><th scope="col">Bianco (g)</th><th scope="col">Scatola</th></tr>'
                 : '<tr><th scope="col">Misura</th><th scope="col">Costo lab.</th><th scope="col">Listino</th><th scope="col">Margine</th><th scope="col">Produzione</th></tr>';
             const tbody = admEl('tbody', '');
             const dims = Object.keys(variants).sort((a, b) => (sizeOrder.indexOf(a) + 1 || 99) - (sizeOrder.indexOf(b) + 1 || 99));
@@ -2530,13 +2823,22 @@
                         td.append(input);
                         tr.append(td);
                     }
+                    const boxTd = admEl('td', '');
+                    const boxSelect = document.createElement('select');
+                    boxSelect.className = 'browser-default adm-box-select';
+                    boxSelect.id = 'edit_scatola_' + modello + '_' + dim;
+                    boxSelect.setAttribute('aria-label', 'Scatola ' + modello + ' ' + dim);
+                    boxSelect.append(new Option('—', ''), ...admBoxes().map(b => new Option(b.nome, b.id)));
+                    boxSelect.value = v.scatola || '';
+                    boxTd.append(boxSelect);
+                    tr.append(boxTd);
                 } else {
                     const cost = Number(v.costo) || 0, price = Number(v.prezzo) || 0;
                     const margin = price - cost;
                     tr.append(admEl('td', '', admMoney.format(cost)), admEl('td', 'adm-price', admMoney.format(price)),
                         admEl('td', margin >= 0 ? 'adm-margin' : 'adm-margin-negative', admMoney.format(margin) + (price ? ' · ' + Math.round(margin / price * 100) + '%' : '')));
                     const gc = Number(v.grammiColore) || 0, gb = Number(v.grammiBianco) || 0, tm = Number(v.tempoStampa) || 0;
-                    tr.append(admEl('td', 'adm-product-prod', (gc || gb || tm) ? [tm ? admHours(tm) : '', gc ? gc + ' g colore' : '', gb ? gb + ' g bianco' : ''].filter(Boolean).join(' · ') : 'Da inserire'));
+                    tr.append(admEl('td', 'adm-product-prod', (gc || gb || tm || v.scatola) ? [tm ? admHours(tm) : '', gc ? gc + ' g colore' : '', gb ? gb + ' g bianco' : '', v.scatola ? 'scatola ' + admBoxName(v.scatola) : ''].filter(Boolean).join(' · ') : 'Da inserire'));
                 }
                 tbody.append(tr);
             }
@@ -2577,6 +2879,8 @@
                 varianti[dim].costo = parseFloat(inputCosto.value) || 0;
                 varianti[dim].prezzo = parseFloat(inputPrezzo.value) || 0;
             }
+            const boxSelect = document.getElementById(`edit_scatola_${modello}_${dim}`);
+            if (boxSelect) { if (boxSelect.value) varianti[dim].scatola = boxSelect.value; else delete varianti[dim].scatola; }
             for (const [field, key] of [['tempo', 'tempoStampa'], ['gcol', 'grammiColore'], ['gbia', 'grammiBianco']]) {
                 const input = document.getElementById(`edit_${field}_${modello}_${dim}`);
                 if (!input) continue;
@@ -3043,6 +3347,8 @@
         if(carrelloCorrente.length === 0) {
             tbody.innerHTML = '<tr><td colspan="6" class="center-align grey-text">Il carrello è vuoto. Aggiungi i prodotti qui sopra.</td></tr>';
             document.getElementById('adm-cart-filament')?.replaceChildren();
+            if (!carrelloScatoleManuale) carrelloScatole = [];
+            admRenderShipBoxes();
             document.getElementById('importo').value = '';
             document.getElementById('labelUtile').innerText = '';
             document.getElementById('riepilogoScontoContenitore').style.display = 'none';
@@ -3138,23 +3444,28 @@
         document.getElementById('importo').value = importoFinale.toFixed(2);
         document.getElementById('labelUtile').innerText = "Vero Guadagno (Utile Netto): € " + utileNetto.toFixed(2) + " (+ iva)";
         M.updateTextFields();
+        admRenderShipBoxes();
         admRenderCartFilament();
+    }
+    function admNeedLine(r, cart) {
+        const line = admEl('div', 'adm-need' + (r.anyShort ? ' is-short' : r.missing.size ? ' is-missing' : ''));
+        line.append(admIcon(r.anyShort ? 'warning' : 'precision_manufacturing'),
+            admEl('strong', '', cart ? (r.anyShort ? 'Il materiale non basta, contando gli ordini già aperti' : r.missing.size ? 'Calcolo del materiale incompleto' : 'Materiale sufficiente') : (r.need.minutes ? 'Stampa ' + admHours(r.need.minutes) : 'Tempo di stampa da inserire')));
+        if (cart && r.need.minutes) line.append(admEl('span', '', 'Stampa ' + admHours(r.need.minutes)));
+        for (const [code, g] of r.need.grams) { const item = admEl('span', ''); item.append(admFilamentLabel(code), document.createTextNode(' ' + admGrams(g))); line.append(item); }
+        for (const [id, q] of r.boxNeed.boxes) { const item = admEl('span', ''); item.append(admBoxLabel(id), document.createTextNode(' ' + q + ' pz')); line.append(item); }
+        const shorts = [...r.short.map(x => admGrams(x.grams) + ' di ' + (admFilament(x.code)?.nome || x.code)), ...r.boxShort.map(x => x.qty + ' scatole ' + admBoxName(x.id))];
+        if (shorts.length) line.append(admEl('span', 'adm-stock-neg', 'Mancano: ' + shorts.join(', ')));
+        if (r.missing.size) line.append(admEl('span', 'adm-muted', [...r.missing].join(' · ')));
+        return line;
     }
     function admRenderCartFilament() {
         const box = document.getElementById('adm-cart-filament');
         if (!box) return;
         box.replaceChildren();
         if (!petStockLoaded || !carrelloCorrente.length) return;
-        const plan = admFilamentPlan({ articoli: carrelloCorrente }, idOrdineInModifica);
-        const r = plan.extra;
-        const line = admEl('div', 'adm-need' + (r.short.length ? ' is-short' : r.need.missing.size ? ' is-missing' : ''));
-        line.append(admIcon(r.short.length ? 'warning' : 'inventory_2'),
-            admEl('strong', '', r.short.length ? 'Il filamento non basta, contando gli ordini già aperti' : r.need.missing.size ? 'Calcolo del filamento incompleto' : 'Filamento sufficiente'),
-            admEl('span', '', r.need.minutes ? 'Stampa ' + admHours(r.need.minutes) : ''));
-        for (const [code, g] of r.need.grams) { const item = admEl('span', ''); item.append(admFilamentLabel(code), document.createTextNode(' ' + admGrams(g))); line.append(item); }
-        if (r.short.length) line.append(admEl('span', 'adm-stock-neg', 'Mancano: ' + r.short.map(x => admGrams(x.grams) + ' di ' + (admFilament(x.code)?.nome || x.code)).join(', ')));
-        if (r.need.missing.size) line.append(admEl('span', 'adm-muted', [...r.need.missing].join(' · ')));
-        box.append(line);
+        const plan = admFilamentPlan({ articoli: carrelloCorrente, scatoleSpedizione: carrelloScatole }, idOrdineInModifica);
+        box.append(admNeedLine(plan.extra, true));
     }
 
     // === GESTIONE MODIFICA E SALVATAGGIO ORDINE ===
@@ -3183,6 +3494,8 @@
         document.getElementById('evaso').checked = order.evaso;
 
         carrelloCorrente = JSON.parse(JSON.stringify(order.articoli));
+        carrelloScatole = JSON.parse(JSON.stringify(order.scatoleSpedizione || []));
+        carrelloScatoleManuale = Array.isArray(order.scatoleSpedizione);
 
         M.updateTextFields();
         aggiornaUICarrello();
@@ -3199,6 +3512,8 @@
     function annullaModificaOrdine() {
         idOrdineInModifica = null;
         carrelloCorrente = [];
+        carrelloScatole = [];
+        carrelloScatoleManuale = false;
         document.getElementById('orderForm').reset();
         
         document.getElementById('titoloFormOrdine').innerHTML = `<i class="material-icons left">add_shopping_cart</i>Componi Ordine Multiplo`;
@@ -3290,7 +3605,8 @@
             importo: importoFinale,
             utile: utileNetto,
             pagato: document.getElementById('pagato').checked,
-            evaso: document.getElementById('evaso').checked
+            evaso: document.getElementById('evaso').checked,
+            scatoleSpedizione: carrelloScatole.filter(x => x.id && (parseInt(x.qta, 10) || 0) > 0).map(x => ({ id: x.id, qta: parseInt(x.qta, 10) }))
         };
 
         if (idOrdineInModifica) {
@@ -3348,9 +3664,9 @@
         state.append(o.pagato ? admBadge('Pagato', 'ok') : admBadge('Da pagare', 'warn'), o.evaso ? admBadge('Evaso', 'ok') : admBadge('Da evadere', 'neutral'));
         const stockPlan = !o.evaso && petStockLoaded ? admOrderPlanCache?.plan.get(o.id) : null;
         if (stockPlan) {
-            if (stockPlan.short.length) state.append(admBadge('Manca filamento', 'warn'));
-            else if (stockPlan.need.missing.size) state.append(admBadge('Dati stampa incompleti', 'neutral'));
-            else state.append(admBadge('Filamento ok', 'ok'));
+            if (stockPlan.anyShort) state.append(admBadge('Manca materiale', 'warn'));
+            else if (stockPlan.missing.size) state.append(admBadge('Dati incompleti', 'neutral'));
+            else state.append(admBadge('Materiale ok', 'ok'));
         }
         const money = admEl('span', 'pet-order-amount', admMoney.format(o.importo || 0));
         money.append(admEl('span', 'adm-order-profit', 'utile ' + admMoney.format(o.utile || 0)));
@@ -3378,17 +3694,8 @@
         );
         body.append(actions);
         if (stockPlan || (o.evaso && petStockLoaded)) {
-            const need = stockPlan ? stockPlan.need : admOrderNeed(o);
-            const box = admEl('div', 'adm-need' + (stockPlan?.short.length ? ' is-short' : need.missing.size ? ' is-missing' : ''));
-            box.append(admIcon('precision_manufacturing'), admEl('strong', '', need.minutes ? 'Stampa ' + admHours(need.minutes) : 'Tempo di stampa da inserire'));
-            for (const [code, g] of need.grams) {
-                const item = admEl('span', '');
-                item.append(admFilamentLabel(code), document.createTextNode(' ' + admGrams(g)));
-                box.append(item);
-            }
-            if (stockPlan?.short.length) box.append(admEl('span', 'adm-stock-neg', 'Mancano: ' + stockPlan.short.map(x => admGrams(x.grams) + ' di ' + (admFilament(x.code)?.nome || x.code)).join(', ')));
-            if (need.missing.size) box.append(admEl('span', 'adm-muted', [...need.missing].join(' · ')));
-            body.append(box);
+            const r = stockPlan || (() => { const need = admOrderNeed(o), boxNeed = admOrderBoxNeed(o); return { need, boxNeed, short: [], boxShort: [], missing: new Set([...need.missing, ...boxNeed.missing]), anyShort: false }; })();
+            body.append(admNeedLine(r, false));
         }
 
         const groups = new Map();
@@ -3558,7 +3865,10 @@
 
                 riepilogoPrint += `<span style="background: white; padding: 2px 8px; border-radius: 4px; border: 1px solid #e1bee7; font-size: 0.8em;">${key}: <b style="color:#b50084;">${grp.totale} pz</b></span>`;
             });
-            riepilogoPrint += '</div></div>';
+            riepilogoPrint += '</div>';
+            const boxNeed = admOrderBoxNeed(o);
+            if (boxNeed.boxes.size) riepilogoPrint += '<div style="margin-top: 6px; font-size: 0.8em; color: #4a004a;"><b>Imballo:</b> ' + [...boxNeed.boxes].map(([id, q]) => q + ' × ' + admBoxName(id)).join(' · ') + '</div>';
+            riepilogoPrint += '</div>';
 
             let orderFooter = `
                 <div style="display: flex; justify-content: flex-end; gap: 15px; margin-top: 4px; padding-top: 4px; border-top: 2px solid #4a004a; page-break-inside: avoid;">
@@ -3969,8 +4279,8 @@
         const activity = window.petAdminActivity;
         const items = [
             { icon: 'precision_manufacturing', title: open.length ? open.length + (open.length === 1 ? ' ordine da evadere' : ' ordini da evadere') : 'Nessun ordine da evadere',
-              note: open.length ? openPieces + ' urne da produrre' + (admOrderPlanCache && admOrderPlanCache.minutes ? ' · ' + admHours(admOrderPlanCache.minutes) + ' di stampa' : '') + (admOrderPlanCache && admOrderPlanCache.shortages.size ? ' · manca filamento per ' + admOrderPlanCache.shortages.size + (admOrderPlanCache.shortages.size === 1 ? ' colore' : ' colori') : '') : 'Produzione in pari',
-              warn: open.length > 0, action: admOrderPlanCache && admOrderPlanCache.shortages.size ? ['Magazzino colori', () => { admOpen('magazzino-colori'); renderMagazzino(); }] : ['Elenco ordini', () => admOpen('lista-ordini')] },
+              note: open.length ? openPieces + ' urne da produrre' + (admOrderPlanCache && admOrderPlanCache.minutes ? ' · ' + admHours(admOrderPlanCache.minutes) + ' di stampa' : '') + (admOrderPlanCache && (admOrderPlanCache.shortages.size || admOrderPlanCache.boxShortages.size) ? ' · manca materiale (' + [admOrderPlanCache.shortages.size ? admOrderPlanCache.shortages.size + (admOrderPlanCache.shortages.size === 1 ? ' colore' : ' colori') : '', admOrderPlanCache.boxShortages.size ? admOrderPlanCache.boxShortages.size + (admOrderPlanCache.boxShortages.size === 1 ? ' misura di scatola' : ' misure di scatole') : ''].filter(Boolean).join(', ') + ')' : '') : 'Produzione in pari',
+              warn: open.length > 0, action: admOrderPlanCache && (admOrderPlanCache.shortages.size || admOrderPlanCache.boxShortages.size) ? ['Magazzino', () => { admOpen('magazzino-colori'); renderMagazzino(); }] : ['Elenco ordini', () => admOpen('lista-ordini')] },
             { icon: 'payments', title: unpaid.length ? admMoney.format(unpaidTotal) + ' da incassare' : 'Tutto incassato',
               note: unpaid.length ? unpaid.length + (unpaid.length === 1 ? ' ordine' : ' ordini') + ' · il più vecchio da ' + oldestUnpaid + ' giorni' : 'Nessun pagamento in sospeso', warn: unpaid.length > 0 },
             { icon: 'receipt_long', title: recent(activity.orderRequests) == null ? 'Richieste d’ordine' : plural(recent(activity.orderRequests), 'richiesta d’ordine', 'richieste d’ordine'),
@@ -4504,6 +4814,23 @@
                     rows.push(...(data || []));
                     if (!data || data.length < 1000) return rows;
                 }
+            },
+            async boxMoves() {
+                const rows = [];
+                for (let from = 0; ; from += 1000) {
+                    const { data, error } = await api.from('admin_box_moves').select('id,box_id,qty,kind,order_id,note,created_at').order('id', { ascending: true }).range(from, from + 999);
+                    if (error) throw error;
+                    rows.push(...(data || []));
+                    if (!data || data.length < 1000) return rows;
+                }
+            },
+            async addBoxMove(row) {
+                const { error } = await api.from('admin_box_moves').insert(row);
+                if (error) throw error;
+            },
+            async deleteBoxMove(id) {
+                const { error } = await api.from('admin_box_moves').delete().eq('id', id);
+                if (error) throw error;
             },
             async addMove(row) {
                 const { error } = await api.from('admin_filament_moves').insert(row);
