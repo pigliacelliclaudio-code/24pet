@@ -383,6 +383,12 @@
         }
         .adm-cost-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px 14px; margin-top: 10px; }
         .adm-cost-sub { margin: 16px 0 0; padding-top: 12px; border-top: 1px solid var(--line); font-size: 1rem; font-weight: 700; }
+        .adm-cost-stockinfo { margin: 8px 0 0; padding-left: 18px; }
+        .adm-cost-stockinfo li { margin: 2px 0; }
+        .adm-cost-stockinfo li.is-missing { color: #9a5500; }
+        .adm-inline-icon { font-size: 16px; vertical-align: -3px; }
+        .adm-stock-price { color: var(--muted); }
+        .adm-stock-price.is-missing { color: #9a5500; }
         .adm-cost-printers { display: grid; gap: 10px; margin-top: 10px; justify-items: start; }
         .adm-printer-row { display: grid; grid-template-columns: minmax(160px, 1.4fr) minmax(130px, 1fr) minmax(130px, 1fr) auto; gap: 10px 14px; align-items: end; width: 100%; }
         .adm-printer-del { margin-bottom: 2px; }
@@ -885,11 +891,12 @@
             <div class="adm-form-body">
                 <div class="adm-form-grid">
                     <label class="adm-field adm-span-3">Cosa vuoi fare
-                        <select id="adm-stock-mode" class="browser-default" onchange="admStockDialogMode()"><option value="carico">Carico bobine acquistate</option><option value="rettifica">Correggi il peso (ho pesato le bobine)</option></select></label>
+                        <select id="adm-stock-mode" class="browser-default" onchange="admStockDialogMode()"><option value="carico">Carico bobine acquistate</option><option value="rettifica">Correggi il peso (ho pesato le bobine)</option><option value="prezzo">Cambia solo il prezzo</option></select></label>
                     <label class="adm-field adm-span-3">Filamento
                         <select id="adm-stock-code" class="browser-default" onchange="admStockDialogMode()"></select></label>
                     <label class="adm-field" id="adm-stock-qty-label">Numero di bobine da 1 kg <input id="adm-stock-qty" type="text" inputmode="decimal" autocomplete="off"></label>
-                    <label class="adm-field adm-span-2">Nota (facoltativa)<input id="adm-stock-note" type="text" maxlength="200" placeholder="es. ordine Bambu del 18/11" autocomplete="off"></label>
+                    <label class="adm-field">Prezzo al kg (€)<input id="adm-stock-price" type="text" inputmode="decimal" placeholder="es. 23,99" autocomplete="off"></label>
+                    <label class="adm-field adm-span-2" id="adm-stock-note-label">Nota (facoltativa)<input id="adm-stock-note" type="text" maxlength="200" placeholder="es. ordine Bambu del 18/11" autocomplete="off"></label>
                 </div>
                 <p id="adm-stock-hint" class="adm-note"></p>
                 <p id="adm-stock-error" class="adm-form-error" role="alert"></p>
@@ -909,11 +916,12 @@
             <div class="adm-form-body">
                 <div class="adm-form-grid">
                     <label class="adm-field adm-span-3">Cosa vuoi fare
-                        <select id="adm-box-mode" class="browser-default" onchange="admBoxDialogMode()"><option value="carico">Carico scatole acquistate</option><option value="rettifica">Correggi il conteggio (le ho contate)</option></select></label>
+                        <select id="adm-box-mode" class="browser-default" onchange="admBoxDialogMode()"><option value="carico">Carico scatole acquistate</option><option value="rettifica">Correggi il conteggio (le ho contate)</option><option value="prezzo">Cambia solo il prezzo</option></select></label>
                     <label class="adm-field adm-span-3">Scatola
                         <select id="adm-box-id" class="browser-default" onchange="admBoxDialogMode()"></select></label>
                     <label class="adm-field" id="adm-box-qty-label">Quante ne hai comprate <input id="adm-box-qty" type="number" min="0" step="1" autocomplete="off"></label>
-                    <label class="adm-field adm-span-2">Nota (facoltativa)<input id="adm-box-note" type="text" maxlength="200" autocomplete="off"></label>
+                    <label class="adm-field">Prezzo al pezzo (€)<input id="adm-box-price" type="text" inputmode="decimal" placeholder="es. 0,80" autocomplete="off"></label>
+                    <label class="adm-field adm-span-2" id="adm-box-note-label">Nota (facoltativa)<input id="adm-box-note" type="text" maxlength="200" autocomplete="off"></label>
                 </div>
                 <p id="adm-box-error" class="adm-form-error" role="alert"></p>
             </div>
@@ -1189,8 +1197,9 @@
                         <div id="adm-cost-fields" class="adm-cost-grid"></div>
                         <h3 class="adm-cost-sub">Stampanti</h3>
                         <div id="adm-cost-printers" class="adm-cost-printers"></div>
-                        <h3 class="adm-cost-sub">Scatole</h3>
-                        <div id="adm-cost-boxes" class="adm-cost-grid"></div>
+                        <h3 class="adm-cost-sub">Prezzi dal Magazzino</h3>
+                        <ul id="adm-cost-stockinfo" class="adm-cost-stockinfo"></ul>
+                        <p class="adm-note">I prezzi delle bobine e delle scatole si inseriscono nel <a href="#" onclick="admOpen('magazzino-colori'); renderMagazzino(); return false;">Magazzino</a>, con il pulsante <i class="material-icons adm-inline-icon" aria-hidden="true">euro</i> di ogni riga.</p>
                         <div class="adm-cost-actions">
                             <button type="button" class="adm-action adm-action-primary" onclick="admSaveCostSettings()"><i class="material-icons" aria-hidden="true">save</i><span>Salva i valori</span></button>
                             <span id="adm-cost-status" class="adm-filament-status" role="status"></span>
@@ -1688,6 +1697,9 @@
     function admHours(min) { min = Math.round(min || 0); const h = Math.floor(min / 60), m = min % 60; return h ? h + ' h' + (m ? ' ' + String(m).padStart(2, '0') : '') : m + ' min'; }
     function admFilament(code) { return BAMBU_FILAMENTI.find(f => f.codice === code) || null; }
     function admWhiteCode() { return petStockSettings.bianco || '11100'; }
+    function admFilamentPrice(code) { const n = Number((petStockSettings.prezzi || {})[code]); return Number.isFinite(n) && n > 0 ? n : 0; }
+    function admPriceText(n, unit) { return n ? admMoney.format(n) + unit : 'prezzo da inserire'; }
+    function admParsePrice(raw) { raw = String(raw ?? '').trim(); if (!raw) return null; const n = parseFloat(raw.replace(',', '.')); return Number.isFinite(n) && n >= 0 ? Math.round(n * 100) / 100 : NaN; }
 
     function admOrderNeed(order) {
         const grams = new Map();
@@ -1865,7 +1877,8 @@
             bar.append(fill); if (need) bar.append(mark);
             const nums = admEl('div', 'adm-stock-nums');
             nums.append(admEl('strong', '', admGrams(stock)), admEl('span', '', need ? 'impegnati ' + admGrams(need) : 'nessun ordine aperto'),
-                admEl('span', after < -0.5 ? 'adm-stock-neg' : 'adm-stock-pos', need ? (after < -0.5 ? 'mancano ' + admGrams(-after) : 'restano ' + admGrams(after)) : ''));
+                admEl('span', after < -0.5 ? 'adm-stock-neg' : 'adm-stock-pos', need ? (after < -0.5 ? 'mancano ' + admGrams(-after) : 'restano ' + admGrams(after)) : ''),
+                admEl('span', 'adm-stock-price' + (admFilamentPrice(code) ? '' : ' is-missing'), admPriceText(admFilamentPrice(code), ' al kg')));
             const actions = admEl('div', 'adm-stock-actions');
             const plus = admEl('button', 'adm-action');
             plus.type = 'button'; plus.append(admIcon('add'), admEl('span', '', '1 bobina'));
@@ -1875,7 +1888,11 @@
             fix.type = 'button'; fix.title = 'Correggi il peso'; fix.setAttribute('aria-label', 'Correggi il peso di ' + (admFilament(code)?.nome || code));
             fix.append(admIcon('scale'));
             fix.addEventListener('click', () => admOpenStockDialog(code, 'rettifica'));
-            actions.append(plus, fix);
+            const price = admEl('button', 'adm-icon-action');
+            price.type = 'button'; price.title = 'Prezzo al kg'; price.setAttribute('aria-label', 'Prezzo al kg di ' + (admFilament(code)?.nome || code));
+            price.append(admIcon('euro'));
+            price.addEventListener('click', () => admOpenStockDialog(code, 'prezzo'));
+            actions.append(plus, fix, price);
             li.append(who, bar, nums, actions);
             return li;
         };
@@ -1958,16 +1975,19 @@
             if (need) { const mark = admEl('i', ''); mark.style.left = Math.min(100, need / top * 100) + '%'; bar.append(mark); }
             const nums = admEl('div', 'adm-stock-nums');
             nums.append(admEl('strong', '', stock + ' pz'), admEl('span', '', need ? 'impegnate ' + need : 'nessun ordine aperto'),
-                admEl('span', after < 0 ? 'adm-stock-neg' : 'adm-stock-pos', need ? (after < 0 ? 'mancano ' + (-after) : 'restano ' + after) : ''));
+                admEl('span', after < 0 ? 'adm-stock-neg' : 'adm-stock-pos', need ? (after < 0 ? 'mancano ' + (-after) : 'restano ' + after) : ''),
+                admEl('span', 'adm-stock-price' + (Number(b.prezzo) > 0 ? '' : ' is-missing'), admPriceText(Number(b.prezzo) > 0 ? Number(b.prezzo) : 0, ' al pezzo')));
             const actions = admEl('div', 'adm-stock-actions');
             const plus = admEl('button', 'adm-action'); plus.type = 'button'; plus.append(admIcon('add'), admEl('span', '', 'Carica'));
             plus.setAttribute('aria-label', 'Carica scatole ' + b.nome);
             plus.addEventListener('click', () => admOpenBoxDialog(b.id, 'carico'));
             const fix = admEl('button', 'adm-icon-action'); fix.type = 'button'; fix.title = 'Correggi il conteggio'; fix.setAttribute('aria-label', 'Correggi il conteggio di ' + b.nome);
             fix.append(admIcon('edit_note')); fix.addEventListener('click', () => admOpenBoxDialog(b.id, 'rettifica'));
+            const price = admEl('button', 'adm-icon-action'); price.type = 'button'; price.title = 'Prezzo al pezzo'; price.setAttribute('aria-label', 'Prezzo al pezzo della scatola ' + b.nome);
+            price.append(admIcon('euro')); price.addEventListener('click', () => admOpenBoxDialog(b.id, 'prezzo'));
             const del = admEl('button', 'adm-icon-action adm-action-danger'); del.type = 'button'; del.title = 'Elimina misura'; del.setAttribute('aria-label', 'Elimina la scatola ' + b.nome);
             del.append(admIcon('delete')); del.addEventListener('click', () => admDeleteBox(b.id));
-            actions.append(plus, fix, del);
+            actions.append(plus, fix, price, del);
             row.append(who, bar, nums, actions);
             return row;
         }) : [admEl('p', 'adm-muted', 'Nessuna scatola: crea le misure che usi con «Nuova misura».')]));
@@ -2013,9 +2033,13 @@
     }
     function admStockDialogMode() {
         const mode = document.getElementById('adm-stock-mode').value;
+        const onlyPrice = mode === 'prezzo';
+        document.getElementById('adm-stock-qty-label').hidden = onlyPrice;
+        document.getElementById('adm-stock-note-label').hidden = onlyPrice;
+        document.getElementById('adm-stock-price').value = admFilamentPrice(document.getElementById('adm-stock-code').value) ? String(admFilamentPrice(document.getElementById('adm-stock-code').value)).replace('.', ',') : '';
         document.getElementById('adm-stock-qty-label').firstChild.textContent = mode === 'rettifica' ? 'Peso che hai davvero adesso (grammi) ' : 'Numero di bobine da 1 kg ';
         document.getElementById('adm-stock-qty').step = mode === 'rettifica' ? '1' : '1';
-        document.getElementById('adm-stock-hint').textContent = mode === 'rettifica'
+        document.getElementById('adm-stock-hint').textContent = onlyPrice ? 'Il prezzo al kg serve al calcolo dei costi nel Catalogo.' : mode === 'rettifica'
             ? 'Pesa le bobine aperte senza il rocchetto e scrivi il totale: la dashboard corregge la differenza.'
             : 'Le bobine acquistate si sommano a quelle che hai già.';
         const code = document.getElementById('adm-stock-code').value;
@@ -2028,10 +2052,26 @@
         const value = Number(String(document.getElementById('adm-stock-qty').value).replace(',', '.'));
         const note = document.getElementById('adm-stock-note').value.trim();
         const error = document.getElementById('adm-stock-error');
+        const price = admParsePrice(document.getElementById('adm-stock-price').value);
+        if (Number.isNaN(price)) { error.textContent = 'Scrivi il prezzo al kg in euro, es. 23,99.'; return; }
+        const priceChanged = (price || 0) !== admFilamentPrice(code);
+        if (priceChanged) {
+            const prezzi = Object.assign({}, petStockSettings.prezzi || {});
+            if (price) prezzi[code] = price; else delete prezzi[code];
+            try { await window.petCloud.saveSetting('magazzino', Object.assign({}, petStockSettings, { prezzi })); petStockSettings.prezzi = prezzi; }
+            catch { error.textContent = 'Prezzo non salvato: riprova.'; return; }
+        }
+        if (mode === 'prezzo') {
+            document.getElementById('adm-stock-dialog').close();
+            M.toast({ html: priceChanged ? 'Prezzo aggiornato' : 'Prezzo invariato', classes: 'rounded' });
+            renderMagazzino(); renderCostSettings(); renderCatalogo();
+            return;
+        }
         if (!Number.isFinite(value) || value < 0 || (mode === 'carico' && (value <= 0 || value > 200))) { error.textContent = mode === 'carico' ? 'Scrivi quante bobine (da 1 a 200).' : 'Scrivi il peso in grammi (0 o più).'; return; }
         const grams = mode === 'carico' ? value * 1000 : value - (admStock().get(code) || 0);
         if (mode === 'rettifica' && Math.abs(grams) < 1) { error.textContent = 'Il peso è già questo: niente da correggere.'; return; }
         document.getElementById('adm-stock-dialog').close();
+        if (priceChanged) { renderCostSettings(); renderCatalogo(); }
         await admAddStock(code, grams, mode, note || (mode === 'carico' ? value + (value === 1 ? ' bobina da 1 kg' : ' bobine da 1 kg') : 'Peso verificato: ' + Math.round(value) + ' g'));
     }
 
@@ -2127,6 +2167,10 @@
     function admBoxDialogMode() {
         const mode = document.getElementById('adm-box-mode').value;
         const id = document.getElementById('adm-box-id').value;
+        document.getElementById('adm-box-qty-label').hidden = mode === 'prezzo';
+        document.getElementById('adm-box-note-label').hidden = mode === 'prezzo';
+        const bp = Number(admBox(id)?.prezzo) || 0;
+        document.getElementById('adm-box-price').value = bp ? String(bp).replace('.', ',') : '';
         document.getElementById('adm-box-qty-label').firstChild.textContent = mode === 'rettifica' ? 'Quante ne hai davvero adesso ' : 'Quante ne hai comprate ';
         document.getElementById('adm-box-qty').value = mode === 'rettifica' ? Math.max(0, admBoxStock().get(id) || 0) : '';
     }
@@ -2137,6 +2181,21 @@
         const value = parseInt(document.getElementById('adm-box-qty').value, 10);
         const note = document.getElementById('adm-box-note').value.trim();
         const error = document.getElementById('adm-box-error');
+        const price = admParsePrice(document.getElementById('adm-box-price').value);
+        if (Number.isNaN(price)) { error.textContent = 'Scrivi il prezzo al pezzo in euro, es. 0,80.'; return; }
+        const priceChanged = (price || 0) !== (Number(admBox(id)?.prezzo) || 0);
+        if (priceChanged) {
+            const prev = petBoxSettings.lista;
+            petBoxSettings.lista = admBoxes().map(b => { if (b.id !== id) return b; const n = Object.assign({}, b); if (price) n.prezzo = price; else delete n.prezzo; return n; });
+            if (!(await admSaveBoxSettings())) { petBoxSettings.lista = prev; error.textContent = 'Prezzo non salvato: riprova.'; return; }
+        }
+        if (mode === 'prezzo') {
+            document.getElementById('adm-box-dialog').close();
+            M.toast({ html: priceChanged ? 'Prezzo aggiornato' : 'Prezzo invariato', classes: 'rounded' });
+            renderMagazzino(); renderCostSettings(); renderCatalogo();
+            return;
+        }
+        if (priceChanged) { renderCostSettings(); renderCatalogo(); }
         if (!Number.isFinite(value) || value < 0 || (mode === 'carico' && (value <= 0 || value > 10000))) { error.textContent = mode === 'carico' ? 'Scrivi quante scatole (da 1 a 10000).' : 'Scrivi quante ne hai (0 o più).'; return; }
         const qty = mode === 'carico' ? value : value - (admBoxStock().get(id) || 0);
         if (mode === 'rettifica' && !qty) { error.textContent = 'Il conteggio è già questo: niente da correggere.'; return; }
@@ -2840,8 +2899,6 @@
     // === CALCOLO DEI COSTI DI PRODUZIONE (parametri in admin_settings 'costi') ===
     let petCostSettings = {};
     const COST_FIELDS = [
-        ['kgColore', 'Filamento colorato', '€ al kg', 'es. 23,99'],
-        ['kgBianco', 'Filamento bianco', '€ al kg', 'es. 23,99'],
         ['scarto', 'Scarto di stampa', '% in più di filamento', 'es. 10'],
         ['usura', 'Usura e manutenzione', '€ per ora di stampa', 'es. 0,20'],
         ['oraLavoro', 'Manodopera', '€ all’ora', 'es. 15']
@@ -2909,22 +2966,30 @@
         add.type = 'button'; add.addEventListener('click', admAddPrinter);
         box.replaceChildren(...rows, add, sum);
     }
+    // Prezzi dal Magazzino: bianco = bobina impostata come bianco; colorato = media dei colori del catalogo con prezzo
+    function admColorKgPrice() {
+        const white = admWhiteCode();
+        const codes = [...new Set(Object.values(petColorBambu || {}))].filter(c => c && c !== white);
+        const priced = codes.map(admFilamentPrice).filter(Boolean);
+        return { avg: priced.length ? priced.reduce((s, x) => s + x, 0) / priced.length : 0, priced: priced.length, total: codes.length };
+    }
     function admCostBreakdown(v) {
         const c = petCostSettings || {};
+        const kgColore = admColorKgPrice().avg, kgBianco = admFilamentPrice(admWhiteCode());
         const gc = Number(v?.grammiColore) || 0, gb = Number(v?.grammiBianco) || 0, min = Number(v?.tempoStampa) || 0;
         const scarto = 1 + admCostNum(c.scarto) / 100;
         const parts = {
-            filamento: (gc * admCostNum(c.kgColore) + gb * admCostNum(c.kgBianco)) / 1000 * scarto,
+            filamento: (gc * kgColore + gb * kgBianco) / 1000 * scarto,
             energia: min / 60 * admPrinterHourCost(),
             usura: min / 60 * admCostNum(c.usura),
             lavoro: (Number(v?.minutiLavoro) || 0) / 60 * admCostNum(c.oraLavoro),
-            scatola: v?.scatola ? admCostNum((c.scatole || {})[v.scatola]) : 0,
+            scatola: v?.scatola ? admCostNum(admBox(v.scatola)?.prezzo) : 0,
             extra: admCostNum(v?.costoExtra)
         };
         const missing = [];
         if (!min) missing.push('tempo di stampa');
         if (!gc && !gb) missing.push('grammi');
-        if ((gc && !admCostNum(c.kgColore)) || (gb && !admCostNum(c.kgBianco))) missing.push('prezzo filamento');
+        if ((gc && !kgColore) || (gb && !kgBianco)) missing.push('prezzo filamento nel Magazzino');
         const total = Object.values(parts).reduce((s, x) => s + x, 0);
         return { parts, total, missing, ready: !missing.length };
     }
@@ -2950,13 +3015,17 @@
         box.replaceChildren(...COST_FIELDS.map(([k, label, hint, ph]) => mk('adm-cost-' + k, label, hint, ph, c[k])));
         admPrinterDraft = null;
         renderPrinters();
-        const boxes = document.getElementById('adm-cost-boxes');
-        const list = admBoxes();
-        boxes.replaceChildren(...(list.length ? list.map(b => mk('adm-cost-box-' + b.id, 'Scatola ' + b.nome, '€ al pezzo', 'es. 0,80', (c.scatole || {})[b.id], 'Costo scatola ' + b.nome))
-            : [admEl('p', 'adm-muted', 'Crea le misure delle scatole nel Magazzino per indicarne il costo.')]));
+        const info = document.getElementById('adm-cost-stockinfo');
+        const col = admColorKgPrice(), wp = admFilamentPrice(admWhiteCode());
+        const boxes = admBoxes(), pricedBoxes = boxes.filter(b => Number(b.prezzo) > 0).length;
+        const li = (label, text, ok) => { const e = admEl('li', ok ? '' : 'is-missing'); e.append(admEl('strong', '', label + ': '), document.createTextNode(text)); return e; };
+        info.replaceChildren(
+            li('Filamento colorato', col.priced ? 'in media ' + admMoney.format(col.avg) + ' al kg (' + col.priced + ' colori su ' + col.total + ' con prezzo)' : 'prezzi da inserire', col.priced === col.total && col.total > 0),
+            li('Filamento bianco', wp ? admMoney.format(wp) + ' al kg' : 'prezzo da inserire', !!wp),
+            li('Scatole', boxes.length ? pricedBoxes + ' su ' + boxes.length + ' con prezzo' : 'nessuna scatola creata', boxes.length > 0 && pricedBoxes === boxes.length));
     }
     async function admSaveCostSettings() {
-        const next = { scatole: {} };
+        const next = {};
         const status = document.getElementById('adm-cost-status');
         for (const [k] of COST_FIELDS) {
             const raw = document.getElementById('adm-cost-' + k).value.trim();
@@ -2964,13 +3033,6 @@
             const n = parseFloat(raw.replace(',', '.'));
             if (!Number.isFinite(n) || n < 0) { status.textContent = 'Controlla il valore di «' + COST_FIELDS.find(f => f[0] === k)[1] + '».'; return; }
             next[k] = n;
-        }
-        for (const b of admBoxes()) {
-            const raw = document.getElementById('adm-cost-box-' + b.id)?.value.trim();
-            if (!raw) continue;
-            const n = parseFloat(raw.replace(',', '.'));
-            if (!Number.isFinite(n) || n < 0) { status.textContent = 'Controlla il costo della scatola ' + b.nome + '.'; return; }
-            next.scatole[b.id] = n;
         }
         admReadPrinterDraft();
         const printers = [];
