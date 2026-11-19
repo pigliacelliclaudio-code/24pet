@@ -275,6 +275,16 @@
         .pet-home-empty { color:var(--muted); }
         .adm-source { margin: -8px 0 14px; color: var(--muted); font-size: .86rem; }
         .adm-todo { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: 16px; }
+        .adm-printq { margin: 0 0 16px; }
+        .adm-printq h2 { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; font-size: 1.1rem; font-weight: 800; color: var(--plum); }
+        .adm-printq-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
+        .adm-printq-card { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 14px; background: #fff; cursor: pointer; text-align: left; font: inherit; color: inherit; min-height: 68px; }
+        .adm-printq-card:hover, .adm-printq-card:focus-visible { border-color: var(--accent); box-shadow: 0 2px 10px rgba(74, 0, 74, .08); }
+        .adm-printq-card strong { display: block; color: var(--plum); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .adm-printq-card small { display: block; color: var(--muted); }
+        .adm-printq-card > .material-icons { color: var(--accent); }
+        .adm-printq-more { align-self: center; justify-self: start; }
+        @media (max-width: 640px) { .adm-printq-list { grid-template-columns: minmax(0, 1fr); } }
         .adm-todo-item { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: start; gap: 4px 10px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
         .adm-todo-item > .material-icons { color: var(--accent); font-size: 22px; }
         .adm-todo-item strong { display: block; color: var(--plum); }
@@ -397,6 +407,30 @@
         .adm-print-steps button:disabled { opacity: .35; cursor: default; }
         .adm-print-saved { margin-right: auto; color: var(--muted); font-size: .9rem; }
         .adm-print-item.is-single { grid-template-columns: auto minmax(0, 1fr) auto; }
+        .adm-print-item.is-dots { grid-template-columns: minmax(0, 1fr) auto; }
+        .adm-print-dots { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; }
+        .adm-print-dot { width: 44px; height: 44px; border: 0; border-radius: 50%; background: #f3edf4; color: #8c0066; cursor: pointer; display: grid; place-items: center; padding: 0; }
+        .adm-print-dot .material-icons { font-size: 26px; }
+        .adm-print-dot.is-on { background: #2e7d4a; color: #fff; }
+        .adm-pay-rows { display: grid; gap: 8px; margin-bottom: 8px; }
+        .adm-pay-row { display: grid; grid-template-columns: 1.1fr 1fr 1.2fr auto 1.2fr auto; gap: 8px; align-items: end; padding: 10px; border: 1px solid var(--line); border-radius: 10px; background: #fff; }
+        .adm-pay-row.is-paid { background: #f1f8f2; border-color: #cfe5d3; }
+        .adm-pay-row .adm-field { margin: 0; }
+        .adm-pay-row input, .adm-pay-row select { height: 40px !important; margin: 0 !important; padding: 4px 8px !important; border: 1px solid #d9cfdc !important; border-radius: 8px !important; box-sizing: border-box; font: inherit; width: 100%; background: #fff; }
+        .adm-pay-paid { display: flex; align-items: center; gap: 6px; height: 40px; font-weight: 700; white-space: nowrap; }
+        .adm-pay-paid input { width: 20px !important; height: 20px !important; position: static !important; opacity: 1 !important; pointer-events: auto !important; }
+        .adm-pay-row .adm-pay-del { height: 40px; }
+        .adm-pay-row.is-overdue { border-color: #e2a1a1; }
+        .adm-pay-row .adm-pay-when[hidden] { display: none; }
+        @media (max-width: 640px) { .adm-pay-row { grid-template-columns: 1fr 1fr; } .adm-pay-row .adm-pay-del { justify-self: end; } }
+        .adm-ship-new h3, #adm-ship-history h3 { margin: 12px 0 6px; font-size: 1rem; font-weight: 800; color: var(--plum); }
+        .adm-ship-fill { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+        .adm-ship-past { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 10px; align-items: center; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; margin-bottom: 6px; background: #fff; }
+        .adm-ship-past small { display: block; color: var(--muted); }
+        .adm-shipq-row { display: grid; grid-template-columns: minmax(0, 1fr) auto 78px; gap: 10px; align-items: center; padding: 6px 10px; border: 1px solid var(--line); border-radius: 10px; margin-bottom: 6px; background: #fff; }
+        .adm-shipq-row.is-done { opacity: .55; }
+        .adm-shipq-row input { height: 38px !important; margin: 0 !important; padding: 4px 8px !important; border: 1px solid #d9cfdc !important; border-radius: 8px !important; text-align: center; box-sizing: border-box; width: 100%; }
+        .adm-shipq-row small { color: var(--muted); white-space: nowrap; }
         @media (max-width: 520px) { .adm-print-item { gap: 8px; padding: 6px 8px; } .adm-print-steps button { width: 34px; height: 34px; } .adm-print-dialog header h2 { font-size: 1.2rem; } }
         .adm-scan-list { display: grid; gap: 4px; margin: 0; }
         .adm-scan-list li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; font-size: .92rem; }
@@ -694,6 +728,11 @@
         .pet-checkout { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px 26px; background:#faf2f7; border-radius:9px; padding:14px 18px; margin-top:16px; }
         .pet-checkout strong { display:block; color:#4a004c; }
         #pet-cart-total { font-size:1.1rem; }
+        .pet-order-extra { margin-top: 14px; }
+        .pet-order-extra h3 { margin: 0 0 4px; font-size: 1rem; font-weight: 800; color: #4a004a; }
+        .pet-order-extra ul { margin: 6px 0 0; display: grid; gap: 4px; }
+        .pet-order-extra li { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; border-bottom: 1px solid #eee6f0; }
+        .pet-order-extra .pet-paid { color: #1b6434; }
         .pet-cart-summary { min-width: 0; flex: 1 1 280px; max-width: 440px; }
         .pet-cart-lines { margin: 0; display: grid; gap: 4px; }
         .pet-cart-lines > div { display: flex; justify-content: space-between; gap: 16px; }
@@ -985,6 +1024,55 @@
             </footer>
         </form>
     </dialog>
+    <dialog class="pet-inbox-dialog adm-client-dialog adm-print-dialog" id="adm-pay-dialog" aria-labelledby="adm-pay-title">
+        <header>
+            <div><h2 id="adm-pay-title">Pagamenti</h2><p id="adm-pay-sub" class="adm-note"></p></div>
+            <button class="pet-inbox-close" type="button" aria-label="Chiudi" data-close-dialog>
+                <i class="material-icons" aria-hidden="true">close</i></button>
+        </header>
+        <div class="adm-print-progress"><span id="adm-pay-ring"></span><strong id="adm-pay-count" role="status"></strong></div>
+        <div class="adm-print-body">
+            <div id="adm-pay-rows" class="adm-pay-rows"></div>
+            <button type="button" class="pet-link-button" onclick="admAddPayRow()">+ Aggiungi rata</button>
+            <p id="adm-pay-check" class="adm-note"></p>
+            <p id="adm-pay-error" class="adm-form-error" role="alert"></p>
+        </div>
+        <footer class="adm-form-footer">
+            <button type="button" class="adm-action" data-close-dialog>Annulla</button>
+            <button type="button" class="adm-action adm-action-primary" onclick="admSavePayments()"><i class="material-icons" aria-hidden="true">save</i><span>Salva</span></button>
+        </footer>
+    </dialog>
+    <dialog class="pet-inbox-dialog adm-client-dialog adm-print-dialog" id="adm-ship-dialog" aria-labelledby="adm-ship-title">
+        <header>
+            <div><h2 id="adm-ship-title">Spedizioni</h2><p id="adm-ship-sub" class="adm-note"></p></div>
+            <button class="pet-inbox-close" type="button" aria-label="Chiudi" data-close-dialog>
+                <i class="material-icons" aria-hidden="true">close</i></button>
+        </header>
+        <div class="adm-print-progress"><span id="adm-ship-ring"></span><strong id="adm-ship-count" role="status"></strong></div>
+        <div class="adm-print-body">
+            <div id="adm-ship-history"></div>
+            <section id="adm-ship-new" class="adm-ship-new">
+                <h3>Nuova spedizione</h3>
+                <div class="adm-form-grid">
+                    <label class="adm-field">Data<input class="browser-default adm-cost-input" id="adm-ship-date" type="date"></label>
+                    <label class="adm-field adm-span-2">Tracciamento (lo vede il cliente)<input class="browser-default adm-cost-input" id="adm-ship-tracking" type="text" maxlength="120" placeholder="es. BRT 123456789" autocomplete="off"></label>
+                    <label class="adm-field adm-span-3">Nota interna<input class="browser-default adm-cost-input" id="adm-ship-note" type="text" maxlength="200" autocomplete="off"></label>
+                </div>
+                <div class="adm-ship-fill">
+                    <button type="button" class="adm-action" onclick="admShipFill('stampate')"><i class="material-icons" aria-hidden="true">checklist</i><span>Solo le stampate</span></button>
+                    <button type="button" class="adm-action" onclick="admShipFill('tutte')"><i class="material-icons" aria-hidden="true">done_all</i><span>Tutte le rimanenti</span></button>
+                    <button type="button" class="adm-action" onclick="admShipFill('zero')"><i class="material-icons" aria-hidden="true">restart_alt</i><span>Azzera</span></button>
+                </div>
+                <div id="adm-ship-items"></div>
+                <p id="adm-ship-error" class="adm-form-error" role="alert"></p>
+            </section>
+        </div>
+        <footer class="adm-form-footer">
+            <span id="adm-ship-total" class="adm-print-saved" role="status"></span>
+            <button type="button" class="adm-action" data-close-dialog>Chiudi</button>
+            <button type="button" class="adm-action adm-action-primary" id="adm-ship-save" onclick="admSaveShipment()"><i class="material-icons" aria-hidden="true">local_shipping</i><span>Registra spedizione</span></button>
+        </footer>
+    </dialog>
     <dialog class="pet-inbox-dialog adm-client-dialog adm-print-dialog" id="adm-print-dialog" aria-labelledby="adm-print-title">
         <header>
             <div><h2 id="adm-print-title">Lista di stampa</h2><p id="adm-print-sub" class="adm-note"></p></div>
@@ -1226,6 +1314,10 @@
 
                     <p class="adm-source" id="pet-data-source">Dati del gestionale salvati in questo browser.</p>
                     <p class="adm-source pet-backup-line" id="pet-backup-line" hidden><i class="material-icons" aria-hidden="true">history</i><span id="pet-backup-info"></span><button type="button" class="pet-backup-download" onclick="petDownloadServerBackup()">Scarica una copia adesso</button></p>
+                    <section id="adm-printq" class="adm-printq" aria-labelledby="adm-printq-title" hidden>
+                        <h2 id="adm-printq-title"><i class="material-icons" aria-hidden="true">checklist</i>Da stampare</h2>
+                        <div id="adm-printq-list" class="adm-printq-list"></div>
+                    </section>
                     <div id="adm-todo" class="adm-todo" aria-label="Da fare"></div>
                     <div id="adm-kpis" class="pet-kpis adm-kpis"></div>
                     <div class="pet-home-grid adm-grid">
@@ -4260,6 +4352,11 @@
     function admToggleOrder(id, field) {
         const order = orders.find(o => o.id === id);
         if (!order) return;
+        if (field === 'pagato' && Array.isArray(order.pagamenti) && order.pagamenti.length) { admOpenPayments(id); return; }
+        if (field === 'evaso' && !order.evaso && Array.isArray(order.spedizioni) && order.spedizioni.length) {
+            const pr = admShipProgress(order);
+            if (pr.done < pr.tot && !confirm('Mancano ' + (pr.tot - pr.done) + ' urne da spedire. Segnare comunque l’ordine come evaso per intero?')) return;
+        }
         order[field] = !order[field];
         petSave('orders');
         loadOrders();
@@ -4276,7 +4373,13 @@
         const who = admEl('span', 'pet-order-label', (o.cliente || 'Senza nome'));
         who.append(admEl('span', 'pet-order-date', '#' + admOrderNumber(o) + ' · ' + (o.data ? admDate.format(new Date(o.data + 'T00:00:00Z')) : '—') + (o.tipo === 'Rivenditore' ? ' · Rivenditore' : '')));
         const state = admEl('span', 'pet-order-state');
-        state.append(o.pagato ? admBadge('Pagato', 'ok') : admBadge('Da pagare', 'warn'), o.evaso ? admBadge('Evaso', 'ok') : admBadge('Da evadere', 'neutral'));
+        const payI = admPayInfo(o), shipP = admShipProgress(o);
+        const partialPay = !o.pagato && payI.list.length && payI.paid > 0;
+        const partialShip = !o.evaso && Array.isArray(o.spedizioni) && o.spedizioni.length && shipP.done > 0;
+        state.append(o.pagato ? admBadge('Pagato', 'ok') : partialPay ? admBadge('Pagato in parte', 'warn') : admBadge('Da pagare', 'warn'),
+            o.evaso ? admBadge('Evaso', 'ok') : partialShip ? admBadge('Spedito in parte', 'neutral') : admBadge('Da evadere', 'neutral'));
+        if (partialPay) { const r = admEl('span', 'adm-order-ring'); r.append(admRing(payI.paid, payI.total, 22, 'Pagato'), document.createTextNode('pagato ' + Math.round(payI.paid / (payI.total || 1) * 100) + '%')); r.title = 'Pagati ' + admMoney.format(payI.paid) + ' di ' + admMoney.format(payI.total); state.append(r); }
+        if (partialShip) { const r = admEl('span', 'adm-order-ring'); r.append(admRing(shipP.done, shipP.tot, 22, 'Spedite'), document.createTextNode('spedite ' + shipP.done + '/' + shipP.tot)); state.append(r); }
         if (!o.evaso) {
             const pr = admPrintProgress(o);
             if (pr.done) { const ring = admEl('span', 'adm-order-ring'); ring.append(admRing(pr.done, pr.tot, 22), document.createTextNode(pr.done >= pr.tot ? 'stampate ✓' : Math.round(pr.done / pr.tot * 100) + '% · ' + pr.done + '/' + pr.tot)); ring.title = 'Urne stampate: ' + pr.done + ' di ' + pr.tot; state.append(ring); }
@@ -4304,12 +4407,14 @@
             return b;
         };
         actions.append(
-            action(o.pagato ? 'undo' : 'paid', o.pagato ? 'Segna da pagare' : 'Segna pagato', () => admToggleOrder(o.id, 'pagato')),
+            ...(Array.isArray(o.pagamenti) && o.pagamenti.length ? [] : [action(o.pagato ? 'undo' : 'paid', o.pagato ? 'Segna da pagare' : 'Segna pagato', () => admToggleOrder(o.id, 'pagato'))]),
+            action('payments', Array.isArray(o.pagamenti) && o.pagamenti.length ? 'Pagamenti (' + o.pagamenti.filter(p => p.pagato).length + '/' + o.pagamenti.length + ')' : 'Pagamento a rate', () => admOpenPayments(o.id)),
             action(o.evaso ? 'undo' : 'local_shipping', o.evaso ? 'Segna da evadere' : 'Segna evaso', () => admToggleOrder(o.id, 'evaso')),
             action('receipt', 'Conferma d’ordine', () => stampaRiepilogoCliente(o.id)),
             action('checklist', 'Lista di stampa', () => admOpenPrintList(o.id), 'adm-action-primary'),
             action('print', 'Scheda produzione', () => stampaSchedaProduzioneSingola(o.id)),
             action('label', 'Etichette', () => stampaEtichetteOrdine(o.id)),
+            action('local_shipping', Array.isArray(o.spedizioni) && o.spedizioni.length ? 'Spedizioni (' + o.spedizioni.length + ')' : 'Spedizione parziale', () => admOpenShipments(o.id)),
             action('fact_check', 'Controlla spedizione', () => admOpenScanner(o.id)),
             action('edit', 'Modifica', () => preparaModificaOrdine(o.id)),
             action('delete', 'Elimina', () => eliminaOrdine(o.id), 'adm-action-danger')
@@ -4812,6 +4917,244 @@
         dot.style.backgroundColor = mappaColoriHex[colore] || '#ccc';
         return dot;
     }
+    // === PAGAMENTI A RATE (campo «pagamenti» dell'ordine) ===
+    const ADM_PAY_TYPES = ['Acconto', 'Rata 1', 'Rata 2', 'Rata 3', 'Saldo'];
+    let admPayOrderId = null, admPayDraft = [];
+    function admTodayIso() { const d = new Date(); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); }
+    function admPayInfo(o) {
+        const list = Array.isArray(o.pagamenti) ? o.pagamenti : [];
+        const total = Number(o.importo) || 0;
+        const planned = list.reduce((t, p) => t + (Number(p.importo) || 0), 0);
+        const paid = list.filter(p => p.pagato).reduce((t, p) => t + (Number(p.importo) || 0), 0);
+        return { list, total, planned, paid: list.length ? paid : (o.pagato ? total : 0), residuo: list.length ? Math.max(0, total - paid) : (o.pagato ? 0 : total) };
+    }
+    function admPayComplete(o) { const i = admPayInfo(o); return i.list.length > 0 && i.list.every(p => p.pagato) && i.planned >= i.total - 0.005; }
+    function admOpenPayments(id) {
+        const o = orders.find(x => x.id === id);
+        if (!o) return;
+        admPayOrderId = id;
+        admPayDraft = (Array.isArray(o.pagamenti) && o.pagamenti.length ? o.pagamenti : (o.pagato ? [{ tipo: 'Saldo', importo: Number(o.importo) || 0, pagato: true, dataPagamento: '' }] : [{ tipo: 'Acconto', importo: '', scadenza: admTodayIso(), pagato: false }]))
+            .map(p => Object.assign({ id: p.id || 'r-' + Math.random().toString(36).slice(2, 9) }, p));
+        document.getElementById('adm-pay-title').textContent = 'Pagamenti · ' + (o.cliente || 'Senza nome');
+        document.getElementById('adm-pay-sub').textContent = '#' + admOrderNumber(o) + ' · importo ordine ' + admMoney.format(Number(o.importo) || 0) + ' (IVA esclusa)';
+        document.getElementById('adm-pay-error').textContent = '';
+        admRenderPayRows();
+        document.getElementById('adm-pay-dialog').showModal();
+    }
+    function admReadPayRows() {
+        admPayDraft = admPayDraft.map(p => {
+            const row = document.querySelector('.adm-pay-row[data-id="' + p.id + '"]');
+            if (!row) return p;
+            const paid = row.querySelector('[data-k="pagato"]').checked;
+            return { id: p.id, tipo: row.querySelector('[data-k="tipo"]').value, importo: row.querySelector('[data-k="importo"]').value.trim(),
+                scadenza: row.querySelector('[data-k="scadenza"]').value, pagato: paid, dataPagamento: paid ? (row.querySelector('[data-k="dataPagamento"]').value || admTodayIso()) : '' };
+        });
+    }
+    function admRenderPayRows() {
+        const o = orders.find(x => x.id === admPayOrderId);
+        const box = document.getElementById('adm-pay-rows');
+        const today = admTodayIso();
+        box.replaceChildren(...admPayDraft.map(p => {
+            const row = admEl('div', 'adm-pay-row' + (p.pagato ? ' is-paid' : (p.scadenza && p.scadenza < today ? ' is-overdue' : '')));
+            row.dataset.id = p.id;
+            const field = (label, el) => { const f = admEl('label', 'adm-field'); f.append(document.createTextNode(label), el); return f; };
+            const tipo = document.createElement('select'); tipo.className = 'browser-default'; tipo.dataset.k = 'tipo';
+            for (const t of new Set([...ADM_PAY_TYPES, p.tipo].filter(Boolean))) tipo.append(new Option(t, t));
+            tipo.value = p.tipo || 'Acconto';
+            const imp = document.createElement('input'); imp.className = 'browser-default'; imp.type = 'text'; imp.inputMode = 'decimal'; imp.dataset.k = 'importo'; imp.placeholder = '€'; imp.value = p.importo === '' || p.importo == null ? '' : String(p.importo).replace('.', ',');
+            const due = document.createElement('input'); due.className = 'browser-default'; due.type = 'date'; due.dataset.k = 'scadenza'; due.value = p.scadenza || '';
+            const paidWrap = admEl('label', 'adm-pay-paid');
+            const paid = document.createElement('input'); paid.className = 'browser-default'; paid.type = 'checkbox'; paid.dataset.k = 'pagato'; paid.checked = !!p.pagato;
+            paidWrap.append(paid, document.createTextNode('Pagata'));
+            const when = document.createElement('input'); when.className = 'browser-default'; when.type = 'date'; when.dataset.k = 'dataPagamento'; when.value = p.dataPagamento || '';
+            const whenField = field('Pagata il', when); whenField.classList.add('adm-pay-when'); whenField.hidden = !p.pagato;
+            paid.addEventListener('change', () => { if (paid.checked && !when.value) when.value = today; whenField.hidden = !paid.checked; row.classList.toggle('is-paid', paid.checked); admPaySummary(); });
+            imp.addEventListener('input', admPaySummary);
+            const del = admEl('button', 'adm-icon-action adm-pay-del'); del.type = 'button'; del.title = 'Togli questa rata'; del.setAttribute('aria-label', 'Togli questa rata'); del.append(admIcon('delete'));
+            del.addEventListener('click', async () => {
+                admReadPayRows();
+                const cur = admPayDraft.find(x => x.id === p.id);
+                if (!(await petConfirmDelete('Togliere «' + (cur?.tipo || 'rata') + '»' + (cur?.importo ? ' da ' + cur.importo + ' €' : '') + '?', 'Sparisce dal piano quando premi «Salva».'))) return;
+                admPayDraft = admPayDraft.filter(x => x.id !== p.id);
+                admRenderPayRows();
+            });
+            row.append(field('Tipo', tipo), field('Importo (€)', imp), field('Scadenza', due), paidWrap, whenField, del);
+            return row;
+        }));
+        admPaySummary();
+    }
+    function admPaySummary() {
+        const o = orders.find(x => x.id === admPayOrderId);
+        if (!o) return;
+        const rows = [...document.querySelectorAll('.adm-pay-row')];
+        const num = v => { const n = parseFloat(String(v || '').replace(',', '.')); return Number.isFinite(n) ? n : 0; };
+        const planned = rows.reduce((t, r) => t + num(r.querySelector('[data-k="importo"]').value), 0);
+        const paid = rows.filter(r => r.querySelector('[data-k="pagato"]').checked).reduce((t, r) => t + num(r.querySelector('[data-k="importo"]').value), 0);
+        const total = Number(o.importo) || 0;
+        const diff = Math.round((total - planned) * 100) / 100;
+        document.getElementById('adm-pay-check').textContent = !rows.length ? 'Nessuna rata: l’ordine torna «Da pagare» con un pagamento unico.'
+            : Math.abs(diff) < 0.01 ? 'Il piano copre tutto l’importo ✓' : diff > 0 ? 'Mancano ' + admMoney.format(diff) + ' da assegnare a una rata.' : 'Le rate superano l’importo di ' + admMoney.format(-diff) + '.';
+        document.getElementById('adm-pay-ring').replaceChildren(admRing(Math.min(paid, total), total, 72, 'Pagato'));
+        document.getElementById('adm-pay-count').textContent = 'Pagati ' + admMoney.format(paid) + ' di ' + admMoney.format(total) + (paid < total ? ' · restano ' + admMoney.format(Math.max(0, total - paid)) : '');
+    }
+    function admAddPayRow() {
+        admReadPayRows();
+        const used = new Set(admPayDraft.map(p => p.tipo));
+        const o = orders.find(x => x.id === admPayOrderId);
+        const num = v => { const n = parseFloat(String(v || '').replace(',', '.')); return Number.isFinite(n) ? n : 0; };
+        const left = Math.max(0, Math.round(((Number(o?.importo) || 0) - admPayDraft.reduce((t, p) => t + num(p.importo), 0)) * 100) / 100);
+        admPayDraft.push({ id: 'r-' + Math.random().toString(36).slice(2, 9), tipo: ADM_PAY_TYPES.find(t => !used.has(t)) || 'Saldo', importo: left ? String(left) : '', scadenza: '', pagato: false });
+        admRenderPayRows();
+    }
+    function admSavePayments() {
+        const o = orders.find(x => x.id === admPayOrderId);
+        if (!o) return;
+        admReadPayRows();
+        const error = document.getElementById('adm-pay-error');
+        const list = [];
+        for (const p of admPayDraft) {
+            const n = admParsePrice(p.importo);
+            if (n === null || Number.isNaN(n) || n <= 0) { error.textContent = 'Scrivi l’importo di «' + p.tipo + '» in euro, es. 500.'; return; }
+            list.push({ id: p.id, tipo: p.tipo, importo: n, scadenza: p.scadenza || '', pagato: !!p.pagato, dataPagamento: p.pagato ? (p.dataPagamento || admTodayIso()) : '' });
+        }
+        const total = Number(o.importo) || 0;
+        const planned = list.reduce((t, p) => t + p.importo, 0);
+        if (planned > total + 0.005) { error.textContent = 'Le rate superano l’importo dell’ordine: correggile prima di salvare.'; return; }
+        if (list.length) { o.pagamenti = list; o.pagato = admPayComplete(o); }
+        else { delete o.pagamenti; o.pagato = false; }
+        petSave('orders');
+        document.getElementById('adm-pay-dialog').close();
+        loadOrders();
+        if (document.getElementById('risultatiRicerca').style.display === 'block') searchClient(null);
+        M.toast({ html: o.pagato ? 'Ordine pagato per intero' : list.length ? 'Piano di pagamento salvato' : 'Piano tolto', classes: 'rounded' });
+    }
+
+    // === SPEDIZIONI PARZIALI (campo «spedizioni» dell'ordine) ===
+    let admShipOrderId = null;
+    function admShippedMap(o) {
+        const m = new Map();
+        for (const s of Array.isArray(o.spedizioni) ? o.spedizioni : []) for (const it of s.articoli || []) m.set(it.code, (m.get(it.code) || 0) + (Number(it.quantita) || 0));
+        return m;
+    }
+    function admShipProgress(o) {
+        const need = admOrderCodeNeed(o), shipped = admShippedMap(o);
+        let tot = 0, done = 0;
+        for (const [code, v] of need) { tot += v.qty; done += Math.min(shipped.get(code) || 0, v.qty); }
+        return { tot, done, need, shipped };
+    }
+    function admOpenShipments(id) {
+        const o = orders.find(x => x.id === id);
+        if (!o) return;
+        admShipOrderId = id;
+        document.getElementById('adm-ship-title').textContent = 'Spedizioni · ' + (o.cliente || 'Senza nome');
+        document.getElementById('adm-ship-sub').textContent = '#' + admOrderNumber(o) + ' · le spedizioni in più sono a carico di 24Pet.';
+        document.getElementById('adm-ship-date').value = admTodayIso();
+        document.getElementById('adm-ship-tracking').value = '';
+        document.getElementById('adm-ship-note').value = '';
+        document.getElementById('adm-ship-error').textContent = '';
+        admRenderShipments();
+        document.getElementById('adm-ship-dialog').showModal();
+    }
+    function admRenderShipments() {
+        const o = orders.find(x => x.id === admShipOrderId);
+        if (!o) return;
+        const pr = admShipProgress(o);
+        document.getElementById('adm-ship-ring').replaceChildren(admRing(pr.done, pr.tot, 72, 'Spedite'));
+        document.getElementById('adm-ship-count').textContent = pr.done >= pr.tot && pr.tot ? 'Tutte spedite ✓ (' + pr.tot + ')' : pr.done + ' di ' + pr.tot + ' spedite';
+        const hist = document.getElementById('adm-ship-history');
+        const list = Array.isArray(o.spedizioni) ? o.spedizioni : [];
+        hist.replaceChildren(...(list.length ? [admEl('h3', '', 'Spedizioni fatte')] : []), ...list.map((s, i) => {
+            const pcs = (s.articoli || []).reduce((t, it) => t + (Number(it.quantita) || 0), 0);
+            const row = admEl('div', 'adm-ship-past');
+            const text = admEl('div', '');
+            text.append(admEl('strong', '', (i + 1) + 'ª · ' + (s.data ? admDate.format(new Date(s.data + 'T00:00:00Z')) : '—') + ' · ' + pcs + (pcs === 1 ? ' urna' : ' urne')),
+                admEl('small', '', [s.tracking ? 'Tracciamento: ' + s.tracking : '', s.nota ? 'Nota: ' + s.nota : ''].filter(Boolean).join(' · ') || 'Senza tracciamento'));
+            const del = admEl('button', 'adm-icon-action'); del.type = 'button'; del.title = 'Elimina questa spedizione'; del.setAttribute('aria-label', 'Elimina la spedizione ' + (i + 1)); del.append(admIcon('delete'));
+            del.addEventListener('click', async () => {
+                if (!(await petConfirmDelete('Eliminare la spedizione del ' + (s.data ? admDate.format(new Date(s.data + 'T00:00:00Z')) : '') + '?', pcs + ' urne tornano «da spedire»' + (o.evaso ? ' e l’ordine torna «Da evadere»' : '') + '. Il cliente non la vedrà più.'))) return;
+                o.spedizioni = list.filter(x => x !== s);
+                if (!o.spedizioni.length) delete o.spedizioni;
+                if (o.evaso) o.evaso = false;
+                petSave('orders');
+                admRenderShipments();
+            });
+            row.append(text, del);
+            return row;
+        }));
+        const left = [...pr.need].map(([code, v]) => [code, v, Math.max(0, v.qty - Math.min(pr.shipped.get(code) || 0, v.qty))]);
+        const newBox = document.getElementById('adm-ship-new');
+        newBox.hidden = left.every(([, , l]) => !l);
+        document.getElementById('adm-ship-save').hidden = newBox.hidden;
+        const items = document.getElementById('adm-ship-items');
+        items.replaceChildren(...left.filter(([, , l]) => l > 0).sort((a, b) => [a[1].item.modello, a[1].item.dimensione, a[1].item.colore].join(' ').localeCompare([b[1].item.modello, b[1].item.dimensione, b[1].item.colore].join(' '), 'it')).map(([code, v, l]) => {
+            const row = admEl('div', 'adm-shipq-row');
+            row.dataset.code = code;
+            const name = admEl('span', 'adm-print-name');
+            name.append(swatchAdmin(v.item.colore), document.createTextNode(v.item.modello + ' ' + (v.item.dimensione || '') + ' · ' + (v.item.colore || '')));
+            const inp = document.createElement('input'); inp.className = 'browser-default'; inp.type = 'number'; inp.min = '0'; inp.max = String(l); inp.step = '1'; inp.value = '0';
+            inp.setAttribute('aria-label', 'Quante ne spedisci di ' + v.item.modello + ' ' + (v.item.dimensione || '') + ' ' + (v.item.colore || ''));
+            inp.addEventListener('input', admShipTotal);
+            row.append(name, admEl('small', '', 'da spedire ' + l), inp);
+            return row;
+        }));
+        admShipTotal();
+    }
+    function admShipFill(mode) {
+        const o = orders.find(x => x.id === admShipOrderId);
+        if (!o) return;
+        const pr = admShipProgress(o);
+        document.querySelectorAll('#adm-ship-items .adm-shipq-row').forEach(row => {
+            const code = row.dataset.code, v = pr.need.get(code), inp = row.querySelector('input');
+            const left = Math.max(0, v.qty - Math.min(pr.shipped.get(code) || 0, v.qty));
+            const printedLeft = Math.max(0, Math.min(Number(o.stampate?.[code]) || 0, v.qty) - Math.min(pr.shipped.get(code) || 0, v.qty));
+            inp.value = String(mode === 'tutte' ? left : mode === 'stampate' ? Math.min(left, printedLeft) : 0);
+        });
+        admShipTotal();
+    }
+    function admShipTotal() {
+        const n = [...document.querySelectorAll('#adm-ship-items input')].reduce((t, i) => t + (parseInt(i.value, 10) || 0), 0);
+        document.getElementById('adm-ship-total').textContent = n ? n + (n === 1 ? ' urna in questa spedizione' : ' urne in questa spedizione') : '';
+    }
+    function admSaveShipment() {
+        const o = orders.find(x => x.id === admShipOrderId);
+        if (!o) return;
+        const error = document.getElementById('adm-ship-error');
+        const pr = admShipProgress(o);
+        const articoli = [];
+        for (const row of document.querySelectorAll('#adm-ship-items .adm-shipq-row')) {
+            const code = row.dataset.code, v = pr.need.get(code);
+            const left = Math.max(0, v.qty - Math.min(pr.shipped.get(code) || 0, v.qty));
+            const n = parseInt(row.querySelector('input').value, 10) || 0;
+            if (n < 0 || n > left) { error.textContent = 'Di ' + v.item.modello + ' ' + (v.item.dimensione || '') + ' ' + (v.item.colore || '') + ' ne restano ' + left + ' da spedire.'; return; }
+            if (n) articoli.push({ code, modello: v.item.modello, dimensione: v.item.dimensione || '', colore: v.item.colore || '', quantita: n });
+        }
+        if (!articoli.length) { error.textContent = 'Indica quante urne parte con questa spedizione (puoi usare «Solo le stampate»).'; return; }
+        const data = document.getElementById('adm-ship-date').value || admTodayIso();
+        o.spedizioni = [...(Array.isArray(o.spedizioni) ? o.spedizioni : []), {
+            id: 'sp-' + Date.now().toString(36), data, articoli,
+            tracking: document.getElementById('adm-ship-tracking').value.trim().slice(0, 120),
+            nota: document.getElementById('adm-ship-note').value.trim().slice(0, 200)
+        }];
+        const after = admShipProgress(o);
+        const complete = after.done >= after.tot;
+        if (complete) o.evaso = true;
+        petSave('orders');
+        error.textContent = '';
+        document.getElementById('adm-ship-tracking').value = '';
+        document.getElementById('adm-ship-note').value = '';
+        admRenderShipments();
+        M.toast({ html: complete ? 'Ultima spedizione registrata: ordine evaso' : 'Spedizione registrata: ' + after.done + ' di ' + after.tot + ' urne spedite', classes: 'green rounded' });
+    }
+    ['adm-pay-dialog', 'adm-ship-dialog'].forEach(id => {
+        const d = document.getElementById(id);
+        d?.querySelectorAll('[data-close-dialog]').forEach(b => b.addEventListener('click', () => d.close()));
+        d?.addEventListener('close', () => {
+            if (petStore.pending.size) { clearTimeout(petStore.timer); petFlush(); }
+            loadOrders();
+            if (document.getElementById('risultatiRicerca').style.display === 'block') searchClient(null);
+        });
+    });
+
     // === LISTA DI STAMPA: urne stampate per ordine, salvate subito nell'ordine (campo «stampate») ===
     let admPrintOrderId = null;
     // Cerchio di avanzamento: si chiude man mano che le urne vengono segnate come stampate
@@ -4851,7 +5194,7 @@
         if (!o) return;
         admPrintOrderId = id;
         document.getElementById('adm-print-title').textContent = 'Lista di stampa · ' + (o.cliente || 'Senza nome');
-        document.getElementById('adm-print-sub').textContent = '#' + admOrderNumber(o) + ' · tocca il cerchio quando un’urna è stampata. Si salva da sola.';
+        document.getElementById('adm-print-sub').textContent = '#' + admOrderNumber(o) + ' · un pallino per urna: toccalo quando è stampata, ritoccalo se hai sbagliato. Si salva da solo.';
         document.getElementById('adm-print-saved').textContent = '';
         admRenderPrintList();
         document.getElementById('adm-print-dialog').showModal();
@@ -4908,8 +5251,24 @@
                 const all = admEl('button', ''); all.type = 'button'; all.append(admIcon('done_all')); all.disabled = full; all.title = 'Tutte stampate'; all.setAttribute('aria-label', 'Tutte stampate');
                 all.addEventListener('click', () => admSetPrinted(code, qty));
                 steps.append(minus, all);
-                li.append(tick, name, admEl('span', 'adm-print-qty', done + '/' + qty));
-                if (qty > 1) li.append(steps); else li.classList.add('is-single');
+                if (qty > 1 && qty <= 12) {
+                    // Un pallino per ogni urna: tocchi un pallino vuoto per segnarla, uno pieno per toglierla
+                    li.classList.add('is-dots');
+                    const dots = admEl('span', 'adm-print-dots');
+                    for (let i = 0; i < qty; i++) {
+                        const dot = admEl('button', 'adm-print-dot' + (i < done ? ' is-on' : ''));
+                        dot.type = 'button';
+                        dot.append(admIcon(i < done ? 'check' : 'radio_button_unchecked'));
+                        dot.setAttribute('aria-label', (i < done ? 'Togli la spunta all’urna ' : 'Segna come stampata l’urna ') + (i + 1) + ' di ' + qty + ' ' + (item.colore || ''));
+                        dot.setAttribute('aria-pressed', i < done ? 'true' : 'false');
+                        dot.addEventListener('click', () => admSetPrinted(code, i < done ? i : i + 1));
+                        dots.append(dot);
+                    }
+                    li.append(name, admEl('span', 'adm-print-qty', done + '/' + qty), dots);
+                } else {
+                    li.append(tick, name, admEl('span', 'adm-print-qty', done + '/' + qty));
+                    if (qty > 1) li.append(steps); else li.classList.add('is-single');
+                }
                 ul.append(li);
             }
             section.append(ul);
@@ -5223,6 +5582,27 @@
                     </div>
                 </div>
 
+                ${(() => {
+                    const fmt = d => d ? d.split('-').reverse().join('/') : '';
+                    const pay = Array.isArray(o.pagamenti) ? o.pagamenti : [];
+                    const ship = Array.isArray(o.spedizioni) ? o.spedizioni : [];
+                    let html = '';
+                    if (pay.length) {
+                        html += '<h5 style="font-weight: bold; color: #4a004a; border-bottom: 1px solid #ccc; padding-bottom: 3px; font-size: 1.05em; margin: 16px 0 5px;">Piano di pagamento</h5>'
+                            + '<table style="width: 100%; border-collapse: collapse; font-size: 0.85em;"><tr style="text-align: left; color: #666;"><th style="padding: 3px 4px;">Voce</th><th style="padding: 3px 4px;">Scadenza</th><th style="padding: 3px 4px;">Stato</th><th style="padding: 3px 4px; text-align: right;">Importo</th></tr>'
+                            + pay.map(p => '<tr style="border-top: 1px solid #eee;"><td style="padding: 3px 4px;">' + p.tipo + '</td><td style="padding: 3px 4px;">' + (fmt(p.scadenza) || '—') + '</td><td style="padding: 3px 4px;">' + (p.pagato ? 'Pagata' + (p.dataPagamento ? ' il ' + fmt(p.dataPagamento) : '') : 'Da pagare') + '</td><td style="padding: 3px 4px; text-align: right;">€ ' + Number(p.importo || 0).toFixed(2) + '</td></tr>').join('')
+                            + '</table>';
+                    }
+                    if (ship.length) {
+                        const sent = ship.reduce((t, sp) => t + (sp.articoli || []).reduce((u, i) => u + (Number(i.quantita) || 0), 0), 0);
+                        html += '<h5 style="font-weight: bold; color: #4a004a; border-bottom: 1px solid #ccc; padding-bottom: 3px; font-size: 1.05em; margin: 16px 0 5px;">Spedizioni (' + sent + ' di ' + qtaTotaleOrdine + ' pz)</h5>'
+                            + '<table style="width: 100%; border-collapse: collapse; font-size: 0.85em;">'
+                            + ship.map((sp, n) => '<tr style="border-top: 1px solid #eee;"><td style="padding: 3px 4px;">' + (n + 1) + 'ª · ' + fmt(sp.data) + (sp.tracking ? ' · tracciamento ' + sp.tracking : '') + '</td><td style="padding: 3px 4px; text-align: right;">' + (sp.articoli || []).reduce((u, i) => u + (Number(i.quantita) || 0), 0) + ' pz</td></tr>').join('')
+                            + '</table>';
+                    }
+                    return html;
+                })()}
+
                 <!-- FIRMA E ACCETTAZIONE -->
                 <div style="margin-top: 25px; display: flex; justify-content: space-between; align-items: flex-end;">
                     <div style="font-size: 0.75em; color: #888; line-height: 1.2;">
@@ -5363,13 +5743,36 @@
         const period = orders.filter(inYear);
         const periodLabel = year === 'Tutti' ? 'in totale' : 'nel ' + year;
 
+        // ---- Da stampare: accesso rapido alla lista di stampa degli ordini aperti ----
+        {
+            const queue = orders.filter(o => !o.evaso).map(o => ({ o, p: admPrintProgress(o) })).filter(x => x.p.tot && x.p.done < x.p.tot)
+                .sort((a, b) => String(a.o.data || '').localeCompare(String(b.o.data || '')) || a.o.id - b.o.id);
+            const section = document.getElementById('adm-printq');
+            const list = document.getElementById('adm-printq-list');
+            section.hidden = !queue.length;
+            list.replaceChildren(...queue.slice(0, 6).map(({ o, p }) => {
+                const card = admEl('button', 'adm-printq-card');
+                card.type = 'button';
+                const text = admEl('span', '');
+                text.append(admEl('strong', '', o.cliente || 'Senza nome'), admEl('small', '', '#' + admOrderNumber(o) + ' · ' + p.done + ' di ' + p.tot + ' urne stampate'));
+                card.append(admRing(p.done, p.tot, 44, 'Stampate'), text, admIcon('chevron_right'));
+                card.setAttribute('aria-label', 'Lista di stampa di ' + (o.cliente || 'ordine') + ': ' + p.done + ' di ' + p.tot + ' stampate');
+                card.addEventListener('click', () => admOpenPrintList(o.id));
+                return card;
+            }), ...(queue.length > 6 ? [(() => { const b = admEl('button', 'pet-link-button adm-printq-more', '+ altri ' + (queue.length - 6) + ' ordini'); b.type = 'button'; b.addEventListener('click', () => admOpen('lista-ordini')); return b; })()] : []));
+        }
+
         // ---- Da fare (sempre su tutti gli ordini) ----
         const todo = document.getElementById('adm-todo');
         todo.replaceChildren();
         const open = orders.filter(o => !o.evaso);
         const openPieces = open.reduce((sum, o) => sum + o.articoli.reduce((s, a) => s + admQty(a), 0), 0);
         const unpaid = orders.filter(o => !o.pagato);
-        const unpaidTotal = unpaid.reduce((sum, o) => sum + (o.importo || 0), 0);
+        const unpaidTotal = unpaid.reduce((sum, o) => sum + admPayInfo(o).residuo, 0);
+        const todayIso = admTodayIso(), soonIso = new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10);
+        const dueRates = orders.flatMap(o => (Array.isArray(o.pagamenti) ? o.pagamenti : []).filter(p => !p.pagato && p.scadenza && p.scadenza <= soonIso).map(p => ({ o, p })))
+            .sort((a, b) => a.p.scadenza.localeCompare(b.p.scadenza));
+        const overdueRates = dueRates.filter(x => x.p.scadenza < todayIso);
         const oldestUnpaid = unpaid.reduce((max, o) => o.data ? Math.max(max, admDays(o.data)) : max, 0);
         const recent = list => Array.isArray(list) ? list.filter(d => Date.now() - new Date(d).getTime() < 30 * 86400000).length : null;
         const plural = (n, one, many) => n + ' ' + (n === 1 ? one : many);
@@ -5380,6 +5783,9 @@
               warn: open.length > 0, action: admOrderPlanCache && (admOrderPlanCache.shortages.size || admOrderPlanCache.boxShortages.size) ? ['Magazzino', () => { admOpen('magazzino-colori'); renderMagazzino(); }] : ['Elenco ordini', () => admOpen('lista-ordini')] },
             { icon: 'payments', title: unpaid.length ? admMoney.format(unpaidTotal) + ' da incassare' : 'Tutto incassato',
               note: unpaid.length ? unpaid.length + (unpaid.length === 1 ? ' ordine' : ' ordini') + ' · il più vecchio da ' + oldestUnpaid + ' giorni' : 'Nessun pagamento in sospeso', warn: unpaid.length > 0 },
+            ...(dueRates.length ? [{ icon: 'event', title: plural(dueRates.length, 'rata', 'rate') + ' in scadenza' + (overdueRates.length ? ' · ' + overdueRates.length + ' scadut' + (overdueRates.length === 1 ? 'a' : 'e') : ''),
+              note: dueRates.slice(0, 2).map(x => (x.o.cliente || 'Senza nome') + ' · ' + x.p.tipo + ' ' + admMoney.format(Number(x.p.importo) || 0) + ' · ' + admDate.format(new Date(x.p.scadenza + 'T00:00:00Z'))).join(' — '),
+              warn: overdueRates.length > 0, action: ['Apri la prima', () => admOpenPayments(dueRates[0].o.id)] }] : []),
             { icon: 'receipt_long', title: recent(activity.orderRequests) == null ? 'Richieste d’ordine' : plural(recent(activity.orderRequests), 'richiesta d’ordine', 'richieste d’ordine'),
               note: recent(activity.orderRequests) == null ? 'Caricamento…' : 'negli ultimi 30 giorni', action: ['Apri', () => document.querySelector('[aria-controls="pet-admin-order-dialog"]').click()] },
             { icon: 'how_to_reg', title: recent(activity.partnerRequests) == null ? 'Richieste di accesso' : plural(recent(activity.partnerRequests), 'richiesta di accesso', 'richieste di accesso'),
@@ -5995,7 +6401,7 @@
             return element;
         }
 
-        function customerOrderRow({ label, date, badges, amount, items, breakdown }) {
+        function customerOrderRow({ label, date, badges, amount, items, breakdown, payments = [], shipments = [] }) {
             const groups = new Map();
             let count = 0;
             for (const item of items) {
@@ -6073,6 +6479,40 @@
                     addLine('Prezzo finale', 'nella conferma di 24Pet', true);
                 }
                 details.append(summaryList);
+            }
+            if (payments.length) {
+                const section = document.createElement('section');
+                section.className = 'pet-order-extra';
+                const paidSum = payments.filter(p => p.pagato).reduce((t, p) => t + Number(p.importo || 0), 0);
+                section.append(labeledText('h3', '', 'Pagamenti'),
+                    labeledText('p', 'pet-order-note', 'Pagati ' + money.format(paidSum) + (amount != null ? ' di ' + money.format(amount) : '') + '.'));
+                const list = document.createElement('ul');
+                for (const p of payments) {
+                    const line = document.createElement('li');
+                    const when = p.pagato ? (p.data_pagamento ? 'pagata il ' + calendarDate.format(new Date(p.data_pagamento + 'T00:00:00Z')) : 'pagata')
+                        : (p.scadenza ? 'scade il ' + calendarDate.format(new Date(p.scadenza + 'T00:00:00Z')) : 'da pagare');
+                    const left = labeledText('span', '', (p.tipo || 'Rata') + ' · ' + when);
+                    line.append(left, labeledText('strong', p.pagato ? 'pet-paid' : '', money.format(Number(p.importo || 0))));
+                    list.append(line);
+                }
+                section.append(list);
+                details.append(section);
+            }
+            if (shipments.length) {
+                const section = document.createElement('section');
+                section.className = 'pet-order-extra';
+                const sent = shipments.reduce((t, sh) => t + (sh.items || []).reduce((u, i) => u + Number(i.quantita || 0), 0), 0);
+                section.append(labeledText('h3', '', 'Spedizioni'), labeledText('p', 'pet-order-note', 'Spedite ' + sent + ' di ' + count + ' urne.'));
+                const list = document.createElement('ul');
+                shipments.forEach((sh, n) => {
+                    const pcs = (sh.items || []).reduce((u, i) => u + Number(i.quantita || 0), 0);
+                    const line = document.createElement('li');
+                    line.append(labeledText('span', '', (n + 1) + 'ª spedizione · ' + (sh.data ? calendarDate.format(new Date(sh.data + 'T00:00:00Z')) : '') + (sh.tracking ? ' · tracciamento ' + sh.tracking : '')),
+                        labeledText('strong', '', pcs + ' pz'));
+                    list.append(line);
+                });
+                section.append(list);
+                details.append(section);
             }
             order.append(details);
             return order;
@@ -6243,7 +6683,7 @@
             clientStatus.textContent = 'Caricamento ordini…';
             try {
                 const { data: orders, error } = await api.from('client_order_history')
-                    .select('order_id,order_date,amount,paid,fulfilled,items,reseller_discount_pct,extra_discount_pct,shipping_charged')
+                    .select('order_id,order_date,amount,paid,fulfilled,items,reseller_discount_pct,extra_discount_pct,shipping_charged,payments,shipments')
                     .order('order_date', { ascending: false }).order('order_id', { ascending: false });
                 if (check !== accessCheck) return;
                 if (error) throw error;
@@ -6258,10 +6698,12 @@
                         ? Number(order.order_id).toString(36).toUpperCase().slice(-5) : order.order_id),
                     date: calendarDate.format(new Date(order.order_date + 'T00:00:00Z')),
                     badges: [
-                        order.paid ? { text: 'Pagato', tone: 'ok' } : { text: 'Da pagare', tone: 'warn' },
-                        order.fulfilled ? { text: 'Evaso', tone: 'ok' } : { text: 'Da evadere', tone: 'neutral' }
+                        order.paid ? { text: 'Pagato', tone: 'ok' } : (order.payments || []).some(p => p.pagato) ? { text: 'Pagato in parte', tone: 'warn' } : { text: 'Da pagare', tone: 'warn' },
+                        order.fulfilled ? { text: 'Evaso', tone: 'ok' } : (order.shipments || []).length ? { text: 'Spedito in parte', tone: 'neutral' } : { text: 'Da evadere', tone: 'neutral' }
                     ],
                     amount: order.amount,
+                    payments: order.payments || [],
+                    shipments: order.shipments || [],
                     breakdown: {
                         resellerPct: order.reseller_discount_pct, extraPct: order.extra_discount_pct, shipping: order.shipping_charged
                     },
