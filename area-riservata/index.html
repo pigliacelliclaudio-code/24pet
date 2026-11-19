@@ -7448,6 +7448,7 @@
         const passwordForm = document.getElementById('pet-password-form');
         const passwordError = document.getElementById('pet-password-error');
         let passwordRecovery = false;
+        let recoverySaved = false;
         async function openPasswordDialog(recovery) {
             passwordRecovery = recovery;
             document.getElementById('pet-password-title').textContent = recovery ? 'Scegli una nuova password' : 'Cambia password';
@@ -7482,6 +7483,7 @@
                 }
                 passwordForm.reset();
                 passwordError.textContent = '';
+                if (passwordRecovery) recoverySaved = true;
                 document.getElementById('pet-password-title').textContent = 'Password aggiornata ✓';
                 setTimeout(() => passwordDialog.close(), 1400);
                 if (passwordRecovery && history.replaceState) history.replaceState(null, '', location.pathname);
@@ -7502,9 +7504,51 @@
             setTimeout(() => { forgot.disabled = false; }, 60000);
         });
 
+        // Link di recupero dall'email. La pagina non legge in automatico i token nell'indirizzo
+        // (detectSessionInUrl: false): qui accettiamo SOLO type=recovery, togliamo subito i token
+        // dalla barra degli indirizzi e chiediamo la nuova password prima di aprire il gestionale.
+        let recoveryPending = false;
+        const urlHash = new URLSearchParams(location.hash.replace(/^#/, ''));
+        if (urlHash.get('type') === 'recovery' || urlHash.get('error_code')) {
+            if (history.replaceState) history.replaceState(null, '', location.pathname + location.search);
+        }
+        if (urlHash.get('error_code')) {
+            signedOutMessage = urlHash.get('error_code') === 'otp_expired'
+                ? 'Il link per la nuova password è scaduto o è già stato usato. Scrivi la tua email e premi di nuovo «Password dimenticata?».'
+                : 'Link non valido. Scrivi la tua email e premi di nuovo «Password dimenticata?».';
+        } else if (urlHash.get('type') === 'recovery' && urlHash.get('access_token') && urlHash.get('refresh_token')) {
+            recoveryPending = true;
+            showLogin('Verifica del link in corso…');
+            const finishRecovery = async () => {
+                if (!recoveryPending) return;
+                recoveryPending = false;
+                const { data } = await api.auth.getSession();
+                authorize(data?.session || null).catch(reportAccessError);
+            };
+            passwordDialog.addEventListener('close', async () => {
+                if (!recoveryPending) return;
+                if (recoverySaved) return finishRecovery();
+                recoveryPending = false;
+                signedOutMessage = 'Password non cambiata. Se ti serve, premi di nuovo «Password dimenticata?».';
+                await api.auth.signOut({ scope: 'local' }).catch(() => {});
+                showLogin(signedOutMessage);
+            });
+            api.auth.setSession({ access_token: urlHash.get('access_token'), refresh_token: urlHash.get('refresh_token') })
+                .then(({ error }) => {
+                    if (error) {
+                        recoveryPending = false;
+                        showLogin('Il link per la nuova password è scaduto o è già stato usato. Scrivi la tua email e premi di nuovo «Password dimenticata?».');
+                        return;
+                    }
+                    showLogin('Scegli la nuova password per entrare.');
+                    openPasswordDialog(true);
+                })
+                .catch(() => { recoveryPending = false; showLogin('Link non valido. Riprova.'); });
+        }
+
         api.auth.onAuthStateChange((event, session) => {
-            if (event === 'PASSWORD_RECOVERY') setTimeout(() => openPasswordDialog(true), 300);
             if (event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') return;
+            if (recoveryPending) return; // durante il recupero si entra solo dopo aver salvato la nuova password
             setTimeout(() => authorize(session).catch(reportAccessError), 0);
         });
     })();
