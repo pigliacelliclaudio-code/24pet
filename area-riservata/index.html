@@ -1237,6 +1237,7 @@
             <footer class="adm-form-footer">
                 <button type="button" class="adm-action" id="btnAnnullaModifica" onclick="annullaModificaCliente()">Annulla</button>
                 <button type="submit" class="adm-action adm-action-primary" id="btnSalvaCliente"><i class="material-icons" aria-hidden="true">save</i><span>Salva cliente</span></button>
+                <button type="button" class="adm-action adm-action-primary" id="btnSalvaInvita" hidden><i class="material-icons" aria-hidden="true">send</i><span>Salva e invia invito</span></button>
             </footer>
         </form>
     </dialog>
@@ -3732,6 +3733,13 @@
         admLoadCloudBilling(client ? client.codice : null);
         document.getElementById('titoloFormCliente').textContent = client ? 'Modifica ' + (client.nome || client.codice) + ' · ' + client.codice : 'Nuovo cliente';
         document.querySelector('#btnSalvaCliente span').textContent = client ? 'Salva modifiche' : 'Salva cliente';
+        // «Salva e invia invito»: solo se il cliente non ha ancora un accesso attivo.
+        const account = client && Array.isArray(admClientAccounts) ? admClientAccounts.find(a => a.client_code === client.codice) : null;
+        const canInvite = typeof window.petAdminInvite === 'function' && !account?.has_account;
+        const inviteButton = document.getElementById('btnSalvaInvita');
+        inviteButton.hidden = !canInvite;
+        inviteButton.querySelector('span').textContent = account?.invite_pending ? 'Salva e rimanda invito' : 'Salva e invia invito';
+        document.getElementById('btnSalvaCliente').classList.toggle('adm-action-primary', !canInvite);
         const dialog = document.getElementById('adm-client-dialog');
         if (!dialog.open) dialog.showModal();
         document.getElementById('nuovoNomeCliente').focus();
@@ -3781,8 +3789,33 @@
         }
     });
 
+    let admInviteAfterSave = false;
+    document.getElementById('btnSalvaInvita').addEventListener('click', () => {
+        const error = document.getElementById('adm-client-form-error');
+        if (!admFormValue('email')) { error.textContent = 'Per mandare l’invito serve l’email del cliente.'; document.getElementById('email').focus(); return; }
+        admInviteAfterSave = true;
+        document.getElementById('clientForm').requestSubmit();
+    });
+    async function admInviteSavedClient(codice) {
+        const client = clients.find(c => c.codice === codice);
+        if (!client || typeof window.petAdminInvite !== 'function') return;
+        const email = String(client.email || '').trim().toLowerCase();
+        M.toast({ html: 'Invio dell’invito a ' + admEsc(email) + '…', classes: 'rounded' });
+        try {
+            const result = await window.petAdminInvite({ client_code: client.codice, business_name: client.ragioneSociale || client.nome || client.codice, email });
+            M.toast({ html: (result.resent ? 'Invito rimandato a ' : 'Invito inviato a ') + admEsc(email) + ' ✓', classes: 'rounded' });
+        } catch (failure) {
+            M.toast({ html: admEsc(ADM_INVITE_ERRORS[failure?.code] || 'Cliente salvato, ma l’invito non è partito. Riprova dalla scheda del cliente.'), classes: 'rounded', displayLength: 8000 });
+        }
+        admClientAccounts = null;
+        try { aggiornaRubrica(); } catch {}
+        admOpenClientCard(codice);
+    }
+
     document.getElementById('clientForm').addEventListener('submit', function (e) {
         e.preventDefault();
+        const inviteAfter = admInviteAfterSave;
+        admInviteAfterSave = false;
         const error = document.getElementById('adm-client-form-error');
         const fail = (message, field) => { error.textContent = message; if (field) document.getElementById(field).focus(); };
         const nome = admFormValue('nuovoNomeCliente');
@@ -3835,6 +3868,7 @@
             sito,
             logo: admClientLogoDraft || null
         };
+        let savedCode = clientInModifica;
         if (clientInModifica) {
             const index = clients.findIndex(c => c.codice === clientInModifica);
             clients[index] = Object.assign({}, clients[index], data, { codice: clientInModifica });
@@ -3847,6 +3881,7 @@
             clients.push(Object.assign({ codice: nuovoCodice }, data));
             M.toast({ html: 'Cliente aggiunto con codice ' + nuovoCodice, classes: 'rounded' });
             if (admClientFromRequest) admOpenAfterSave = nuovoCodice;
+            savedCode = nuovoCodice;
         }
         admClientFromRequest = false;
         petSave('clients');
@@ -3855,6 +3890,7 @@
         aggiornaRubrica();
         loadOrders();
         if (edited && document.getElementById('risultatiRicerca').style.display === 'block' && document.getElementById('resCodice').textContent === edited) searchClient(edited);
+        if (inviteAfter && savedCode) { admOpenAfterSave = null; admInviteSavedClient(savedCode); return; }
         if (admOpenAfterSave) { const code = admOpenAfterSave; admOpenAfterSave = null; setTimeout(() => admOpenClientCard(code), 200); }
     });
 
