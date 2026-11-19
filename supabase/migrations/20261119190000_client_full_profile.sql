@@ -20,7 +20,7 @@ create table public.client_profile_details (
     shipping_phone text check (char_length(shipping_phone) <= 40),
     delivery_hours text check (char_length(delivery_hours) <= 200),
     delivery_notes text check (char_length(delivery_notes) <= 500),
-    logo text check (logo is null or (char_length(logo) <= 300000 and logo ~ '^data:image/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$')),
+    logo text check (logo is null or (char_length(logo) <= 200000 and logo ~ '^data:image/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$')),
     -- Public listing on 24pet.it: null = never chosen by the client (the admin's setting stays),
     -- true/false = the client's own choice, with the moment consent was given.
     listing_consent boolean,

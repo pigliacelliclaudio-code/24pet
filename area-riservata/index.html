@@ -4951,6 +4951,8 @@
             URL.revokeObjectURL(url);
             let data = canvas.toDataURL('image/png');
             if (data.length > 160000) data = canvas.toDataURL('image/jpeg', 0.85);
+            if (data.length > 190000) data = canvas.toDataURL('image/jpeg', 0.7);
+            if (data.length > 190000) { error.textContent = 'Il logo è troppo pesante: prova con un file più semplice.'; return; }
             admClientLogoDraft = data;
             admRenderLogoField();
         };
@@ -7133,7 +7135,8 @@
                 URL.revokeObjectURL(url);
                 let data = canvas.toDataURL('image/png');
                 if (data.length > 160000) data = canvas.toDataURL('image/jpeg', 0.85);
-                if (data.length > 290000) { logoError.textContent = 'Il logo è troppo pesante: prova con un file più semplice.'; return; }
+                if (data.length > 190000) data = canvas.toDataURL('image/jpeg', 0.7);
+                if (data.length > 190000) { logoError.textContent = 'Il logo è troppo pesante: prova con un file più semplice.'; return; }
                 profileLogo = data;
                 renderLogo();
                 const ratio = w0 / h0;
