@@ -3043,6 +3043,8 @@
     let petCostSettings = {};
     const COST_FIELDS = [
         ['scarto', 'Scarto di stampa', '% in più di filamento', 'es. 10'],
+        ['cartaScatola', 'Carta nella scatola dell’urna', '€ per urna, IVA esclusa', 'es. 0,10'],
+        ['cartaCartone', 'Carta e nastro nel cartone di spedizione', '€ per cartone, IVA esclusa', 'es. 0,50'],
         ['kwh', 'Prezzo energia', '€ al kWh, IVA esclusa (bolletta: imponibile ÷ kWh)', 'es. 0,25'],
         ['usura', 'Usura e manutenzione', '€ per ora di stampa', 'es. 0,20'],
         ['oraLavoro', 'Manodopera', '€ all’ora', 'es. 15']
@@ -3122,6 +3124,13 @@
         const priced = codes.map(admFilamentPrice).filter(Boolean);
         return { avg: priced.length ? priced.reduce((s, x) => s + x, 0) / priced.length : 0, priced: priced.length, total: codes.length };
     }
+    // Imballo: carta nella scatola dell'urna + quota del cartone di spedizione (cartone dal Magazzino + carta e nastro) divisa per le urne del cartone
+    function admPackingPerUrn(v) {
+        const c = petCostSettings || {};
+        const per = Math.max(1, parseInt(petBoxSettings.perCartone, 10) || 8);
+        const cartone = admCostNum(admBox(petBoxSettings.cartone)?.prezzo);
+        return (v?.scatola ? admCostNum(c.cartaScatola) : 0) + (cartone + admCostNum(c.cartaCartone)) / per;
+    }
     function admCostBreakdown(v) {
         const c = petCostSettings || {};
         const kgColore = admColorKgPrice().avg, kgBianco = admFilamentPrice(admWhiteCode());
@@ -3133,7 +3142,8 @@
             usura: min / 60 * admCostNum(c.usura),
             lavoro: (Number(v?.minutiLavoro) || 0) / 60 * admCostNum(c.oraLavoro),
             scatola: v?.scatola ? admCostNum(admBox(v.scatola)?.prezzo) : 0,
-            extra: admCostNum(v?.costoExtra)
+            extra: admCostNum(v?.costoExtra),
+            imballo: admPackingPerUrn(v)
         };
         const missing = [];
         if (!min) missing.push('tempo di stampa');
@@ -3143,7 +3153,7 @@
         return { parts, total, missing, ready: !missing.length };
     }
     function admCostTitle(b) {
-        const L = { filamento: 'Filamento', energia: 'Energia', usura: 'Usura', lavoro: 'Manodopera', scatola: 'Scatola', extra: 'Extra' };
+        const L = { filamento: 'Filamento', energia: 'Energia', usura: 'Usura', lavoro: 'Manodopera', scatola: 'Scatola', imballo: 'Imballo', extra: 'Extra' };
         return Object.entries(b.parts).filter(([, x]) => x > 0).map(([k, x]) => L[k] + ' ' + admMoney.format(x)).join(' · ');
     }
     function renderCostSettings() {
@@ -3171,7 +3181,9 @@
         info.replaceChildren(
             li('Filamento colorato', col.priced ? 'in media ' + admMoney.format(col.avg) + ' al kg (' + col.priced + ' su ' + col.total + (col.total === 1 ? ' colore' : ' colori') + ' con prezzo)' : 'prezzi da inserire', col.priced === col.total && col.total > 0),
             li('Filamento bianco', wp ? admMoney.format(wp) + ' al kg' : 'prezzo da inserire', !!wp),
-            li('Scatole', boxes.length ? pricedBoxes + ' su ' + boxes.length + ' con prezzo' : 'nessuna scatola creata', boxes.length > 0 && pricedBoxes === boxes.length));
+            li('Scatole', boxes.length ? pricedBoxes + ' su ' + boxes.length + ' con prezzo' : 'nessuna scatola creata', boxes.length > 0 && pricedBoxes === boxes.length),
+            (() => { const cb = admBox(petBoxSettings.cartone); const cp = admCostNum(cb?.prezzo); const per = Math.max(1, parseInt(petBoxSettings.perCartone, 10) || 8);
+                return li('Cartone di spedizione', cb ? (cp ? cb.nome + ' a ' + admMoney.format(cp) + ', diviso per ' + per + ' urne' : cb.nome + ': prezzo da inserire') : 'scegli il cartone predefinito nel Magazzino', !!cp); })());
     }
     async function admSaveCostSettings() {
         const next = {};
