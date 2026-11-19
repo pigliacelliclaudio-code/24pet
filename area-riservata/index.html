@@ -7225,6 +7225,8 @@
                 fiscalStatus.textContent = '';
                 fiscalLoaded = true;
                 fiscalComplete = profileReady(billing, details);
+                if (!fiscalComplete) await saveProfile(true); // dati obbligatori già in rubrica: il cliente può ordinare subito
+                if (check !== accessCheck) return;
                 showCustomerPage(customerPage);
                 await startOrdering(customerCode, check);
             } catch {
@@ -7234,9 +7236,13 @@
             }
         }
 
-        fiscalForm.addEventListener('submit', async event => {
+        fiscalForm.addEventListener('submit', event => {
             event.preventDefault();
-            if (!customerCode || !fiscalLoaded || saveFiscal.disabled) return;
+            saveProfile(false);
+        });
+        // quiet = salvataggio automatico al primo accesso con i dati che il gestionale ha già in rubrica.
+        async function saveProfile(quiet) {
+            if (!customerCode || !fiscalLoaded || saveFiscal.disabled) return false;
             for (const name of [...fiscalFields, ...detailFields]) {
                 const input = fiscalForm.elements[name];
                 if (!input || input.tagName === 'SELECT') continue;
@@ -7246,7 +7252,7 @@
                 if ((name === 'website' || name === 'listing_website') && input.value && !/^https?:\/\//i.test(input.value)) input.value = 'https://' + input.value;
             }
             syncShipping(); syncListing();
-            if (!fiscalForm.reportValidity()) { fiscalFeedback.textContent = 'Controlla i campi evidenziati.'; return; }
+            if (quiet ? !fiscalForm.checkValidity() : !fiscalForm.reportValidity()) { if (!quiet) fiscalFeedback.textContent = 'Controlla i campi evidenziati.'; return false; }
             const value = name => fiscalForm.elements[name].value || null;
             const billing = Object.fromEntries(fiscalFields.map(name => [name, value(name)]));
             const same = shipSame.checked;
@@ -7259,7 +7265,7 @@
 
             const check = accessCheck;
             saveFiscal.disabled = true;
-            fiscalFeedback.textContent = 'Salvataggio…';
+            if (!quiet) fiscalFeedback.textContent = 'Salvataggio…';
             try {
                 const saved = await api.from('client_billing_profiles')
                     .upsert({ client_code: customerCode, ...billing }, { onConflict: 'client_code' });
@@ -7275,17 +7281,19 @@
                 listingSince.hidden = !(savedDetails.data?.listing_consent && savedDetails.data?.listing_consent_at);
                 if (!listingSince.hidden) listingSince.textContent = 'Consenso dato il ' + new Date(savedDetails.data.listing_consent_at).toLocaleDateString('it-IT') + '.';
                 fiscalComplete = profileReady(billing, details);
-                fiscalFeedback.textContent = details.listing_consent === true ? 'Profilo salvato ✓ Ora compari sul sito 24pet.it.'
+                if (!quiet) fiscalFeedback.textContent = details.listing_consent === true ? 'Profilo salvato ✓ Ora compari sul sito 24pet.it.'
                     : details.listing_consent === false ? 'Profilo salvato ✓ Non compari sul sito 24pet.it.'
                     : 'Profilo salvato ✓ Puoi inviare i tuoi ordini.';
                 showCustomerPage(customerPage);
                 renderCart();
+                return true;
             } catch {
-                if (check === accessCheck) fiscalFeedback.textContent = 'Salvataggio non riuscito. Controlla i dati e riprova.';
+                if (check === accessCheck && !quiet) fiscalFeedback.textContent = 'Salvataggio non riuscito. Controlla i dati e riprova.';
+                return false;
             } finally {
                 if (check === accessCheck) saveFiscal.disabled = false;
             }
-        });
+        }
         for (const drawer of [modelDrawer, colorDrawer]) {
             drawer.querySelector('[data-drawer-close]').addEventListener('click', () => drawer.close());
             drawer.addEventListener('click', event => {
