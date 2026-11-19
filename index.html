@@ -367,7 +367,12 @@ form.addEventListener('submit', async (event) => {
                 email: fields.get('email').trim().toLowerCase()
             })
         });
-        if (!response.ok) throw new Error('submission failed');
+        if (!response.ok) {
+            const detail = String((await response.json().catch(() => null))?.message || '');
+            if (detail.includes('già ricevuta')) { status.textContent = 'Abbiamo già la tua richiesta: ti ricontatteremo all’indirizzo indicato.'; form.reset(); return; }
+            if (detail.includes('Troppe')) { status.textContent = 'In questo momento riceviamo molte richieste: riprova tra qualche minuto.'; return; }
+            throw new Error('submission failed');
+        }
         status.textContent = 'Richiesta ricevuta. Ti ricontatteremo all’indirizzo indicato.';
         form.reset();
     } catch {
@@ -377,7 +382,7 @@ form.addEventListener('submit', async (event) => {
     }
 });
 </script>
-<script src="/assets/punti-vendita.js?v=2"></script>
+<script src="/assets/punti-vendita.js?v=3"></script>
 <script>
 (() => {
     if (!window.PetStores) return;

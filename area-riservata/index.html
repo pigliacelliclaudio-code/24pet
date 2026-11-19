@@ -7,10 +7,10 @@
     <meta name="robots" content="noindex, nofollow">
     <link rel="icon" type="image/png" sizes="64x64" href="/assets/favicon-24pet.png">
     <!-- Materialize CSS & Icone -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/vendor/materialize-1.0.0.min.css">
+    <link rel="stylesheet" href="/assets/vendor/material-icons.css">
     <!-- Chart.js per i grafici -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/assets/vendor/chart-4.6.1.umd.min.js"></script>
     
     <style>
         body { background-color: #f4f6f8; }
@@ -83,7 +83,7 @@
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
         }
     </style>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="/assets/vendor/dm-sans.css">
     <style media="screen">
         :root {
             --ink: #291d33;
@@ -213,6 +213,10 @@
         [hidden] { display: none !important; }
         body:not(.pet-admin) .sidenav, body:not(.pet-admin) .print-only { display: none !important; }
         .pet-access { display: grid; min-height: 100vh; place-items: center; padding: 20px; }
+        .pet-forgot { display: block; margin: 12px auto 0; font-size: .92rem; }
+        .pet-password-button { margin-right: 8px; }
+        .pet-password-button { padding: 0 12px !important; }
+        .pet-password-button .material-icons { line-height: inherit; font-size: 20px; vertical-align: middle; }
         .pet-access-card { width: min(100%, 440px); background: #fff; padding: clamp(24px, 6vw, 42px); border: 1px solid #e8e0eb; border-radius: 20px; }
         .pet-access-card h1 { font-size: clamp(25px, 7vw, 32px); font-weight: 800; margin: 22px 0; }
         .pet-access-card label { color: #685e72; font-size: .95rem; }
@@ -764,6 +768,27 @@
 </head>
 <body>
 
+<dialog class="pet-inbox-dialog adm-client-dialog adm-stock-dialog" id="pet-password-dialog" aria-labelledby="pet-password-title">
+    <header>
+        <h2 id="pet-password-title">Cambia password</h2>
+        <button class="pet-inbox-close" type="button" aria-label="Chiudi" data-password-close><i class="material-icons" aria-hidden="true">close</i></button>
+    </header>
+    <form class="adm-form" id="pet-password-form" novalidate>
+        <div class="adm-form-body">
+            <input type="email" id="pet-password-user" autocomplete="username" hidden>
+            <div class="adm-form-grid">
+                <label class="adm-field adm-span-3">Nuova password<input id="pet-password-new" type="password" autocomplete="new-password" minlength="10" maxlength="72" required></label>
+                <label class="adm-field adm-span-3">Ripeti la nuova password<input id="pet-password-repeat" type="password" autocomplete="new-password" minlength="10" maxlength="72" required></label>
+            </div>
+            <p class="adm-note">Almeno 10 caratteri. Meglio una frase di più parole, diversa da quelle che usi su altri siti.</p>
+            <p id="pet-password-error" class="adm-form-error" role="alert"></p>
+        </div>
+        <footer class="adm-form-footer">
+            <button type="button" class="adm-action" data-password-close>Annulla</button>
+            <button type="submit" class="adm-action adm-action-primary" id="pet-password-save"><i class="material-icons" aria-hidden="true">lock</i><span>Salva la password</span></button>
+        </footer>
+    </form>
+</dialog>
 <section id="pet-login" class="pet-access no-print">
     <form id="pet-login-form" class="pet-access-card">
         <div class="app-brand"><img class="app-brand-logo" src="/assets/logo-24pet.png" width="38" height="38" alt=""><span>24Pet</span></div>
@@ -773,6 +798,7 @@
         <label for="pet-password">Password</label>
         <input id="pet-password" type="password" autocomplete="current-password" required>
         <button id="pet-sign-in" type="submit" class="btn btn-custom" disabled>Accedi</button>
+        <button id="pet-forgot" type="button" class="pet-link-button pet-forgot">Password dimenticata?</button>
         <p id="pet-login-status" role="status">Verifica dell’accesso in corso…</p>
         <p class="pet-login-legal"><a href="https://24pet.it/privacy/" target="_blank" rel="noopener">Informativa privacy</a> · <a href="https://24pet.it/condizioni-v1/" target="_blank" rel="noopener">Condizioni di vendita</a></p>
     </form>
@@ -781,6 +807,7 @@
     <div class="pet-access-card">
         <header class="pet-client-bar">
             <div class="app-brand"><img class="app-brand-logo" src="/assets/logo-24pet.png" width="38" height="38" alt=""><span>Dashboard <strong>24Pet</strong></span></div>
+            <button class="btn btn-custom pet-password-button" type="button" data-pet-password title="Cambia password" aria-label="Cambia password"><i class="material-icons" aria-hidden="true">lock</i></button>
             <button class="btn btn-custom" type="button" data-pet-sign-out>Esci</button>
             <p class="pet-sign-out-status" role="status"></p>
         </header>
@@ -899,7 +926,7 @@
             </div>
             <div class="pet-account"><div class="sync-status" id="cloudSyncInfo">
                 <i class="material-icons" aria-hidden="true">storage</i> <span id="dashboard-data-status">Dati locali</span>
-            </div><button class="btn btn-custom" type="button" data-pet-sign-out>Esci</button><span class="pet-sign-out-status" role="status"></span></div>
+            </div><button class="btn btn-custom pet-password-button" type="button" data-pet-password title="Cambia password" aria-label="Cambia password"><i class="material-icons" aria-hidden="true">lock</i></button><button class="btn btn-custom" type="button" data-pet-sign-out>Esci</button><span class="pet-sign-out-status" role="status"></span></div>
         </div>
     </nav>
     <dialog class="pet-inbox-dialog adm-client-dialog adm-stock-dialog" id="adm-stock-dialog" aria-labelledby="adm-stock-dialog-title">
@@ -1631,7 +1658,7 @@
     </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+<script src="/assets/vendor/materialize-1.0.0.min.js"></script>
 <script>
     let chartModelliInstance = null;
     let chartClientiInstance = null;
@@ -4266,6 +4293,7 @@
 
     // === GENERAZIONE SCHEDA PRODUZIONE PDF (PER IL LABORATORIO) ===
     function costruisciHtmlSchedeProduzione(ordiniDaStampare, titoloHeader) {
+        ordiniDaStampare = ordiniDaStampare.map(admEscDeep);
         let printHtml = `
             <div style="max-width: 850px; margin: 0 auto; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #333; padding: 10px;">
                 <div style="background: linear-gradient(135deg, #4a004a 0%, #b50084 100%); border-radius: 6px; padding: 6px 12px; color: white; display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; page-break-inside: avoid;">
@@ -4401,6 +4429,14 @@
         return `<svg class="lab-barcode" viewBox="0 0 ${total} 1" preserveAspectRatio="none" style="width:${widthMm};height:${heightMm}mm" shape-rendering="crispEdges" aria-label="${admEsc(value)}">${bars}</svg>`;
     }
     function admEsc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+    // Copia con tutti i testi resi innocui, per i modelli HTML delle stampe (i dati dei clienti possono arrivare dall'area clienti)
+    function admEscDeep(v) {
+        if (typeof v === 'string') return admEsc(v);
+        if (Array.isArray(v)) return v.map(admEscDeep);
+        if (v && typeof v === 'object') { const o = {}; for (const k of Object.keys(v)) o[k] = admEscDeep(v[k]); return o; }
+        return v;
+    }
+    function admSafeImage(src) { return typeof src === 'string' && /^data:image\/(png|jpe?g|webp|gif);base64,[A-Za-z0-9+/=]+$/.test(src) ? src : ''; }
     function admItemCode(a) {
         if (a.sku && /-[A-Z]\d$/.test(a.sku)) return a.sku;
         const base = catalogoPrezzi[a.modello]?.[a.dimensione]?.sku || a.sku || '';
@@ -4416,7 +4452,7 @@
         for (const a of sorted) for (let i = 0; i < admQty(a); i++) items.push(a);
         const total = items.length;
         const head = client?.logo
-            ? `<div class="lab-logo"><img src="${client.logo}" alt=""></div>`
+            ? `<div class="lab-logo"><img src="${admSafeImage(client.logo)}" alt=""></div>`
             : `<div class="lab-client">${admEsc(client?.nome || order.cliente || '')}</div>`;
         return `<style>
             @page { size: 62mm 100mm; margin: 0; }
@@ -4775,10 +4811,10 @@
 
     // === GENERAZIONE RIEPILOGO CLIENTE COMPATTO ===
     function stampaRiepilogoCliente(idOrdine) {
-        const o = orders.find(ord => ord.id === idOrdine);
-        if(!o) return;
-
-        const cInfo = clients.find(c => c.codice === o.codiceCliente) || {};
+        const found = orders.find(ord => ord.id === idOrdine);
+        if(!found) return;
+        const o = admEscDeep(found);
+        const cInfo = admEscDeep(clients.find(c => c.codice === found.codiceCliente) || {});
         const dataFormattata = ('0'+new Date(o.data).getDate()).slice(-2) + '/' + ('0'+(new Date(o.data).getMonth()+1)).slice(-2) + '/' + new Date(o.data).getFullYear();
         const orderNum = Number(o.id).toString(36).toUpperCase().slice(-5); 
 
@@ -5501,7 +5537,7 @@
         note.classList.toggle('adm-billing-warn', differences.length > 0);
     }
 </script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.89.0/dist/umd/supabase.js"></script>
+<script src="/assets/vendor/supabase-js-2.89.0.js"></script>
 <script>
     (() => {
         const login = document.getElementById('pet-login');
@@ -6772,7 +6808,67 @@
             });
         });
 
+        // Password: cambio dall'interno e recupero con link via email
+        const passwordDialog = document.getElementById('pet-password-dialog');
+        const passwordForm = document.getElementById('pet-password-form');
+        const passwordError = document.getElementById('pet-password-error');
+        let passwordRecovery = false;
+        async function openPasswordDialog(recovery) {
+            passwordRecovery = recovery;
+            document.getElementById('pet-password-title').textContent = recovery ? 'Scegli una nuova password' : 'Cambia password';
+            passwordForm.reset();
+            passwordError.textContent = '';
+            try { const { data } = await api.auth.getUser(); document.getElementById('pet-password-user').value = data?.user?.email || ''; } catch {}
+            if (!passwordDialog.open) passwordDialog.showModal();
+            document.getElementById('pet-password-new').focus();
+        }
+        passwordDialog.querySelectorAll('[data-password-close]').forEach(b => b.addEventListener('click', () => passwordDialog.close()));
+        document.querySelectorAll('[data-pet-password]').forEach(b => b.addEventListener('click', () => openPasswordDialog(false)));
+        passwordForm.addEventListener('submit', async event => {
+            event.preventDefault();
+            const value = document.getElementById('pet-password-new').value;
+            const repeat = document.getElementById('pet-password-repeat').value;
+            const email = document.getElementById('pet-password-user').value.toLowerCase();
+            if (value.length < 10) { passwordError.textContent = 'La password deve avere almeno 10 caratteri.'; return; }
+            if (value !== repeat) { passwordError.textContent = 'Le due password non coincidono.'; return; }
+            if (email && value.toLowerCase().includes(email.split('@')[0])) { passwordError.textContent = 'Non usare il tuo indirizzo email nella password.'; return; }
+            const save = document.getElementById('pet-password-save');
+            save.disabled = true;
+            passwordError.textContent = '';
+            try {
+                const { error } = await api.auth.updateUser({ password: value });
+                if (error) {
+                    const code = error.code || '';
+                    passwordError.textContent = code === 'same_password' ? 'È uguale alla password attuale: scegline una diversa.'
+                        : code === 'weak_password' ? 'Password troppo debole o già finita in elenchi pubblici: scegline un’altra.'
+                        : code === 'reauthentication_needed' ? 'Per sicurezza esci, rientra e riprova subito.'
+                        : 'Password non aggiornata. Riprova.';
+                    return;
+                }
+                passwordForm.reset();
+                passwordError.textContent = '';
+                document.getElementById('pet-password-title').textContent = 'Password aggiornata ✓';
+                setTimeout(() => passwordDialog.close(), 1400);
+                if (passwordRecovery && history.replaceState) history.replaceState(null, '', location.pathname);
+            } catch {
+                passwordError.textContent = 'Password non aggiornata. Controlla la connessione e riprova.';
+            } finally {
+                save.disabled = false;
+            }
+        });
+        const forgot = document.getElementById('pet-forgot');
+        forgot.addEventListener('click', async () => {
+            const status = document.getElementById('pet-login-status');
+            const email = document.getElementById('pet-email').value.trim();
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { status.textContent = 'Scrivi la tua email qui sopra, poi premi «Password dimenticata?».'; document.getElementById('pet-email').focus(); return; }
+            forgot.disabled = true;
+            try { await api.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname }); } catch {}
+            status.textContent = 'Se l’indirizzo è registrato, ti arriverà un’email con il link per scegliere una nuova password. Controlla anche lo spam.';
+            setTimeout(() => { forgot.disabled = false; }, 60000);
+        });
+
         api.auth.onAuthStateChange((event, session) => {
+            if (event === 'PASSWORD_RECOVERY') setTimeout(() => openPasswordDialog(true), 300);
             if (event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') return;
             setTimeout(() => authorize(session).catch(reportAccessError), 0);
         });

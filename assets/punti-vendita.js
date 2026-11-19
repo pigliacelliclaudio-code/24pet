@@ -84,7 +84,7 @@
         const contacts = document.createElement('p'); contacts.className = 'store-contacts';
         if (s.phone) contacts.append(link('tel:' + s.phone.replace(/[^+\d]/g, ''), s.phone));
         if (s.email) contacts.append(link('mailto:' + s.email, s.email));
-        if (s.website) contacts.append(link(s.website, s.website.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')));
+        if (s.website && /^https?:\/\/[^\s]+$/i.test(s.website)) contacts.append(link(s.website, s.website.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')));
         if (contacts.childNodes.length) li.append(contacts);
         return li;
     }
