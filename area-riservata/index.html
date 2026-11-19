@@ -396,6 +396,10 @@
         .adm-order-ring { display: inline-flex; align-items: center; gap: 6px; font-size: .82rem; font-weight: 700; color: var(--muted); }
         .adm-print-body { padding: 8px 20px 16px; overflow-y: auto; max-height: min(62vh, 640px); }
         .adm-print-group h3 { margin: 14px 0 6px; font-size: 1rem; font-weight: 800; color: var(--plum); }
+        /* Tipologia sempre visibile mentre si scorrono i colori: resta in alto finché la sezione non finisce,
+           poi la tipologia successiva la spinge via. top negativo = copre il padding del contenitore. */
+        .adm-print-group h3 { position: sticky; top: -8px; z-index: 2; margin: 0 -8px 6px; padding: 10px 8px; background: #fff; border-bottom: 2px solid #eee6f0; }
+        .adm-print-group + .adm-print-group { margin-top: 18px; }
         .adm-print-group h3 small { margin-left: auto; font-weight: 600; color: var(--muted); }
         .adm-print-list { display: grid; gap: 6px; margin: 0; }
         .adm-print-item { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: #fff; }
