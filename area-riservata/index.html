@@ -963,11 +963,13 @@
             <div class="adm-form-body">
                 <div class="adm-form-grid">
                     <label class="adm-field adm-span-3">Cosa vuoi fare
-                        <select id="adm-box-mode" class="browser-default" onchange="admBoxDialogMode()"><option value="carico">Carico scatole acquistate</option><option value="rettifica">Correggi il conteggio (le ho contate)</option><option value="prezzo">Cambia solo il prezzo</option></select></label>
+                        <select id="adm-box-mode" class="browser-default" onchange="admBoxDialogMode()"><option value="carico">Carico scatole acquistate</option><option value="rettifica">Correggi il conteggio (le ho contate)</option><option value="prezzo">Cambia prezzo e imballo</option></select></label>
                     <label class="adm-field adm-span-3">Scatola
                         <select id="adm-box-id" class="browser-default" onchange="admBoxDialogMode()"></select></label>
                     <label class="adm-field" id="adm-box-qty-label">Quante ne hai comprate <input id="adm-box-qty" type="number" min="0" step="1" autocomplete="off"></label>
                     <label class="adm-field">Prezzo al pezzo (€, IVA esclusa)<input id="adm-box-price" type="text" inputmode="decimal" placeholder="es. 0,80" autocomplete="off"></label>
+                    <label class="adm-field">Carta di riempimento (cm)<input id="adm-box-carta" type="text" inputmode="decimal" placeholder="es. 40" autocomplete="off"></label>
+                    <label class="adm-field">Nastro adesivo (cm)<input id="adm-box-nastro" type="text" inputmode="decimal" placeholder="solo cartoni, es. 150" autocomplete="off"></label>
                     <label class="adm-field adm-span-2" id="adm-box-note-label">Nota (facoltativa)<input id="adm-box-note" type="text" maxlength="200" autocomplete="off"></label>
                 </div>
                 <p id="adm-box-error" class="adm-form-error" role="alert"></p>
@@ -1242,7 +1244,7 @@
                         <h2 id="adm-cost-title">Calcolo dei costi</h2>
                         <p class="adm-note">Con questi valori e con tempi, grammi, lavoro ed extra di ogni misura (in «Modifica») la dashboard calcola il costo di ogni urna. Ogni nuovo ordine salva il costo calcolato in quel momento: gli ordini già fatti non cambiano.</p>
                         <div id="adm-cost-fields" class="adm-cost-grid"></div>
-                        <h3 class="adm-cost-sub">Carta di riempimento</h3>
+                        <h3 class="adm-cost-sub">Carta di riempimento e nastro</h3>
                         <p class="adm-note" id="adm-cost-paper-note"></p>
                         <div id="adm-cost-paper" class="adm-cost-grid"></div>
                         <h3 class="adm-cost-sub">Stampanti</h3>
@@ -2043,7 +2045,8 @@
             const nums = admEl('div', 'adm-stock-nums');
             nums.append(admEl('strong', '', stock + ' pz'), admEl('span', '', need ? 'impegnate ' + need : 'nessun ordine aperto'),
                 admEl('span', after < 0 ? 'adm-stock-neg' : 'adm-stock-pos', need ? (after < 0 ? 'mancano ' + (-after) : 'restano ' + after) : ''),
-                admEl('span', 'adm-stock-price' + (Number(b.prezzo) > 0 ? '' : ' is-missing'), admPriceText(Number(b.prezzo) > 0 ? Number(b.prezzo) : 0, ' al pezzo')));
+                admEl('span', 'adm-stock-price' + (Number(b.prezzo) > 0 ? '' : ' is-missing'), admPriceText(Number(b.prezzo) > 0 ? Number(b.prezzo) : 0, ' al pezzo')),
+                (Number(b.cartaCm) || Number(b.nastroCm)) ? admEl('span', 'adm-stock-price', [Number(b.cartaCm) ? 'carta ' + b.cartaCm + ' cm' : '', Number(b.nastroCm) ? 'nastro ' + b.nastroCm + ' cm' : ''].filter(Boolean).join(' · ')) : '');
             const actions = admEl('div', 'adm-stock-actions');
             const plus = admEl('button', 'adm-action'); plus.type = 'button'; plus.append(admIcon('add'), admEl('span', '', 'Carica'));
             plus.setAttribute('aria-label', 'Carica scatole ' + b.nome);
@@ -2307,6 +2310,7 @@
         document.getElementById('adm-box-note-label').hidden = mode === 'prezzo';
         const bp = Number(admBox(id)?.prezzo) || 0;
         document.getElementById('adm-box-price').value = bp ? String(bp).replace('.', ',') : '';
+        for (const k of ['carta', 'nastro']) { const n = Number(admBox(id)?.[k + 'Cm']) || 0; document.getElementById('adm-box-' + k).value = n ? String(n).replace('.', ',') : ''; }
         document.getElementById('adm-box-qty-label').firstChild.textContent = mode === 'rettifica' ? 'Quante ne hai davvero adesso ' : 'Quante ne hai comprate ';
         document.getElementById('adm-box-qty').value = mode === 'rettifica' ? Math.max(0, admBoxStock().get(id) || 0) : '';
     }
@@ -2319,15 +2323,28 @@
         const error = document.getElementById('adm-box-error');
         const price = admParsePrice(document.getElementById('adm-box-price').value);
         if (Number.isNaN(price)) { error.textContent = 'Scrivi il prezzo al pezzo in euro, es. 0,80.'; return; }
-        const priceChanged = (price || 0) !== (Number(admBox(id)?.prezzo) || 0);
+        const cm = {};
+        for (const k of ['carta', 'nastro']) {
+            const n = admParsePrice(document.getElementById('adm-box-' + k).value);
+            if (Number.isNaN(n) || n > 10000) { error.textContent = 'Scrivi i cm di ' + k + ' come numero, es. 40.'; return; }
+            cm[k + 'Cm'] = n || 0;
+        }
+        const cur = admBox(id) || {};
+        const priceChanged = (price || 0) !== (Number(cur.prezzo) || 0) || cm.cartaCm !== (Number(cur.cartaCm) || 0) || cm.nastroCm !== (Number(cur.nastroCm) || 0);
         if (priceChanged) {
             const prev = petBoxSettings.lista;
-            petBoxSettings.lista = admBoxes().map(b => { if (b.id !== id) return b; const n = Object.assign({}, b); if (price) n.prezzo = price; else delete n.prezzo; return n; });
-            if (!(await admSaveBoxSettings())) { petBoxSettings.lista = prev; error.textContent = 'Prezzo non salvato: riprova.'; return; }
+            petBoxSettings.lista = admBoxes().map(b => {
+                if (b.id !== id) return b;
+                const n = Object.assign({}, b);
+                if (price) n.prezzo = price; else delete n.prezzo;
+                for (const k of ['cartaCm', 'nastroCm']) { if (cm[k]) n[k] = cm[k]; else delete n[k]; }
+                return n;
+            });
+            if (!(await admSaveBoxSettings())) { petBoxSettings.lista = prev; error.textContent = 'Non salvato: riprova.'; return; }
         }
         if (mode === 'prezzo') {
             document.getElementById('adm-box-dialog').close();
-            M.toast({ html: priceChanged ? 'Prezzo aggiornato' : 'Prezzo invariato', classes: 'rounded' });
+            M.toast({ html: priceChanged ? 'Prezzo e imballo aggiornati' : 'Niente da cambiare', classes: 'rounded' });
             renderMagazzino(); renderCostSettings(); renderCatalogo();
             return;
         }
@@ -3053,7 +3070,8 @@
     const PAPER_FIELDS = [
         ['rotoloPrezzo', 'Rotolo di carta: prezzo', '€ per rotolo, IVA esclusa', 'es. 25'],
         ['rotoloMetri', 'Rotolo di carta: lunghezza', 'metri per rotolo', 'es. 250'],
-        ['nastroCartone', 'Nastro adesivo', '€ per cartone di spedizione, IVA esclusa', 'es. 0,15']
+        ['nastroPrezzo', 'Rotolo di nastro: prezzo', '€ per rotolo, IVA esclusa', 'es. 2'],
+        ['nastroMetri', 'Rotolo di nastro: lunghezza', 'metri per rotolo', 'es. 66']
     ];
     function admCostNum(v) { const n = parseFloat(String(v ?? '').replace(',', '.')); return Number.isFinite(n) && n >= 0 ? n : 0; }
     // Stampanti: consumo medio in watt × prezzo dell'energia -> costo per ora di stampa (media tra le stampanti)
@@ -3132,14 +3150,17 @@
     }
     // Imballo: carta nella scatola dell'urna + quota del cartone di spedizione (cartone dal Magazzino + carta e nastro) divisa per le urne del cartone
     function admPaperPerCm() { const c = petCostSettings || {}; const m = admCostNum(c.rotoloMetri); return m ? admCostNum(c.rotoloPrezzo) / (m * 100) : 0; }
-    function admPaperCm(boxId) { return boxId ? admCostNum((petCostSettings.cartaCm || {})[boxId]) : 0; }
+    function admTapePerCm() { const c = petCostSettings || {}; const m = admCostNum(c.nastroMetri); return m ? admCostNum(c.nastroPrezzo) / (m * 100) : 0; }
+    // Carta e nastro di una scatola: i cm sono nel Magazzino, i prezzi dei rotoli nel Calcolo dei costi
+    function admBoxPacking(boxId) {
+        const b = boxId ? admBox(boxId) : null;
+        return b ? admCostNum(b.cartaCm) * admPaperPerCm() + admCostNum(b.nastroCm) * admTapePerCm() : 0;
+    }
     function admPackingPerUrn(v) {
-        const c = petCostSettings || {};
         const per = Math.max(1, parseInt(petBoxSettings.perCartone, 10) || 8);
-        const eurCm = admPaperPerCm();
         const cartoneId = petBoxSettings.cartone;
-        const cartone = admCostNum(admBox(cartoneId)?.prezzo) + admPaperCm(cartoneId) * eurCm + admCostNum(c.nastroCartone);
-        return (v?.scatola ? admPaperCm(v.scatola) * eurCm : 0) + cartone / per;
+        const cartone = admCostNum(admBox(cartoneId)?.prezzo) + admBoxPacking(cartoneId);
+        return (v?.scatola ? admBoxPacking(v.scatola) : 0) + cartone / per;
     }
     function admCostBreakdown(v) {
         const c = petCostSettings || {};
@@ -3188,13 +3209,13 @@
         if (paper) {
             const eurCm = admPaperPerCm();
             const list = admBoxes();
-            paper.replaceChildren(...PAPER_FIELDS.map(([k, label, hint, ph]) => mk('adm-cost-' + k, label, hint, ph, c[k])), ...(list.length ? list.map(b => {
-                const isCarton = b.id === petBoxSettings.cartone;
-                const f = mk('adm-cost-cm-' + b.id, (isCarton ? 'Cartone di spedizione ' : 'Scatola ') + b.nome, 'cm di carta' + (eurCm && (petCostSettings.cartaCm || {})[b.id] ? ' · ' + admMoney.format(admPaperCm(b.id) * eurCm) : ''), 'es. ' + (isCarton ? '150' : '40'), (petCostSettings.cartaCm || {})[b.id], 'Centimetri di carta per ' + b.nome);
-                return f;
-            }) : [admEl('p', 'adm-muted', 'Crea le scatole nel Magazzino per indicare la carta.')]));
+            paper.replaceChildren(...PAPER_FIELDS.map(([k, label, hint, ph]) => mk('adm-cost-' + k, label, hint, ph, c[k])));
+            const tapeCm = admTapePerCm();
+            const withCm = list.filter(b => Number(b.cartaCm) || Number(b.nastroCm)).length;
             const pn = document.getElementById('adm-cost-paper-note');
-            if (pn) pn.textContent = eurCm ? 'La carta ti costa ' + admMoney.format(eurCm * 100) + ' al metro.' : 'Inserisci prezzo e lunghezza del rotolo per calcolare il costo della carta.';
+            if (pn) pn.textContent = [eurCm ? 'Carta: ' + admMoney.format(eurCm * 100) + ' al metro.' : 'Carta: inserisci prezzo e lunghezza del rotolo.',
+                tapeCm ? 'Nastro: ' + admMoney.format(tapeCm * 100) + ' al metro.' : 'Nastro: inserisci prezzo e lunghezza del rotolo.',
+                'I cm di carta e di nastro di ogni scatola si inseriscono nel Magazzino con il pulsante € (' + withCm + ' su ' + list.length + ' scatole compilate).'].join(' ');
         }
         const info = document.getElementById('adm-cost-stockinfo');
         const col = admColorKgPrice(), wp = admFilamentPrice(admWhiteCode());
@@ -3218,15 +3239,6 @@
             if (!Number.isFinite(n) || n < 0) { status.textContent = 'Controlla il valore di «' + ALL_FIELDS.find(f => f[0] === k)[1] + '».'; return; }
             next[k] = n;
         }
-        const cm = {};
-        for (const b of admBoxes()) {
-            const raw = document.getElementById('adm-cost-cm-' + b.id)?.value.trim();
-            if (!raw) continue;
-            const n = parseFloat(raw.replace(',', '.'));
-            if (!Number.isFinite(n) || n < 0 || n > 10000) { status.textContent = 'Controlla i cm di carta di ' + b.nome + '.'; return; }
-            cm[b.id] = n;
-        }
-        if (Object.keys(cm).length) next.cartaCm = cm;
         admReadPrinterDraft();
         const printers = [];
         for (const p of admPrinters()) {
