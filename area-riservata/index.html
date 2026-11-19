@@ -599,6 +599,18 @@
         .adm-access::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: #b9adbd; }
         .adm-access.is-on { color: #1b6434; }
         .adm-access.is-on::before { background: #2e9a5a; }
+        .adm-access.is-wait { color: #8a5a00; }
+        .adm-access.is-wait::before { background: #e0a100; }
+        .adm-invite { display: grid; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+        .adm-invite label { display: grid; gap: 4px; font-size: .85rem; font-weight: 600; color: var(--muted); }
+        .adm-invite input { height: 44px; padding: 0 12px; border: 1px solid var(--line); border-radius: 10px; font: inherit; color: var(--ink, #2b2b2b); background: #fff; }
+        .adm-invite .btn { justify-self: start; }
+        .adm-invite-status { margin: 0; font-size: .9rem; }
+        .adm-invite-status.is-ok { color: #1b6434; font-weight: 600; }
+        .adm-invite-status.is-error { color: #b00020; font-weight: 600; }
+        .pet-partner-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+        .pet-partner-row span { flex: 1 1 260px; }
+        .pet-partner-row .pet-link-button { white-space: nowrap; }
         .adm-client-contact { display: grid; min-width: 0; font-size: .88rem; }
         .adm-client-contact a { color: var(--accent); overflow-wrap: anywhere; }
         .adm-client-numbers { display: grid; justify-items: start; gap: 4px; font-size: .88rem; font-variant-numeric: tabular-nums; }
@@ -1701,6 +1713,7 @@
                             <section class="pet-home-card" aria-labelledby="adm-client-access-title">
                                 <h2 id="adm-client-access-title">Area clienti</h2>
                                 <dl id="adm-client-access" class="adm-facts"></dl>
+                                <div id="adm-client-invite" class="adm-invite" hidden></div>
                             </section>
                             <section class="pet-home-card" aria-labelledby="adm-client-models-title">
                                 <h2 id="adm-client-models-title">Modelli più acquistati</h2>
@@ -3833,14 +3846,31 @@
             const nuovoCodice = 'C-' + String(maxNum + 1).padStart(3, '0');
             clients.push(Object.assign({ codice: nuovoCodice }, data));
             M.toast({ html: 'Cliente aggiunto con codice ' + nuovoCodice, classes: 'rounded' });
+            if (admClientFromRequest) admOpenAfterSave = nuovoCodice;
         }
+        admClientFromRequest = false;
         petSave('clients');
         const edited = clientInModifica;
         annullaModificaCliente();
         aggiornaRubrica();
         loadOrders();
         if (edited && document.getElementById('risultatiRicerca').style.display === 'block' && document.getElementById('resCodice').textContent === edited) searchClient(edited);
+        if (admOpenAfterSave) { const code = admOpenAfterSave; admOpenAfterSave = null; setTimeout(() => admOpenClientCard(code), 200); }
     });
+
+    // Dalla richiesta di accesso professionale: apre la scheda nuovo cliente già compilata.
+    let admClientFromRequest = false;
+    let admOpenAfterSave = null;
+    function admNewClientFromRequest(request) {
+        const existing = clients.find(c => String(c.email || '').trim().toLowerCase() === String(request.email || '').trim().toLowerCase());
+        if (existing) { admOpenClientCard(existing.codice); return; }
+        admOpenClientForm(null);
+        admClientFromRequest = true;
+        admSetForm('nuovoNomeCliente', request.business_name);
+        admSetForm('ragioneSociale', request.business_name);
+        admSetForm('email', request.email);
+        if (window.M && M.updateTextFields) M.updateTextFields();
+    }
 
     function eliminaCliente(index) {
         const client = clients[index];
@@ -3906,7 +3936,9 @@
         if (c.sito?.visibile) tags.append(admBadge('Sul sito', 'ok'));
         const account = admClientAccounts ? (admClientAccounts.get(c.codice) || null) : undefined;
         if (account !== undefined) {
-            const state = admEl('span', 'adm-access ' + (account?.has_account ? 'is-on' : 'is-off'), account?.has_account ? 'Area clienti attiva' : 'Senza area clienti');
+            const state = account?.has_account ? admEl('span', 'adm-access is-on', 'Area clienti attiva')
+                : account?.invite_pending ? admEl('span', 'adm-access is-wait', 'Invito inviato')
+                : admEl('span', 'adm-access is-off', 'Senza area clienti');
             tags.append(state);
         }
 
@@ -6074,6 +6106,80 @@
         admLoadClientCloud(client);
     }
 
+    // Invito all'area clienti: crea l'account, lo collega al cliente e manda l'email in italiano.
+    const ADM_INVITE_ERRORS = {
+        email_used: 'Questa email è già collegata a un altro cliente.',
+        email_exists: 'Questa email ha già un accesso attivo: il cliente può usare «Password dimenticata?».',
+        already_active: 'Il cliente ha già un accesso attivo.',
+        is_staff: 'Questa email appartiene a un amministratore: usane un’altra.',
+        rate_limit: 'Troppe email inviate nell’ultima ora. Riprova più tardi.',
+        input: 'Controlla l’email: non sembra valida.',
+        forbidden: 'Solo un amministratore può inviare inviti.',
+        auth: 'Sessione scaduta: esci, rientra e riprova.'
+    };
+    function admRenderInvite(client, account) {
+        const box = document.getElementById('adm-client-invite');
+        if (!box) return;
+        box.replaceChildren();
+        if (account?.has_account || typeof window.petAdminInvite !== 'function') { box.hidden = true; return; }
+        box.hidden = false;
+        const label = admEl('label', '', 'Email a cui mandare l’invito');
+        const input = document.createElement('input');
+        input.type = 'email'; input.autocomplete = 'off'; input.maxLength = 200;
+        input.value = account?.login_email || client.email || '';
+        label.append(input);
+        const button = admEl('button', 'btn btn-custom', account?.invite_pending ? 'Rimanda l’invito' : 'Invia invito all’area clienti');
+        button.type = 'button';
+        const status = admEl('p', 'adm-invite-status', account?.invite_pending
+            ? 'Il cliente non ha ancora scelto la password. Il link vale 24 ore: se è scaduto, rimandalo.'
+            : 'Il cliente riceve un’email da info@24pet.it con il link per scegliere la password. Il link vale 24 ore.');
+        status.setAttribute('role', 'status');
+        button.addEventListener('click', async () => {
+            const email = input.value.trim().toLowerCase();
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { status.className = 'adm-invite-status is-error'; status.textContent = ADM_INVITE_ERRORS.input; input.focus(); return; }
+            // Conferma in due tocchi, senza finestre del browser: il primo chiede conferma, il secondo invia.
+            if (button.dataset.confirmFor !== email) {
+                button.dataset.confirmFor = email;
+                button.textContent = 'Conferma: invia a ' + email;
+                status.className = 'adm-invite-status';
+                status.textContent = 'Tocca di nuovo per inviare l’invito a ' + (client.nome || client.codice) + '.';
+                clearTimeout(button._reset);
+                button._reset = setTimeout(() => { delete button.dataset.confirmFor; button.textContent = account?.invite_pending ? 'Rimanda l’invito' : 'Invia invito all’area clienti'; }, 8000);
+                return;
+            }
+            clearTimeout(button._reset);
+            delete button.dataset.confirmFor;
+            button.textContent = account?.invite_pending ? 'Rimanda l’invito' : 'Invia invito all’area clienti';
+            button.disabled = true;
+            status.className = 'adm-invite-status';
+            status.textContent = 'Invio in corso…';
+            let result;
+            try {
+                result = await window.petAdminInvite({ client_code: client.codice, business_name: client.ragioneSociale || client.nome || client.codice, email });
+            } catch (error) {
+                status.className = 'adm-invite-status is-error';
+                status.textContent = ADM_INVITE_ERRORS[error?.code] || 'Invito non inviato. Controlla la connessione e riprova.';
+                button.disabled = false;
+                return;
+            }
+            status.className = 'adm-invite-status is-ok';
+            status.textContent = (result.resent ? 'Invito rimandato a ' : 'Invito inviato a ') + email + ' ✓';
+            try {
+                if (!client.email) { client.email = email; petSave('clients'); }
+                admClientAccounts = null;
+                aggiornaRubrica();
+            } catch {}
+            setTimeout(() => {
+                if (document.getElementById('resCodice').textContent !== client.codice) return;
+                admLoadClientCloud(client).then(() => {
+                    const again = document.querySelector('#adm-client-invite .adm-invite-status');
+                    if (again) { again.className = 'adm-invite-status is-ok'; again.textContent = (result.resent ? 'Invito rimandato a ' : 'Invito inviato a ') + email + ' ✓ Il link vale 24 ore.'; }
+                }).catch(() => {});
+            }, 1500);
+        });
+        box.append(label, button, status);
+    }
+
     async function admLoadClientCloud(client) {
         const access = document.getElementById('adm-client-access');
         const note = document.getElementById('adm-client-billing-note');
@@ -6093,8 +6199,9 @@
         }
         const account = cloud.account;
         const lastLogin = account?.last_sign_in_at ? new Date(account.last_sign_in_at) : null;
+        admRenderInvite(client, account);
         admFacts(access, account ? [
-            ['Stato', account.has_account ? 'Account attivo' : 'Invito non ancora accettato'],
+            ['Stato', account.has_account ? 'Account attivo' : account.invite_pending ? 'Invito inviato il ' + (account.invited_at ? admDate.format(new Date(account.invited_at)) : '—') + ', non ancora accettato' : 'Invito non ancora inviato'],
             ['Email di accesso', account.login_email, account.login_email ? 'mailto:' : ''],
             ['Ultimo accesso', lastLogin ? admDate.format(lastLogin) + ' · ' + (admDays(lastLogin.toISOString().slice(0, 10)) === 0 ? 'oggi' : admDays(lastLogin.toISOString().slice(0, 10)) + ' giorni fa') : (account.has_account ? 'Mai entrato' : '')],
             ['Profilo fiscale', cloud.billing ? 'Completo' : 'Da compilare: non può ancora inviare ordini']
@@ -7203,6 +7310,17 @@
             if (error) throw error;
             return data || [];
         };
+        window.petAdminInvite = async payload => {
+            const { data, error } = await api.functions.invoke('invite-client', { body: payload });
+            if (error) {
+                let code = '';
+                try { code = (await error.context?.json())?.error || ''; } catch {}
+                const failure = new Error(code || 'invite');
+                failure.code = code;
+                throw failure;
+            }
+            return data || {};
+        };
         window.petAdminClientCloud = async code => {
             const [accounts, billing] = await Promise.all([
                 api.rpc('admin_client_accounts'),
@@ -7391,12 +7509,26 @@
                 inbox.replaceChildren();
                 for (const request of data) {
                     const row = document.createElement('li');
-                    row.className = 'collection-item';
+                    row.className = 'collection-item pet-partner-row';
                     if (new Date(request.created_at).toISOString() > partnersSeen) row.classList.add('pet-is-new');
-                    row.textContent = [
+                    const text = document.createElement('span');
+                    text.textContent = [
                         request.business_name, businessTypes[request.business_type], request.email,
                         new Date(request.created_at).toLocaleDateString('it-IT')
                     ].join(' · ');
+                    row.append(text);
+                    if (typeof admNewClientFromRequest === 'function') {
+                        const known = typeof clients !== 'undefined' && clients.some(c => String(c.email || '').trim().toLowerCase() === String(request.email || '').trim().toLowerCase());
+                        const create = document.createElement('button');
+                        create.type = 'button';
+                        create.className = 'pet-link-button';
+                        create.textContent = known ? 'Apri scheda cliente' : 'Crea cliente e invita';
+                        create.addEventListener('click', () => {
+                            document.getElementById('partner-inbox-dialog').close();
+                            admNewClientFromRequest(request);
+                        });
+                        row.append(create);
+                    }
                     inbox.append(row);
                 }
                 inboxStatus.textContent = data.length ? 'Ultime richieste ricevute' : 'Nessuna richiesta ricevuta.';
@@ -7449,9 +7581,9 @@
         const passwordError = document.getElementById('pet-password-error');
         let passwordRecovery = false;
         let recoverySaved = false;
-        async function openPasswordDialog(recovery) {
+        async function openPasswordDialog(recovery, firstAccess) {
             passwordRecovery = recovery;
-            document.getElementById('pet-password-title').textContent = recovery ? 'Scegli una nuova password' : 'Cambia password';
+            document.getElementById('pet-password-title').textContent = firstAccess ? 'Benvenuto: scegli la tua password' : recovery ? 'Scegli una nuova password' : 'Cambia password';
             passwordForm.reset();
             passwordError.textContent = '';
             try { const { data } = await api.auth.getUser(); document.getElementById('pet-password-user').value = data?.user?.email || ''; } catch {}
@@ -7509,14 +7641,16 @@
         // dalla barra degli indirizzi e chiediamo la nuova password prima di aprire il gestionale.
         let recoveryPending = false;
         const urlHash = new URLSearchParams(location.hash.replace(/^#/, ''));
-        if (urlHash.get('type') === 'recovery' || urlHash.get('error_code')) {
+        const linkType = urlHash.get('type');
+        const isPasswordLink = linkType === 'recovery' || linkType === 'invite';
+        if (isPasswordLink || urlHash.get('error_code')) {
             if (history.replaceState) history.replaceState(null, '', location.pathname + location.search);
         }
         if (urlHash.get('error_code')) {
             signedOutMessage = urlHash.get('error_code') === 'otp_expired'
-                ? 'Il link per la nuova password è scaduto o è già stato usato. Scrivi la tua email e premi di nuovo «Password dimenticata?».'
+                ? 'Il link è scaduto o è già stato usato. Se era un invito, scrivi a info@24pet.it per riceverne uno nuovo; se era il cambio password, scrivi la tua email e premi di nuovo «Password dimenticata?».'
                 : 'Link non valido. Scrivi la tua email e premi di nuovo «Password dimenticata?».';
-        } else if (urlHash.get('type') === 'recovery' && urlHash.get('access_token') && urlHash.get('refresh_token')) {
+        } else if (isPasswordLink && urlHash.get('access_token') && urlHash.get('refresh_token')) {
             recoveryPending = true;
             showLogin('Verifica del link in corso…');
             const finishRecovery = async () => {
@@ -7540,8 +7674,8 @@
                         showLogin('Il link per la nuova password è scaduto o è già stato usato. Scrivi la tua email e premi di nuovo «Password dimenticata?».');
                         return;
                     }
-                    showLogin('Scegli la nuova password per entrare.');
-                    openPasswordDialog(true);
+                    showLogin(linkType === 'invite' ? 'Scegli la tua password per entrare.' : 'Scegli la nuova password per entrare.');
+                    openPasswordDialog(true, linkType === 'invite');
                 })
                 .catch(() => { recoveryPending = false; showLogin('Link non valido. Riprova.'); });
         }
