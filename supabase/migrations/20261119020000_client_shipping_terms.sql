@@ -4,7 +4,7 @@ returns jsonb language sql stable security definer set search_path = '' as $$
     select jsonb_build_object(
         'primo', coalesce((s.value->>'primo')::numeric, 15),
         'extra', coalesce((s.value->>'extra')::numeric, 5),
-        'soglia', coalesce((s.value->>'soglia')::numeric, 400),
+        'soglia', coalesce((s.value->>'soglia')::numeric, 300),
         'perCartone', greatest(1, coalesce((b.value->>'perCartone')::int, 8)),
         'scontoPct', case when c.data->>'tipo' = 'Rivenditore' then 25 else 0 end
     )

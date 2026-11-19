@@ -1276,7 +1276,7 @@
                         <div class="adm-cost-grid">
                             <label class="adm-field">Primo cartone (€)<input id="adm-ship-primo" type="text" inputmode="decimal" class="browser-default adm-cost-input" placeholder="15" autocomplete="off"><small>IVA esclusa</small></label>
                             <label class="adm-field">Ogni cartone in più (€)<input id="adm-ship-extra" type="text" inputmode="decimal" class="browser-default adm-cost-input" placeholder="5" autocomplete="off"><small>IVA esclusa</small></label>
-                            <label class="adm-field">Spedizione inclusa da (€)<input id="adm-ship-soglia" type="text" inputmode="decimal" class="browser-default adm-cost-input" placeholder="400" autocomplete="off"><small>subtotale di listino, IVA esclusa</small></label>
+                            <label class="adm-field">Spedizione inclusa da (€)<input id="adm-ship-soglia" type="text" inputmode="decimal" class="browser-default adm-cost-input" placeholder="300" autocomplete="off"><small>subtotale di listino, IVA esclusa</small></label>
                         </div>
                         <p id="adm-ship-example" class="adm-note"></p>
                         <div class="adm-cost-actions">
@@ -2118,13 +2118,13 @@
     function petShippingQuote(pieces, net, t) {
         t = t || {};
         const per = Math.max(1, parseInt(t.perCartone, 10) || 8);
-        const primo = Number(t.primo ?? 15), extra = Number(t.extra ?? 5), soglia = Number(t.soglia ?? 400);
+        const primo = Number(t.primo ?? 15), extra = Number(t.extra ?? 5), soglia = Number(t.soglia ?? 300);
         const cartoni = pieces > 0 ? Math.ceil(pieces / per) : 0;
         const tariffa = cartoni ? Math.round((primo + (cartoni - 1) * extra) * 100) / 100 : 0;
         const gratis = soglia > 0 && net >= soglia - 0.005;
         return { cartoni, per, tariffa, gratis, addebito: gratis ? 0 : tariffa, soglia, mancano: gratis ? 0 : Math.max(0, soglia - net) };
     }
-    function admShipTerms() { return Object.assign({ primo: 15, extra: 5, soglia: 400 }, petShipSettings, { perCartone: parseInt(petBoxSettings.perCartone, 10) || 8 }); }
+    function admShipTerms() { return Object.assign({ primo: 15, extra: 5, soglia: 300 }, petShipSettings, { perCartone: parseInt(petBoxSettings.perCartone, 10) || 8 }); }
     function renderShipSettings() {
         const t = admShipTerms();
         for (const k of ['primo', 'extra', 'soglia']) { const el = document.getElementById('adm-ship-' + k); if (el) el.value = String(t[k]).replace('.', ','); }
