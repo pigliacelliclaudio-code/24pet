@@ -381,6 +381,16 @@
         @media (max-width: 650px) {
             .adm-scan-dialog { width: 100%; max-width: 100%; height: 100dvh; max-height: 100dvh; margin: 0; border-radius: 0; }
         }
+        .adm-cost-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px 14px; margin-top: 10px; }
+        .adm-cost-boxes { padding-top: 10px; border-top: 1px solid var(--line); }
+        .adm-cost-input { width: 100%; height: 40px !important; margin: 0 !important; padding: 6px 10px !important; border: 1px solid #d9cfdc !important; border-radius: 8px !important; box-sizing: border-box; font: inherit; }
+        .adm-cost-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 14px; }
+        .adm-cost-calc strong { color: var(--plum); }
+        .adm-cost-calc small { display: block; }
+        .adm-cost-detail { color: var(--muted); white-space: normal; max-width: 260px; }
+        .adm-cost-up { color: #9a5500; }
+        .adm-cost-down { color: #1b6434; }
+        .adm-cost-apply { justify-self: start; font-size: .9rem; }
         .adm-logo-field { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; margin-top: 8px; }
         .adm-logo-preview { display: grid; place-items: center; width: 220px; min-height: 80px; padding: 8px; border: 1px dashed #d9cfdc; border-radius: 10px; background: #fff; text-align: center; font-size: .85rem; }
         .adm-logo-preview img { max-width: 100%; max-height: 90px; object-fit: contain; }
@@ -1168,6 +1178,16 @@
                         </div>
                     </div>
                     <div id="catalogo-container" class="adm-catalog"></div>
+                    <section class="pet-home-card adm-filament-card adm-cost-card" aria-labelledby="adm-cost-title">
+                        <h2 id="adm-cost-title">Calcolo dei costi</h2>
+                        <p class="adm-note">Con questi valori e con tempi, grammi, lavoro ed extra di ogni misura (in «Modifica») la dashboard calcola il costo di ogni urna. Il costo di laboratorio usato negli ordini cambia solo se premi «Usa il costo calcolato».</p>
+                        <div id="adm-cost-fields" class="adm-cost-grid"></div>
+                        <div id="adm-cost-boxes" class="adm-cost-grid adm-cost-boxes"></div>
+                        <div class="adm-cost-actions">
+                            <button type="button" class="adm-action adm-action-primary" onclick="admSaveCostSettings()"><i class="material-icons" aria-hidden="true">save</i><span>Salva i valori</span></button>
+                            <span id="adm-cost-status" class="adm-filament-status" role="status"></span>
+                        </div>
+                    </section>
                     <section class="pet-home-card adm-filament-card" aria-labelledby="adm-filament-title">
                         <div class="adm-filament-head">
                             <div>
@@ -1729,15 +1749,17 @@
     async function petLoadFilaments() {
         if (petStore.mode !== 'cloud' || typeof window.petCloud?.filamentMoves !== 'function') return;
         try {
-            const [moves, settings, boxMoves, boxSettings] = await Promise.all([window.petCloud.filamentMoves(), window.petCloud.getSetting('magazzino'), window.petCloud.boxMoves(), window.petCloud.getSetting('scatole')]);
+            const [moves, settings, boxMoves, boxSettings, costSettings] = await Promise.all([window.petCloud.filamentMoves(), window.petCloud.getSetting('magazzino'), window.petCloud.boxMoves(), window.petCloud.getSetting('scatole'), window.petCloud.getSetting('costi')]);
             petFilamentMoves = moves || [];
             petStockSettings = Object.assign({ bianco: '11100' }, settings || {});
             petBoxMoves = boxMoves || [];
             petBoxSettings = Object.assign({ lista: [], cartone: '', perCartone: 8 }, boxSettings || {});
+            petCostSettings = costSettings || {};
             petStockLoaded = true;
         } catch { return; }
         renderMagazzino();
         loadOrders();
+        renderCostSettings();
         renderCatalogo();
         if (typeof aggiornaUICarrello === 'function') aggiornaUICarrello();
     }
@@ -2806,6 +2828,101 @@
     }
 
     // === GENERAZIONE CATALOGO ===
+
+    // === CALCOLO DEI COSTI DI PRODUZIONE (parametri in admin_settings 'costi') ===
+    let petCostSettings = {};
+    const COST_FIELDS = [
+        ['kgColore', 'Filamento colorato', '€ al kg', 'es. 23,99'],
+        ['kgBianco', 'Filamento bianco', '€ al kg', 'es. 23,99'],
+        ['scarto', 'Scarto di stampa', '% in più di filamento', 'es. 10'],
+        ['watt', 'Consumo stampante', 'watt medi', 'es. 120'],
+        ['kwh', 'Costo energia', '€ al kWh', 'es. 0,30'],
+        ['usura', 'Usura e manutenzione', '€ per ora di stampa', 'es. 0,20'],
+        ['oraLavoro', 'Manodopera', '€ all’ora', 'es. 15']
+    ];
+    function admCostNum(v) { const n = parseFloat(String(v ?? '').replace(',', '.')); return Number.isFinite(n) && n >= 0 ? n : 0; }
+    function admCostBreakdown(v) {
+        const c = petCostSettings || {};
+        const gc = Number(v?.grammiColore) || 0, gb = Number(v?.grammiBianco) || 0, min = Number(v?.tempoStampa) || 0;
+        const scarto = 1 + admCostNum(c.scarto) / 100;
+        const parts = {
+            filamento: (gc * admCostNum(c.kgColore) + gb * admCostNum(c.kgBianco)) / 1000 * scarto,
+            energia: min / 60 * admCostNum(c.watt) / 1000 * admCostNum(c.kwh),
+            usura: min / 60 * admCostNum(c.usura),
+            lavoro: (Number(v?.minutiLavoro) || 0) / 60 * admCostNum(c.oraLavoro),
+            scatola: v?.scatola ? admCostNum((c.scatole || {})[v.scatola]) : 0,
+            extra: admCostNum(v?.costoExtra)
+        };
+        const missing = [];
+        if (!min) missing.push('tempo di stampa');
+        if (!gc && !gb) missing.push('grammi');
+        if ((gc && !admCostNum(c.kgColore)) || (gb && !admCostNum(c.kgBianco))) missing.push('prezzo filamento');
+        const total = Object.values(parts).reduce((s, x) => s + x, 0);
+        return { parts, total, missing, ready: !missing.length };
+    }
+    function admCostTitle(b) {
+        const L = { filamento: 'Filamento', energia: 'Energia', usura: 'Usura', lavoro: 'Manodopera', scatola: 'Scatola', extra: 'Extra' };
+        return Object.entries(b.parts).filter(([, x]) => x > 0).map(([k, x]) => L[k] + ' ' + admMoney.format(x)).join(' · ');
+    }
+    function renderCostSettings() {
+        const box = document.getElementById('adm-cost-fields');
+        if (!box) return;
+        const c = petCostSettings || {};
+        const mk = (id, label, hint, ph, value, aria) => {
+            const field = admEl('label', 'adm-field');
+            field.append(document.createTextNode(label));
+            const input = document.createElement('input');
+            input.type = 'text'; input.inputMode = 'decimal'; input.className = 'browser-default adm-cost-input';
+            input.id = id; input.placeholder = ph; input.autocomplete = 'off';
+            input.value = value === undefined || value === null || value === '' ? '' : String(value).replace('.', ',');
+            if (aria) input.setAttribute('aria-label', aria);
+            field.append(input, admEl('small', '', hint));
+            return field;
+        };
+        box.replaceChildren(...COST_FIELDS.map(([k, label, hint, ph]) => mk('adm-cost-' + k, label, hint, ph, c[k])));
+        const boxes = document.getElementById('adm-cost-boxes');
+        const list = admBoxes();
+        boxes.replaceChildren(...(list.length ? list.map(b => mk('adm-cost-box-' + b.id, 'Scatola ' + b.nome, '€ al pezzo', 'es. 0,80', (c.scatole || {})[b.id], 'Costo scatola ' + b.nome))
+            : [admEl('p', 'adm-muted', 'Crea le misure delle scatole nel Magazzino per indicarne il costo.')]));
+    }
+    async function admSaveCostSettings() {
+        const next = { scatole: {} };
+        const status = document.getElementById('adm-cost-status');
+        for (const [k] of COST_FIELDS) {
+            const raw = document.getElementById('adm-cost-' + k).value.trim();
+            if (!raw) continue;
+            const n = parseFloat(raw.replace(',', '.'));
+            if (!Number.isFinite(n) || n < 0) { status.textContent = 'Controlla il valore di «' + COST_FIELDS.find(f => f[0] === k)[1] + '».'; return; }
+            next[k] = n;
+        }
+        for (const b of admBoxes()) {
+            const raw = document.getElementById('adm-cost-box-' + b.id)?.value.trim();
+            if (!raw) continue;
+            const n = parseFloat(raw.replace(',', '.'));
+            if (!Number.isFinite(n) || n < 0) { status.textContent = 'Controlla il costo della scatola ' + b.nome + '.'; return; }
+            next.scatole[b.id] = n;
+        }
+        try {
+            await window.petCloud.saveSetting('costi', next);
+            petCostSettings = next;
+            status.textContent = 'Salvato ✓';
+            setTimeout(() => { if (status.textContent === 'Salvato ✓') status.textContent = ''; }, 2500);
+            renderCatalogo();
+        } catch { status.textContent = 'Non salvato: riprova.'; }
+    }
+    function admApplyComputedCosts(modello) {
+        const sizes = catalogoPrezzi[modello] || {};
+        const ready = Object.entries(sizes).map(([dim, v]) => [dim, admCostBreakdown(v)]).filter(([, b]) => b.ready);
+        if (!ready.length) { M.toast({ html: 'Inserisci prima tempi, grammi e prezzi del filamento', classes: 'rounded' }); return; }
+        const list = ready.map(([dim, b]) => dim + ' ' + admMoney.format(Math.round(b.total * 100) / 100)).join(', ');
+        if (!confirm('Aggiornare il costo di laboratorio di ' + modello + ' con il costo calcolato?\n\n' + list + '\n\nVale per i nuovi ordini: quelli già salvati non cambiano.')) return;
+        for (const [dim, b] of ready) sizes[dim].costo = Math.round(b.total * 100) / 100;
+        petSave('catalogo');
+        M.toast({ html: modello + ': costi aggiornati', classes: 'green rounded' });
+        renderCatalogo();
+        loadOrders();
+    }
+
     function renderCatalogo(modelloInModifica = null) {
         const container = document.getElementById('catalogo-container');
         const year = document.getElementById('catalogoAnno')?.value || 'Tutti';
@@ -2870,8 +2987,8 @@
             const table = admEl('table', 'adm-product-table');
             const thead = admEl('thead', '');
             thead.innerHTML = editing
-                ? '<tr><th scope="col">Misura</th><th scope="col">Costo lab.</th><th scope="col">Listino</th><th scope="col">Stampa (min)</th><th scope="col">Colore (g)</th><th scope="col">Bianco (g)</th><th scope="col">Scatola</th></tr>'
-                : '<tr><th scope="col">Misura</th><th scope="col">Costo lab.</th><th scope="col">Listino</th><th scope="col">Margine</th><th scope="col">Produzione</th></tr>';
+                ? '<tr><th scope="col">Misura</th><th scope="col">Costo lab.</th><th scope="col">Listino</th><th scope="col">Stampa (min)</th><th scope="col">Colore (g)</th><th scope="col">Bianco (g)</th><th scope="col">Lavoro (min)</th><th scope="col">Extra (€)</th><th scope="col">Scatola</th></tr>'
+                : '<tr><th scope="col">Misura</th><th scope="col">Costo lab.</th><th scope="col">Costo calcolato</th><th scope="col">Listino</th><th scope="col">Margine</th><th scope="col">Produzione</th></tr>';
             const tbody = admEl('tbody', '');
             const dims = Object.keys(variants).sort((a, b) => (sizeOrder.indexOf(a) + 1 || 99) - (sizeOrder.indexOf(b) + 1 || 99));
             for (const dim of dims) {
@@ -2901,10 +3018,10 @@
                         td.append(input);
                         tr.append(td);
                     }
-                    for (const [field, value, label] of [['tempo', v.tempoStampa, 'Minuti di stampa'], ['gcol', v.grammiColore, 'Grammi di colore'], ['gbia', v.grammiBianco, 'Grammi di bianco']]) {
+                    for (const [field, value, label] of [['tempo', v.tempoStampa, 'Minuti di stampa'], ['gcol', v.grammiColore, 'Grammi di colore'], ['gbia', v.grammiBianco, 'Grammi di bianco'], ['lav', v.minutiLavoro, 'Minuti di lavoro a mano'], ['extra', v.costoExtra, 'Costi extra in euro (magneti, viti, cornice)']]) {
                         const td = admEl('td', '');
                         const input = document.createElement('input');
-                        input.type = 'number'; input.step = '1'; input.min = '0';
+                        input.type = 'number'; input.step = field === 'extra' ? '0.01' : '1'; input.min = '0';
                         input.id = 'edit_' + field + '_' + modello + '_' + dim;
                         input.value = value ?? '';
                         input.placeholder = '—';
@@ -2925,10 +3042,21 @@
                 } else {
                     const cost = Number(v.costo) || 0, price = Number(v.prezzo) || 0;
                     const margin = price - cost;
-                    tr.append(admEl('td', '', admMoney.format(cost)), admEl('td', 'adm-price', admMoney.format(price)),
+                    const cb = admCostBreakdown(v);
+                    const calcTd = admEl('td', 'adm-cost-calc');
+                    if (cb.ready) {
+                        calcTd.append(admEl('strong', '', admMoney.format(cb.total)));
+                        const diff = cost - cb.total;
+                        if (cost && Math.abs(diff) >= 0.01) calcTd.append(admEl('small', diff > 0 ? 'adm-cost-up' : 'adm-cost-down', 'costo lab. ' + (diff > 0 ? 'più alto' : 'più basso') + ' di ' + admMoney.format(Math.abs(diff))));
+                        calcTd.title = admCostTitle(cb);
+                        const det = admEl('small', 'adm-cost-detail', admCostTitle(cb));
+                        calcTd.append(det);
+                    } else calcTd.append(admEl('span', 'adm-muted', 'Mancano: ' + cb.missing.join(', ')));
+                    tr.append(admEl('td', '', admMoney.format(cost)), calcTd, admEl('td', 'adm-price', admMoney.format(price)),
                         admEl('td', margin >= 0 ? 'adm-margin' : 'adm-margin-negative', admMoney.format(margin) + (price ? ' · ' + Math.round(margin / price * 100) + '%' : '')));
                     const gc = Number(v.grammiColore) || 0, gb = Number(v.grammiBianco) || 0, tm = Number(v.tempoStampa) || 0;
-                    tr.append(admEl('td', 'adm-product-prod', (gc || gb || tm || v.scatola) ? [tm ? admHours(tm) : '', gc ? gc + ' g colore' : '', gb ? gb + ' g bianco' : '', v.scatola ? 'scatola ' + admBoxName(v.scatola) : ''].filter(Boolean).join(' · ') : 'Da inserire'));
+                    const lav = Number(v.minutiLavoro) || 0, ex = Number(v.costoExtra) || 0;
+                    tr.append(admEl('td', 'adm-product-prod', (gc || gb || tm || v.scatola || lav || ex) ? [tm ? admHours(tm) : '', gc ? gc + ' g colore' : '', gb ? gb + ' g bianco' : '', lav ? lav + ' min lavoro' : '', ex ? admMoney.format(ex) + ' extra' : '', v.scatola ? 'scatola ' + admBoxName(v.scatola) : ''].filter(Boolean).join(' · ') : 'Da inserire'));
                 }
                 tbody.append(tr);
             }
@@ -2936,6 +3064,12 @@
             const wrap = admEl('div', 'adm-table-wrap');
             wrap.append(table);
             body.append(wrap);
+            if (!editing && Object.values(variants).some(v => admCostBreakdown(v).ready)) {
+                const apply = admEl('button', 'pet-link-button adm-cost-apply', 'Usa il costo calcolato come costo di laboratorio');
+                apply.type = 'button';
+                apply.addEventListener('click', () => admApplyComputedCosts(modello));
+                body.append(apply);
+            }
 
             if (editing) {
                 const bar = admEl('div', 'adm-order-actions adm-product-edit');
@@ -2971,11 +3105,16 @@
             }
             const boxSelect = document.getElementById(`edit_scatola_${modello}_${dim}`);
             if (boxSelect) { if (boxSelect.value) varianti[dim].scatola = boxSelect.value; else delete varianti[dim].scatola; }
-            for (const [field, key] of [['tempo', 'tempoStampa'], ['gcol', 'grammiColore'], ['gbia', 'grammiBianco']]) {
+            for (const [field, key] of [['tempo', 'tempoStampa'], ['gcol', 'grammiColore'], ['gbia', 'grammiBianco'], ['lav', 'minutiLavoro']]) {
                 const input = document.getElementById(`edit_${field}_${modello}_${dim}`);
                 if (!input) continue;
                 const n = Math.round(parseFloat(String(input.value).replace(',', '.')));
                 if (Number.isFinite(n) && n > 0) varianti[dim][key] = n; else delete varianti[dim][key];
+            }
+            const extraInput = document.getElementById(`edit_extra_${modello}_${dim}`);
+            if (extraInput) {
+                const n = Math.round(parseFloat(String(extraInput.value).replace(',', '.')) * 100) / 100;
+                if (Number.isFinite(n) && n > 0) varianti[dim].costoExtra = n; else delete varianti[dim].costoExtra;
             }
         }
         petSave('catalogo');
