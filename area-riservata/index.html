@@ -4904,7 +4904,8 @@
         dot.style.backgroundColor = mappaColoriHex[colore] || '#ccc';
         return dot;
     }
-    // === CONSEGNA PREVISTA: coda di stampa (ordini in arrivo, i piccoli <20 urne passano avanti) + 20% + giorni del corriere ===
+    // === CONSEGNA PREVISTA: due code di stampa in ordine di arrivo — 1 stampante dedicata agli ordini piccoli (<20 urne),
+    // le altre sempre sugli ordini grandi — poi +20% e i giorni del corriere ===
     const ADM_SMALL_ORDER = 20, ADM_ETA_MARGIN = 1.2;
     function admPrintMinutesPerUrn() {
         const known = [];
@@ -4924,17 +4925,21 @@
     }
     function admDeliveryEstimate(target) {
         const c = petCostSettings || {};
-        const printers = Math.max(1, (c.stampanti || []).length || 2);
+        const total = Math.max(1, (c.stampanti || []).length || 2);
         const hours = admCostNum(c.oreGiorno) || 16;
         const shipDays = c.giorniSpedizione === undefined || c.giorniSpedizione === null || c.giorniSpedizione === '' ? 2 : admCostNum(c.giorniSpedizione);
         const pcs = o => (o.articoli || []).reduce((t, a) => t + admQty(a), 0);
         const key = o => String(o.data || '') + '|' + String(o.id).padStart(16, '0');
         const open = orders.filter(o => !o.evaso && o.id !== target.id).concat([target]);
         const small = pcs(target) < ADM_SMALL_ORDER;
+        // Con una sola stampante tutto passa da lì; con due o più, una è riservata agli ordini piccoli
+        const split = total >= 2;
+        const printers = split ? (small ? 1 : total - 1) : total;
         let minutes = 0, missing = 0, usable = true;
         for (const o of open) {
             const before = key(o) <= key(target);
-            const counts = small ? (pcs(o) < ADM_SMALL_ORDER && before) : (pcs(o) < ADM_SMALL_ORDER || before);
+            const sameLane = !split || (pcs(o) < ADM_SMALL_ORDER) === small;
+            const counts = split ? (sameLane && before) : (small ? (pcs(o) < ADM_SMALL_ORDER && before) : (pcs(o) < ADM_SMALL_ORDER || before));
             if (!counts) continue;
             const r = admOrderRemainingMinutes(o);
             minutes += r.minutes; missing += r.missing; usable = usable && r.usable;
@@ -4944,10 +4949,10 @@
         const days = Math.max(1, Math.ceil(printDays * ADM_ETA_MARGIN) + shipDays);
         const d = new Date(); d.setDate(d.getDate() + days);
         const iso = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
-        return { date: iso, days, printDays, printers, hours, shipDays, missing };
+        return { date: iso, days, printDays, printers, hours, shipDays, missing, small, split };
     }
     function admEtaText(e) {
-        return e ? 'stima: ' + (e.printDays < 1 ? 'meno di 1 giorno' : Math.ceil(e.printDays) + (Math.ceil(e.printDays) === 1 ? ' giorno' : ' giorni')) + ' di stampa con ' + e.printers + (e.printers === 1 ? ' stampante' : ' stampanti') + ', +20%, + ' + e.shipDays + ' di corriere' + (e.missing ? ' · ' + e.missing + ' urne senza tempo di stampa (uso la media)' : '') : 'mancano i tempi di stampa nel Catalogo';
+        return e ? 'stima: ' + (e.printDays < 1 ? 'meno di 1 giorno' : Math.ceil(e.printDays) + (Math.ceil(e.printDays) === 1 ? ' giorno' : ' giorni')) + ' di stampa con ' + (e.split && e.small ? 'la stampante dedicata agli ordini piccoli' : e.printers + (e.printers === 1 ? ' stampante' : ' stampanti') + (e.split ? ' per gli ordini grandi' : '')) + ', +20%, + ' + e.shipDays + ' di corriere' + (e.missing ? ' · ' + e.missing + ' urne senza tempo di stampa (uso la media)' : '') : 'mancano i tempi di stampa nel Catalogo';
     }
     function admRecalcDelivery(id) {
         const o = orders.find(x => x.id === id);
