@@ -378,6 +378,10 @@
         .adm-scan-bar { display: block; height: 8px; border-radius: 99px; background: #fff; overflow: hidden; }
         .adm-scan-bar i { display: block; height: 100%; background: currentColor; transition: width .2s; }
         .adm-print-dialog { width: min(640px, calc(100vw - 24px)); }
+        .adm-eta-line { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin: 6px 0 10px; font-weight: 600; color: var(--plum); }
+        .adm-eta-line .material-icons { font-size: 20px; color: var(--accent); }
+        .adm-eta-line small { flex-basis: 100%; font-weight: 400; color: var(--muted); padding-left: 30px; }
+        .adm-eta-line .pet-link-button { margin-left: auto; }
         .adm-print-dialog header p { margin: 2px 0 0; }
         .adm-print-progress { display: flex; align-items: center; gap: 12px; padding: 12px 20px 4px; }
         .adm-ring { position: relative; display: inline-grid; place-items: center; flex: none; }
@@ -1956,6 +1960,7 @@
         loadOrders();
         renderCostSettings();
         renderShipSettings();
+        admFillMissingDeliveries();
         renderCatalogo();
         if (typeof aggiornaUICarrello === 'function') aggiornaUICarrello();
     }
@@ -3174,6 +3179,8 @@
     let petCostSettings = {};
     const COST_FIELDS = [
         ['scarto', 'Scarto di stampa', '% in più di filamento', 'es. 10'],
+        ['oreGiorno', 'Ore di stampa al giorno', 'per ogni stampante · serve alla consegna prevista (vuoto = 16)', 'es. 16'],
+        ['giorniSpedizione', 'Giorni del corriere', 'da aggiungere alla consegna prevista (vuoto = 2)', 'es. 2'],
         ['kwh', 'Prezzo energia', '€ al kWh, IVA esclusa (bolletta: imponibile ÷ kWh)', 'es. 0,25'],
         ['usura', 'Usura e manutenzione', '€ per ora di stampa', 'es. 0,20'],
         ['oraLavoro', 'Manodopera', '€ all’ora', 'es. 15']
@@ -4290,9 +4297,16 @@
 
         if (idOrdineInModifica) {
             const idx = orders.findIndex(o => o.id === idOrdineInModifica);
-            if(idx !== -1) orders[idx] = newOrderData;
+            if (idx !== -1) {
+                // Tiene spunte di stampa, piano di pagamento e consegna prevista già salvati
+                const prev = orders[idx];
+                for (const k of ['stampate', 'pagamenti', 'consegnaPrevista']) if (prev[k] !== undefined) newOrderData[k] = prev[k];
+                if (Array.isArray(newOrderData.pagamenti) && newOrderData.pagamenti.length) newOrderData.pagato = admPayComplete(newOrderData);
+                orders[idx] = newOrderData;
+            }
             M.toast({html: 'Ordine aggiornato con successo!', classes: 'blue rounded'});
         } else {
+            if (!newOrderData.evaso) { const e = admDeliveryEstimate(newOrderData); if (e) newOrderData.consegnaPrevista = e.date; }
             orders.push(newOrderData);
             M.toast({html: 'Ordine Multiplo salvato con successo!', classes: 'purple rounded'});
         }
@@ -4385,6 +4399,14 @@
             action('delete', 'Elimina', () => eliminaOrdine(o.id), 'adm-action-danger')
         );
         body.append(actions);
+        if (!o.evaso) {
+            const etaLine = admEl('p', 'adm-eta-line');
+            const e = petStockLoaded ? admDeliveryEstimate(o) : null;
+            etaLine.append(admIcon('event_available'), admEl('span', '', o.consegnaPrevista ? 'Consegna prevista entro il ' + admDate.format(new Date(o.consegnaPrevista + 'T00:00:00Z')) + ' (la vede il cliente)' : 'Consegna prevista: non ancora calcolata'),
+                admEl('small', '', admEtaText(e) + (e && o.consegnaPrevista && e.date !== o.consegnaPrevista ? ' → oggi verrebbe ' + admDate.format(new Date(e.date + 'T00:00:00Z')) : '')));
+            if (e) { const b = admEl('button', 'pet-link-button', 'Ricalcola'); b.type = 'button'; b.addEventListener('click', () => admRecalcDelivery(o.id)); etaLine.append(b); }
+            body.append(etaLine);
+        }
         if (stockPlan || (o.evaso && petStockLoaded)) {
             const r = stockPlan || (() => { const need = admOrderNeed(o), boxNeed = admOrderBoxNeed(o); return { need, boxNeed, short: [], boxShort: [], missing: new Set([...need.missing, ...boxNeed.missing]), anyShort: false }; })();
             body.append(admNeedLine(r, false));
@@ -4882,6 +4904,72 @@
         dot.style.backgroundColor = mappaColoriHex[colore] || '#ccc';
         return dot;
     }
+    // === CONSEGNA PREVISTA: coda di stampa (ordini in arrivo, i piccoli <20 urne passano avanti) + 20% + giorni del corriere ===
+    const ADM_SMALL_ORDER = 20, ADM_ETA_MARGIN = 1.2;
+    function admPrintMinutesPerUrn() {
+        const known = [];
+        for (const sizes of Object.values(catalogoPrezzi || {})) for (const v of Object.values(sizes || {})) if (Number(v.tempoStampa) > 0) known.push(Number(v.tempoStampa));
+        return known.length ? known.reduce((a, b) => a + b, 0) / known.length : 0;
+    }
+    function admOrderRemainingMinutes(o) {
+        const avg = admPrintMinutesPerUrn();
+        let minutes = 0, missing = 0;
+        for (const [code, v] of admOrderCodeNeed(o)) {
+            const left = Math.max(0, v.qty - Math.min(Number(o.stampate?.[code]) || 0, v.qty));
+            const t = Number(catalogoPrezzi?.[v.item.modello]?.[v.item.dimensione]?.tempoStampa) || 0;
+            if (!t) missing += left;
+            minutes += left * (t || avg);
+        }
+        return { minutes, missing, usable: avg > 0 };
+    }
+    function admDeliveryEstimate(target) {
+        const c = petCostSettings || {};
+        const printers = Math.max(1, (c.stampanti || []).length || 2);
+        const hours = admCostNum(c.oreGiorno) || 16;
+        const shipDays = c.giorniSpedizione === undefined || c.giorniSpedizione === null || c.giorniSpedizione === '' ? 2 : admCostNum(c.giorniSpedizione);
+        const pcs = o => (o.articoli || []).reduce((t, a) => t + admQty(a), 0);
+        const key = o => String(o.data || '') + '|' + String(o.id).padStart(16, '0');
+        const open = orders.filter(o => !o.evaso && o.id !== target.id).concat([target]);
+        const small = pcs(target) < ADM_SMALL_ORDER;
+        let minutes = 0, missing = 0, usable = true;
+        for (const o of open) {
+            const before = key(o) <= key(target);
+            const counts = small ? (pcs(o) < ADM_SMALL_ORDER && before) : (pcs(o) < ADM_SMALL_ORDER || before);
+            if (!counts) continue;
+            const r = admOrderRemainingMinutes(o);
+            minutes += r.minutes; missing += r.missing; usable = usable && r.usable;
+        }
+        if (!usable) return null;
+        const printDays = minutes / (printers * hours * 60);
+        const days = Math.max(1, Math.ceil(printDays * ADM_ETA_MARGIN) + shipDays);
+        const d = new Date(); d.setDate(d.getDate() + days);
+        const iso = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+        return { date: iso, days, printDays, printers, hours, shipDays, missing };
+    }
+    function admEtaText(e) {
+        return e ? 'stima: ' + (e.printDays < 1 ? 'meno di 1 giorno' : Math.ceil(e.printDays) + (Math.ceil(e.printDays) === 1 ? ' giorno' : ' giorni')) + ' di stampa con ' + e.printers + (e.printers === 1 ? ' stampante' : ' stampanti') + ', +20%, + ' + e.shipDays + ' di corriere' + (e.missing ? ' · ' + e.missing + ' urne senza tempo di stampa (uso la media)' : '') : 'mancano i tempi di stampa nel Catalogo';
+    }
+    function admRecalcDelivery(id) {
+        const o = orders.find(x => x.id === id);
+        if (!o) return;
+        const e = admDeliveryEstimate(o);
+        if (!e) { M.toast({ html: 'Inserisci i tempi di stampa nel Catalogo per calcolare la consegna', classes: 'rounded' }); return; }
+        o.consegnaPrevista = e.date;
+        petSave('orders');
+        loadOrders();
+        M.toast({ html: 'Consegna prevista: ' + admDate.format(new Date(e.date + 'T00:00:00Z')), classes: 'rounded' });
+    }
+    // Ordini aperti senza data: la calcola una volta, appena ci sono i tempi di stampa
+    function admFillMissingDeliveries() {
+        if (petStore.mode !== 'cloud' || !petStockLoaded) return;
+        let changed = false;
+        for (const o of [...orders].filter(o => !o.evaso && !o.consegnaPrevista).sort((a, b) => String(a.data).localeCompare(String(b.data)) || a.id - b.id)) {
+            const e = admDeliveryEstimate(o);
+            if (e) { o.consegnaPrevista = e.date; changed = true; }
+        }
+        if (changed) petSave('orders');
+    }
+
     // === PAGAMENTI A RATE (campo «pagamenti» dell'ordine) ===
     const ADM_PAY_TYPES = ['Acconto', 'Rata 1', 'Rata 2', 'Rata 3', 'Saldo'];
     let admPayOrderId = null, admPayDraft = [];
@@ -5435,6 +5523,7 @@
                     const fmt = d => d ? d.split('-').reverse().join('/') : '';
                     const pay = Array.isArray(o.pagamenti) ? o.pagamenti : [];
                     let html = '';
+                    if (o.consegnaPrevista && !o.evaso) html += '<p style="margin: 14px 0 0; font-size: 0.95em;"><strong style="color: #4a004a;">Consegna prevista entro il ' + fmt(o.consegnaPrevista) + '</strong></p>';
                     if (pay.length) {
                         html += '<h5 style="font-weight: bold; color: #4a004a; border-bottom: 1px solid #ccc; padding-bottom: 3px; font-size: 1.05em; margin: 16px 0 5px;">Piano di pagamento</h5>'
                             + '<table style="width: 100%; border-collapse: collapse; font-size: 0.85em;"><tr style="text-align: left; color: #666;"><th style="padding: 3px 4px;">Voce</th><th style="padding: 3px 4px;">Scadenza</th><th style="padding: 3px 4px;">Stato</th><th style="padding: 3px 4px; text-align: right;">Importo</th></tr>'
@@ -6243,6 +6332,7 @@
             return { step: 0, label: 'Ricevuto', tone: 'neutral' };
         }
         function expectedDelivery(order) {
+            if (order.expected_delivery) return calendarDate.format(new Date(order.expected_delivery + 'T00:00:00Z'));
             const d = new Date(order.order_date + 'T00:00:00Z');
             if (Number.isNaN(d.getTime())) return '';
             d.setUTCDate(d.getUTCDate() + DELIVERY_DAYS);
@@ -6536,7 +6626,7 @@
             clientStatus.textContent = 'Caricamento ordini…';
             try {
                 const { data: orders, error } = await api.from('client_order_history')
-                    .select('order_id,order_date,amount,paid,fulfilled,items,reseller_discount_pct,extra_discount_pct,shipping_charged,payments,in_production')
+                    .select('order_id,order_date,amount,paid,fulfilled,items,reseller_discount_pct,extra_discount_pct,shipping_charged,payments,in_production,expected_delivery')
                     .order('order_date', { ascending: false }).order('order_id', { ascending: false });
                 if (check !== accessCheck) return;
                 if (error) throw error;
