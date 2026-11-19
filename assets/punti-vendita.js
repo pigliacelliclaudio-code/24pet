@@ -1,7 +1,7 @@
 // Punti vendita 24Pet: caricamento, ricerca e raggruppamento per regione e provincia.
 // Usato dalla home (anteprima di 6) e dalla pagina /punti-vendita/ (elenco completo).
 (() => {
-    const API = 'https://vacxudtbzpfygkkxmhyz.supabase.co/rest/v1/public_resellers?select=name,kind,address,city,province,phone,email,website&order=province.asc,city.asc,name.asc';
+    const API = 'https://vacxudtbzpfygkkxmhyz.supabase.co/rest/v1/public_resellers?select=name,kind,address,city,province,phone,mobile,email,website&order=province.asc,city.asc,name.asc';
     const KEY = 'sb_publishable_Pxz4_0wKSdVx4_sHoyhJlw_jfMSJid8';
     const P = {
         AQ: ["L’Aquila", 'Abruzzo'], CH: ['Chieti', 'Abruzzo'], PE: ['Pescara', 'Abruzzo'], TE: ['Teramo', 'Abruzzo'],
@@ -83,6 +83,7 @@
         li.append(kind, name, place);
         const contacts = document.createElement('p'); contacts.className = 'store-contacts';
         if (s.phone) contacts.append(link('tel:' + s.phone.replace(/[^+\d]/g, ''), s.phone));
+        if (s.mobile && s.mobile !== s.phone) contacts.append(link('tel:' + s.mobile.replace(/[^+\d]/g, ''), s.mobile));
         if (s.email) contacts.append(link('mailto:' + s.email, s.email));
         if (s.website && /^https?:\/\/[^\s]+$/i.test(s.website)) contacts.append(link(s.website, s.website.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')));
         if (contacts.childNodes.length) li.append(contacts);

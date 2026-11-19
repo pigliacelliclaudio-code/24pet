@@ -611,6 +611,7 @@
         .pet-partner-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
         .pet-partner-row span { flex: 1 1 260px; }
         .pet-partner-row .pet-link-button { white-space: nowrap; }
+        .pet-partner-row .pet-reject-button { color: #b00020; }
         .adm-client-contact { display: grid; min-width: 0; font-size: .88rem; }
         .adm-client-contact a { color: var(--accent); overflow-wrap: anywhere; }
         .adm-client-numbers { display: grid; justify-items: start; gap: 4px; font-size: .88rem; font-variant-numeric: tabular-nums; }
@@ -710,6 +711,35 @@
         .pet-fiscal-fields input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
         .pet-fiscal-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-top: 12px; }
         #pet-fiscal-feedback { margin: 0; }
+        .pet-profile-intro { margin: 0 0 6px; color: #685e72; }
+        .pet-profile-block { margin: 16px 0 0; padding: 14px 16px 16px; border: 1px solid var(--line); border-radius: 10px; }
+        .pet-profile-block legend { padding: 0 6px; color: var(--plum); font-weight: 800; }
+        .pet-fiscal-fields small { display: block; margin-top: -4px; color: #685e72; font-size: .8rem; }
+        .pet-fiscal-fields textarea { width: 100%; min-height: 64px; padding: 8px 0; border: 0; border-bottom: 1px solid #9e9e9e; background: transparent; font: inherit; resize: vertical; }
+        .pet-check { display: flex; align-items: center; gap: 10px; margin: 2px 0 10px; color: inherit; font-size: 1rem; cursor: pointer; }
+        .pet-check input[type="checkbox"] { position: static; opacity: 1; pointer-events: auto; width: 20px; height: 20px; margin: 0; accent-color: var(--plum); }
+        .pet-check input[type="checkbox"] + span { position: static; height: auto; padding-left: 0; color: inherit; font-size: inherit; line-height: 1.4; user-select: auto; }
+        .pet-check input[type="checkbox"] + span::before, .pet-check input[type="checkbox"] + span::after { content: none; display: none; }
+        #pet-ship-fields { margin-bottom: 10px; }
+        .pet-logo-help { margin: 0 0 6px; }
+        .pet-logo-rules { margin: 0 0 12px; padding-left: 18px; color: #4f4559; }
+        .pet-logo-rules li { list-style: disc; margin: 2px 0; }
+        .pet-logo-field { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; }
+        .pet-logo-preview { display: grid; place-items: center; width: 240px; max-width: 100%; aspect-ratio: 3 / 1; padding: 8px; border: 1px dashed #b9adbd; border-radius: 8px; background: #fff; color: #685e72; font-size: .85rem; }
+        .pet-logo-preview img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .pet-logo-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+        .pet-logo-upload { display: inline-flex; align-items: center; min-height: 44px; border: 1px solid var(--plum); border-radius: 8px; color: var(--plum); text-transform: none; cursor: pointer; }
+        .pet-logo-upload:focus-within { outline: 2px solid var(--plum); outline-offset: 2px; }
+        .visually-hidden-file { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
+        #pet-logo-remove { min-height: 44px; color: #b00020; text-transform: none; }
+        .pet-logo-error { margin: 8px 0 0; color: #b00020; font-weight: 600; }
+        .pet-logo-error:empty { display: none; }
+        .pet-consent { align-items: flex-start; font-weight: 700; }
+        .pet-consent input[type="checkbox"] { margin-top: 2px; flex: none; }
+        .pet-consent-legal { margin: 10px 0 0; color: #685e72; font-size: .82rem; line-height: 1.45; }
+        .pet-consent-legal a { color: #685e72; text-decoration: underline; }
+        .pet-consent-note { margin: 4px 0 0; color: #685e72; font-size: .85rem; }
+        #pet-listing-fields select { height: 44px; border: 0; border-bottom: 1px solid #9e9e9e; background: transparent; font: inherit; }
         .pet-admin-billing { margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--line); }
         .pet-admin-billing summary { color: var(--plum); cursor: pointer; font-weight: 700; }
         .pet-admin-billing dl { display: grid; grid-template-columns: max-content 1fr; gap: 4px 12px; margin: 8px 0 0; }
@@ -915,7 +945,7 @@
                 <h1 id="pet-role-title"></h1>
                 <p id="pet-role-message"></p>
                 <div id="pet-profile-notice" class="pet-profile-notice" hidden>
-                    <p>Salva i dati di fatturazione obbligatori nel profilo per poter inviare l’ordine.</p>
+                    <p>Completa e salva il tuo profilo (dati di fatturazione, persona di riferimento e cellulare) per poter inviare l’ordine.</p>
                     <button class="btn btn-custom" id="pet-open-profile" type="button">Compila il profilo</button>
                 </div>
                 <form id="pet-new-order" hidden>
@@ -972,21 +1002,88 @@
                 </section>
                 <section id="pet-fiscal-profile" hidden aria-label="Dati di fatturazione">
                     <p id="pet-fiscal-status" role="status"></p>
-                    <form id="pet-fiscal-form" hidden>
-                        <p>I campi con * sono obbligatori per ordinare.</p>
-                        <div class="pet-fiscal-fields">
-                            <div><label for="pet-billing-name">Ragione sociale *</label><input id="pet-billing-name" name="legal_name" type="text" autocomplete="section-billing organization" maxlength="160" required></div>
-                            <div><label for="pet-billing-vat">Partita IVA *</label><input id="pet-billing-vat" name="vat_number" type="text" inputmode="numeric" pattern="[0-9]{11}" maxlength="11" title="Inserisci 11 cifre" required></div>
-                            <div class="pet-fiscal-wide"><label for="pet-billing-address">Indirizzo della sede e numero civico *</label><input id="pet-billing-address" name="street_address" type="text" autocomplete="section-billing address-line1" maxlength="200" required></div>
-                            <div><label for="pet-billing-postal">CAP *</label><input id="pet-billing-postal" name="postal_code" type="text" inputmode="numeric" autocomplete="section-billing postal-code" pattern="[0-9]{5}" maxlength="5" required></div>
-                            <div><label for="pet-billing-city">Comune *</label><input id="pet-billing-city" name="city" type="text" autocomplete="section-billing address-level2" maxlength="100" required></div>
-                            <div><label for="pet-billing-province">Provincia (sigla) *</label><input id="pet-billing-province" name="province" type="text" autocomplete="section-billing address-level1" pattern="[A-Za-z]{2}" maxlength="2" required></div>
-                            <div><label for="pet-billing-tax">Codice fiscale</label><input id="pet-billing-tax" name="tax_code" type="text" pattern="[A-Za-z0-9]{16}|[0-9]{11}" maxlength="16"></div>
-                            <div><label for="pet-billing-sdi">Codice destinatario SDI</label><input id="pet-billing-sdi" name="recipient_code" type="text" pattern="[A-Za-z0-9]{7}" maxlength="7"></div>
-                            <div><label for="pet-billing-pec">Indirizzo PEC</label><input id="pet-billing-pec" name="certified_email" type="email" maxlength="254"></div>
-                        </div>
+                    <form id="pet-fiscal-form" hidden novalidate>
+                        <p class="pet-profile-intro">Tieni aggiornati i tuoi dati: li usiamo per fatture, spedizioni ed etichette. I campi con * sono obbligatori per ordinare.</p>
+                        <fieldset class="pet-profile-block">
+                            <legend>Azienda e fatturazione</legend>
+                            <div class="pet-fiscal-fields">
+                                <div class="pet-fiscal-wide"><label for="pet-billing-name">Ragione sociale *</label><input id="pet-billing-name" name="legal_name" type="text" autocomplete="organization" maxlength="160" required></div>
+                                <div><label for="pet-billing-vat">Partita IVA *</label><input id="pet-billing-vat" name="vat_number" type="text" inputmode="numeric" pattern="[0-9]{11}" maxlength="11" title="Inserisci 11 cifre" required></div>
+                                <div><label for="pet-billing-tax">Codice fiscale</label><input id="pet-billing-tax" name="tax_code" type="text" pattern="[A-Za-z0-9]{16}|[0-9]{11}" maxlength="16" title="16 caratteri, oppure 11 cifre"></div>
+                                <div><label for="pet-billing-sdi">Codice univoco (SDI) *</label><input id="pet-billing-sdi" name="recipient_code" type="text" pattern="[A-Za-z0-9]{7}" maxlength="7" title="7 caratteri" required><small>Se non ce l’hai, scrivi 0000000 e indica la PEC.</small></div>
+                                <div><label for="pet-billing-pec">PEC</label><input id="pet-billing-pec" name="certified_email" type="email" maxlength="254"></div>
+                                <div class="pet-fiscal-wide"><label for="pet-billing-address">Indirizzo della sede e numero civico *</label><input id="pet-billing-address" name="street_address" type="text" autocomplete="section-billing address-line1" maxlength="200" required></div>
+                                <div><label for="pet-billing-postal">CAP *</label><input id="pet-billing-postal" name="postal_code" type="text" inputmode="numeric" autocomplete="section-billing postal-code" pattern="[0-9]{5}" maxlength="5" title="5 cifre" required></div>
+                                <div><label for="pet-billing-city">Comune *</label><input id="pet-billing-city" name="city" type="text" autocomplete="section-billing address-level2" maxlength="100" required></div>
+                                <div><label for="pet-billing-province">Provincia (sigla) *</label><input id="pet-billing-province" name="province" type="text" autocomplete="section-billing address-level1" pattern="[A-Za-z]{2}" maxlength="2" title="2 lettere, per esempio RM" required></div>
+                            </div>
+                        </fieldset>
+                        <fieldset class="pet-profile-block">
+                            <legend>Contatti</legend>
+                            <div class="pet-fiscal-fields">
+                                <div><label for="pet-contact-name">Persona di riferimento *</label><input id="pet-contact-name" name="contact_name" type="text" autocomplete="name" maxlength="120" required></div>
+                                <div><label for="pet-contact-mobile">Cellulare *</label><input id="pet-contact-mobile" name="mobile" type="tel" autocomplete="tel" maxlength="40" pattern="[\d +\.\/\-\(\)]{6,40}" title="Solo numeri" required><small>Lo diamo anche al corriere per la consegna.</small></div>
+                                <div><label for="pet-contact-email">Email *</label><input id="pet-contact-email" name="email" type="email" autocomplete="email" maxlength="254" required></div>
+                                <div><label for="pet-contact-phone">Telefono fisso</label><input id="pet-contact-phone" name="phone" type="tel" maxlength="40" pattern="[\d +\.\/\-\(\)]{6,40}" title="Solo numeri"></div>
+                                <div class="pet-fiscal-wide"><label for="pet-contact-web">Sito web</label><input id="pet-contact-web" name="website" type="url" inputmode="url" maxlength="200" placeholder="https://"></div>
+                            </div>
+                        </fieldset>
+                        <fieldset class="pet-profile-block">
+                            <legend>Spedizione</legend>
+                            <label class="pet-check"><input id="pet-ship-same" name="shipping_same" type="checkbox" checked> <span>Spedite all’indirizzo della sede</span></label>
+                            <div id="pet-ship-fields" class="pet-fiscal-fields" hidden>
+                                <div class="pet-fiscal-wide"><label for="pet-ship-at">Presso (nome sulla porta, se diverso)</label><input id="pet-ship-at" name="shipping_at" type="text" maxlength="120"></div>
+                                <div class="pet-fiscal-wide"><label for="pet-ship-street">Indirizzo di spedizione e numero civico *</label><input id="pet-ship-street" name="shipping_street" type="text" autocomplete="section-shipping address-line1" maxlength="200"></div>
+                                <div><label for="pet-ship-postal">CAP *</label><input id="pet-ship-postal" name="shipping_postal_code" type="text" inputmode="numeric" autocomplete="section-shipping postal-code" pattern="[0-9]{5}" maxlength="5" title="5 cifre"></div>
+                                <div><label for="pet-ship-city">Comune *</label><input id="pet-ship-city" name="shipping_city" type="text" autocomplete="section-shipping address-level2" maxlength="100"></div>
+                                <div><label for="pet-ship-province">Provincia (sigla) *</label><input id="pet-ship-province" name="shipping_province" type="text" pattern="[A-Za-z]{2}" maxlength="2" title="2 lettere, per esempio RM"></div>
+                            </div>
+                            <div class="pet-fiscal-fields">
+                                <div><label for="pet-ship-contact">Chi riceve la merce</label><input id="pet-ship-contact" name="shipping_contact" type="text" maxlength="120" placeholder="Se diverso dalla persona di riferimento"></div>
+                                <div><label for="pet-ship-phone">Telefono per la consegna</label><input id="pet-ship-phone" name="shipping_phone" type="tel" maxlength="40" pattern="[\d +\.\/\-\(\)]{6,40}" title="Solo numeri" placeholder="Se diverso dal cellulare"></div>
+                                <div class="pet-fiscal-wide"><label for="pet-ship-hours">Orari in cui potete ricevere</label><input id="pet-ship-hours" name="delivery_hours" type="text" maxlength="200" placeholder="Per esempio: lun–ven 9–13 e 15–19"></div>
+                                <div class="pet-fiscal-wide"><label for="pet-ship-notes">Note per il corriere</label><textarea id="pet-ship-notes" name="delivery_notes" rows="2" maxlength="500" placeholder="Citofono, piano, accesso per il furgone…"></textarea></div>
+                            </div>
+                        </fieldset>
+                        <fieldset class="pet-profile-block">
+                            <legend>Logo per le etichette</legend>
+                            <p class="pet-logo-help">Facoltativo, ma consigliato: lo stampiamo sull’etichetta delle urne che vi spediamo, così l’etichetta è personalizzata e più bella da consegnare alle famiglie.</p>
+                            <ul class="pet-logo-rules">
+                                <li><strong>Formato rettangolare orizzontale</strong>, circa 3 volte più largo che alto (per esempio 900 × 300 pixel).</li>
+                                <li><strong>Solo il logo</strong>: niente numeri di telefono, indirizzi o altre scritte.</li>
+                                <li>Meglio su <strong>sfondo bianco</strong>: l’etichetta si stampa in bianco e nero.</li>
+                                <li>File PNG o JPG.</li>
+                            </ul>
+                            <div class="pet-logo-field">
+                                <div id="pet-logo-preview" class="pet-logo-preview"><span>Nessun logo caricato</span></div>
+                                <div class="pet-logo-actions">
+                                    <label class="btn btn-flat pet-logo-upload" for="pet-logo-file"><i class="material-icons left" aria-hidden="true">upload</i>Carica il logo</label>
+                                    <input id="pet-logo-file" type="file" accept="image/png,image/jpeg,image/webp" class="visually-hidden-file">
+                                    <button id="pet-logo-remove" class="btn-flat" type="button" hidden>Togli il logo</button>
+                                </div>
+                            </div>
+                            <p id="pet-logo-error" class="pet-logo-error" role="alert"></p>
+                        </fieldset>
+                        <fieldset class="pet-profile-block">
+                            <legend>Compari sul sito 24pet.it</legend>
+                            <p class="pet-logo-help">Sul sito 24pet.it c’è l’elenco dei <strong>punti vendita autorizzati in Italia</strong>: le famiglie lo usano per trovare chi offre le urne 24Pet vicino a casa. Comparire è gratuito e facoltativo.</p>
+                            <label class="pet-check pet-consent"><input id="pet-listing-consent" name="listing_consent" type="checkbox"> <span>Sì, voglio comparire su 24pet.it tra i punti vendita autorizzati, con i dati qui sotto.</span></label>
+                            <div id="pet-listing-fields" class="pet-fiscal-fields" hidden>
+                                <div><label for="pet-listing-name">Nome dell’attività da mostrare *</label><input id="pet-listing-name" name="listing_name" type="text" maxlength="120"></div>
+                                <div><label for="pet-listing-kind">Tipo di attività</label><select id="pet-listing-kind" name="listing_kind" class="browser-default"><option value="agenzia">Agenzia funebre per animali</option><option value="crematorio">Centro di cremazione per animali</option><option value="altro">Altra attività del settore</option></select></div>
+                                <div class="pet-fiscal-wide"><label for="pet-listing-street">Indirizzo del punto vendita</label><input id="pet-listing-street" name="listing_street" type="text" maxlength="200"></div>
+                                <div><label for="pet-listing-city">Comune *</label><input id="pet-listing-city" name="listing_city" type="text" maxlength="100"></div>
+                                <div><label for="pet-listing-province">Provincia (sigla)</label><input id="pet-listing-province" name="listing_province" type="text" pattern="[A-Za-z]{2}" maxlength="2" title="2 lettere, per esempio RM"></div>
+                                <div><label for="pet-listing-phone">Telefono da mostrare</label><input id="pet-listing-phone" name="listing_phone" type="tel" maxlength="40" pattern="[\d +\.\/\-\(\)]{6,40}" title="Solo numeri"></div>
+                                <div><label for="pet-listing-mobile">Cellulare da mostrare</label><input id="pet-listing-mobile" name="listing_mobile" type="tel" maxlength="40" pattern="[\d +\.\/\-\(\)]{6,40}" title="Solo numeri"></div>
+                                <div class="pet-fiscal-wide"><label for="pet-listing-web">Sito web da mostrare</label><input id="pet-listing-web" name="listing_website" type="url" maxlength="200" placeholder="https://"></div>
+                                <p class="pet-fiscal-wide pet-consent-note">Lascia vuoto quello che non vuoi mostrare. L’email non viene pubblicata, per proteggerti dallo spam.</p>
+                            </div>
+                            <p class="pet-consent-legal">Spuntando la casella autorizzi Cloood s.a.s. (24Pet) a pubblicare questi dati sul sito 24pet.it, nella sezione dei punti vendita, per farti trovare dalle famiglie. Puoi cambiarli o revocare il consenso quando vuoi: basta togliere la spunta e salvare, e i dati spariscono dal sito. <a href="/privacy/" target="_blank" rel="noopener">Informativa privacy</a></p>
+                            <p id="pet-listing-since" class="pet-consent-note" hidden></p>
+                        </fieldset>
                         <div class="pet-fiscal-actions">
-                            <button id="pet-save-fiscal" class="btn btn-custom" type="submit">Salva dati di fatturazione</button>
+                            <button id="pet-save-fiscal" class="btn btn-custom" type="submit">Salva il profilo</button>
                             <p id="pet-fiscal-feedback" role="status"></p>
                         </div>
                     </form>
@@ -1215,6 +1312,7 @@
                 <fieldset>
                     <legend>Sul sito 24pet.it</legend>
                     <label class="adm-check"><input id="sitoVisibile" type="checkbox" class="filled-in"><span>Mostra tra i punti vendita sul sito</span></label>
+                    <p id="sitoConsenso" class="adm-note" hidden></p>
                     <div class="adm-form-grid" id="sitoCampi" hidden>
                         <label class="adm-field adm-span-2">Nome da mostrare *<input id="sitoNome" type="text" maxlength="120" autocomplete="off"></label>
                         <label class="adm-field">Tipo
@@ -1223,6 +1321,7 @@
                         <label class="adm-field">Comune *<input id="sitoComune" type="text" maxlength="100" autocomplete="off"></label>
                         <label class="adm-field">Provincia<input id="sitoProvincia" type="text" maxlength="2" placeholder="es. MI" autocomplete="off"></label>
                         <label class="adm-field">Telefono pubblico<input id="sitoTelefono" type="tel" maxlength="40" autocomplete="off"></label>
+                        <label class="adm-field">Cellulare pubblico<input id="sitoCellulare" type="tel" maxlength="40" autocomplete="off"></label>
                         <label class="adm-field adm-span-2">Email pubblica<input id="sitoEmail" type="email" maxlength="254" autocomplete="off"></label>
                         <label class="adm-field">Sito web<input id="sitoWeb" type="url" maxlength="200" placeholder="https://" autocomplete="off"></label>
                         <p class="adm-note adm-span-3">Questi dati sono visibili a chiunque visita 24pet.it, nella sezione «Dove trovarle». Indirizzo, email e sito solo se il cliente lo chiede.</p>
@@ -2603,7 +2702,7 @@
     let carrelloCorrente = [];
 
     // === DOPPIA CONFERMA PER OGNI ELIMINAZIONE ===
-    function petConfirmDelete(title, detail) {
+    function petConfirmDelete(title, detail, labels) {
         const dialog = document.getElementById('pet-confirm');
         const heading = document.getElementById('pet-confirm-title');
         const text = document.getElementById('pet-confirm-text');
@@ -2618,7 +2717,7 @@
                 heading.textContent = current === 1 ? title : 'Sei sicuro?';
                 text.textContent = current === 1 ? (detail || '') : 'È la seconda conferma: dopo l’eliminazione non si può tornare indietro.';
                 step.textContent = 'Conferma ' + current + ' di 2';
-                ok.textContent = current === 1 ? 'Elimina' : 'Sì, elimina definitivamente';
+                ok.textContent = current === 1 ? (labels?.[0] || 'Elimina') : (labels?.[1] || 'Sì, elimina definitivamente');
                 dialog.classList.toggle('is-final', current === 2);
             };
             const finish = value => {
@@ -3683,6 +3782,12 @@
         admSetForm('sitoComune', site.comune ?? billing.comune ?? '');
         admSetForm('sitoProvincia', site.provincia ?? billing.provincia ?? '');
         admSetForm('sitoTelefono', site.telefono ?? (client ? (client.telefono || client.cellulare) : ''));
+        admSetForm('sitoCellulare', site.cellulare ?? '');
+        const consent = document.getElementById('sitoConsenso');
+        consent.hidden = !site.consensoCliente && !(site.visibile === false && 'consensoCliente' in site);
+        consent.textContent = site.consensoCliente
+            ? 'Il cliente ha autorizzato la pubblicazione dall’area riservata il ' + new Date(site.consensoCliente).toLocaleDateString('it-IT') + '.'
+            : 'Il cliente ha scelto dall’area riservata di non comparire sul sito.';
         admSetForm('sitoEmail', site.email ?? (client?.email || ''));
         admSetForm('sitoWeb', site.web ?? (client?.sitoWeb || ''));
         admToggleSite();
@@ -3691,7 +3796,33 @@
         document.getElementById('spedCampi').hidden = document.getElementById('spedUguale').checked;
     }
 
-    function admOpenClientForm(codice) {
+    // Il cliente può aggiornare il suo profilo dall'area riservata: prima di mostrare o modificare
+    // la scheda prendo la versione sul server, se qui non ci sono modifiche non ancora salvate.
+    async function admRefreshClient(codice) {
+        if (!codice || petStore.mode !== 'cloud' || typeof window.petCloud?.fetchClient !== 'function') return false;
+        if (petStore.pending.has('clients') || petStore.busy) return false;
+        let row;
+        try { row = await window.petCloud.fetchClient(codice); } catch { return false; }
+        if (!row) return false;
+        const index = clients.findIndex(c => c.codice === codice);
+        if (index < 0) return false;
+        const key = String(codice);
+        const fresh = Object.assign({}, row.data, { codice: row.code });
+        const freshCanon = petCanon({ code: key, data: fresh });
+        const synced = petStore.synced.clients;
+        const before = synced?.get(key);
+        if (before === freshCanon) return false;
+        if (before !== undefined && petCanon({ code: key, data: clients[index] }) !== before) return false;
+        if (petStore.pending.has('clients') || petStore.busy) return false;
+        clients[index] = fresh;
+        if (synced) synced.set(key, freshCanon);
+        return true;
+    }
+    function admOpenClientForm(codice, refreshed) {
+        if (codice && !refreshed && petStore.mode === 'cloud') {
+            admRefreshClient(codice).finally(() => admOpenClientForm(codice, true));
+            return;
+        }
         const form = document.getElementById('clientForm');
         form.reset();
         document.getElementById('adm-client-form-error').textContent = '';
@@ -3730,7 +3861,7 @@
         admFillSite(client);
         admClientLogoDraft = client?.logo || null;
         admRenderLogoField();
-        admLoadCloudBilling(client ? client.codice : null);
+        document.getElementById('adm-client-cloud-hint').hidden = true; // i dati del cliente arrivano già in rubrica
         document.getElementById('titoloFormCliente').textContent = client ? 'Modifica ' + (client.nome || client.codice) + ' · ' + client.codice : 'Nuovo cliente';
         document.querySelector('#btnSalvaCliente span').textContent = client ? 'Salva modifiche' : 'Salva cliente';
         // «Salva e invia invito»: solo se il cliente non ha ancora un accesso attivo.
@@ -3845,7 +3976,9 @@
             if (admFormValue('sitoEmail') && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(admFormValue('sitoEmail'))) return fail('Controlla l’email pubblica.', 'sitoEmail');
         }
         const sito = { visibile: siteOn, nome: admFormValue('sitoNome'), tipo: document.getElementById('sitoTipo').value, indirizzo: admFormValue('sitoIndirizzo'),
-            comune: admFormValue('sitoComune'), provincia: admFormValue('sitoProvincia').toUpperCase(), telefono: admFormValue('sitoTelefono'), email: admFormValue('sitoEmail'), web: siteWeb };
+            comune: admFormValue('sitoComune'), provincia: admFormValue('sitoProvincia').toUpperCase(), telefono: admFormValue('sitoTelefono'), cellulare: admFormValue('sitoCellulare'), email: admFormValue('sitoEmail'), web: siteWeb };
+        const previousSite = clientInModifica ? (clients.find(c => c.codice === clientInModifica)?.sito || {}) : {};
+        if ('consensoCliente' in previousSite) sito.consensoCliente = siteOn ? previousSite.consensoCliente : null;
         const fatturazione = { via: admFormValue('fattVia'), cap: admFormValue('fattCap'), comune: admFormValue('fattComune'), provincia: admFormValue('fattProvincia').toUpperCase() };
         const spedizioneUguale = document.getElementById('spedUguale').checked;
         const spedizione = spedizioneUguale ? null : { presso: admFormValue('spedPresso'), via: admFormValue('spedVia'), cap: admFormValue('spedCap'), comune: admFormValue('spedComune'), provincia: admFormValue('spedProvincia').toUpperCase() };
@@ -3928,6 +4061,11 @@
     function admOpenClientCard(codice, fromHistory) {
         const c = clients.find(x => x.codice === codice);
         if (!c) return;
+        admRefreshClient(codice).then(changed => {
+            if (!changed) return;
+            try { aggiornaRubrica(); } catch {}
+            if (document.getElementById('resCodice').textContent === codice && document.getElementById('riepilogo-cliente').classList.contains('active')) searchClient(codice);
+        });
         if (document.getElementById('gestione-clienti').classList.contains('active')) admClientListScroll = window.scrollY;
         showPage('riepilogo-cliente', document.querySelector('.app-menu a[href="#gestione-clienti"]'));
         const label = '[' + c.codice + '] ' + (c.nome || '') + (c.tipo === 'Rivenditore' ? ' (Rivenditore)' : '');
@@ -6907,6 +7045,103 @@
             fiscalForm.elements.legal_name.focus();
         });
 
+        // Profilo completo del cliente. I dati salvati qui finiscono anche nella rubrica del gestionale;
+        // quelli che il gestionale ha già compaiono precompilati.
+        const detailFields = ['contact_name', 'phone', 'mobile', 'email', 'website', 'shipping_at', 'shipping_street', 'shipping_postal_code',
+            'shipping_city', 'shipping_province', 'shipping_contact', 'shipping_phone', 'delivery_hours', 'delivery_notes',
+            'listing_name', 'listing_kind', 'listing_street', 'listing_city', 'listing_province', 'listing_phone', 'listing_mobile', 'listing_website'];
+        const upperFields = ['province', 'tax_code', 'recipient_code', 'shipping_province', 'listing_province'];
+        const shipSame = document.getElementById('pet-ship-same');
+        const shipFields = document.getElementById('pet-ship-fields');
+        const listingConsent = document.getElementById('pet-listing-consent');
+        const listingFields = document.getElementById('pet-listing-fields');
+        const listingSince = document.getElementById('pet-listing-since');
+        const logoPreview = document.getElementById('pet-logo-preview');
+        const logoRemove = document.getElementById('pet-logo-remove');
+        const logoError = document.getElementById('pet-logo-error');
+        let profileLogo = null;
+        let listingChosen = null;   // scelta salvata dal cliente: null = mai scelto
+        let listingTouched = false;
+        const addressPattern = /^(.*?)\s*[-–,]?\s*(\d{5})\s+(.+?)\s*\(([A-Za-z]{2})\)\s*$/;
+        const parseAddress = text => {
+            const value = String(text || '').trim();
+            const match = value.match(addressPattern);
+            return match ? { via: match[1].replace(/[\s,–-]+$/, ''), cap: match[2], comune: match[3], provincia: match[4].toUpperCase() } : { via: value, cap: '', comune: '', provincia: '' };
+        };
+        const firstFilled = (...values) => { for (const v of values) { if (v !== undefined && v !== null && String(v).trim() !== '') return String(v); } return ''; };
+        const setField = (name, value) => { const el = fiscalForm.elements[name]; if (el) el.value = value ?? ''; };
+
+        function renderLogo() {
+            logoPreview.replaceChildren();
+            if (profileLogo) {
+                const img = document.createElement('img');
+                img.src = profileLogo; img.alt = 'Il tuo logo per le etichette';
+                logoPreview.append(img);
+            } else {
+                const empty = document.createElement('span');
+                empty.textContent = 'Nessun logo caricato';
+                logoPreview.append(empty);
+            }
+            logoRemove.hidden = !profileLogo;
+        }
+        function syncShipping() {
+            shipFields.hidden = shipSame.checked;
+            for (const name of ['shipping_street', 'shipping_postal_code', 'shipping_city', 'shipping_province']) fiscalForm.elements[name].required = !shipSame.checked;
+        }
+        function syncListing() {
+            listingFields.hidden = !listingConsent.checked;
+            for (const name of ['listing_name', 'listing_city']) fiscalForm.elements[name].required = listingConsent.checked;
+        }
+        shipSame.addEventListener('change', syncShipping);
+        listingConsent.addEventListener('change', () => {
+            listingTouched = true;
+            if (listingConsent.checked) {
+                // Proposta iniziale con i dati già scritti sopra: il cliente toglie quello che non vuole mostrare.
+                if (!fiscalForm.elements.listing_name.value) setField('listing_name', fiscalForm.elements.legal_name.value);
+                if (!fiscalForm.elements.listing_city.value) {
+                    const same = shipSame.checked;
+                    setField('listing_street', same ? fiscalForm.elements.street_address.value : fiscalForm.elements.shipping_street.value);
+                    setField('listing_city', same ? fiscalForm.elements.city.value : fiscalForm.elements.shipping_city.value);
+                    setField('listing_province', same ? fiscalForm.elements.province.value : fiscalForm.elements.shipping_province.value);
+                    if (!fiscalForm.elements.listing_phone.value) setField('listing_phone', fiscalForm.elements.phone.value);
+                    if (!fiscalForm.elements.listing_mobile.value) setField('listing_mobile', fiscalForm.elements.mobile.value);
+                    if (!fiscalForm.elements.listing_website.value) setField('listing_website', fiscalForm.elements.website.value);
+                }
+            }
+            syncListing();
+        });
+        document.getElementById('pet-logo-file').addEventListener('change', event => {
+            const file = event.target.files[0];
+            event.target.value = '';
+            logoError.textContent = '';
+            if (!file) return;
+            if (!/^image\/(png|jpeg|webp)$/.test(file.type)) { logoError.textContent = 'Il logo deve essere un’immagine PNG o JPG.'; return; }
+            if (file.size > 8 * 1024 * 1024) { logoError.textContent = 'L’immagine è troppo grande (massimo 8 MB).'; return; }
+            const url = URL.createObjectURL(file);
+            const img = new Image();
+            img.onload = () => {
+                const w0 = img.naturalWidth || 600, h0 = img.naturalHeight || 200;
+                const scale = Math.min(1, 640 / w0, 260 / h0);
+                const canvas = document.createElement('canvas');
+                canvas.width = Math.max(1, Math.round(w0 * scale)); canvas.height = Math.max(1, Math.round(h0 * scale));
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                URL.revokeObjectURL(url);
+                let data = canvas.toDataURL('image/png');
+                if (data.length > 160000) data = canvas.toDataURL('image/jpeg', 0.85);
+                if (data.length > 290000) { logoError.textContent = 'Il logo è troppo pesante: prova con un file più semplice.'; return; }
+                profileLogo = data;
+                renderLogo();
+                if (w0 < h0 * 1.6) logoError.textContent = 'Il logo sembra quadrato o verticale: sull’etichetta verrà piccolo. Se ce l’hai, caricane una versione orizzontale.';
+            };
+            img.onerror = () => { URL.revokeObjectURL(url); logoError.textContent = 'Non riesco a leggere questa immagine.'; };
+            img.src = url;
+        });
+        logoRemove.addEventListener('click', () => { profileLogo = null; logoError.textContent = ''; renderLogo(); });
+
+        const profileReady = (billing, details) => Boolean(billing && billing.recipient_code && details && details.contact_name && details.mobile && details.email);
+
         async function loadCustomerProfile(check) {
             fiscalStatus.textContent = 'Caricamento del profilo…';
             try {
@@ -6921,17 +7156,72 @@
                 customerCode = account.client_code;
                 document.getElementById('pet-role-message').textContent = account.business_name;
                 loadRequests(requestRows, false, check);
-                const { data: billing, error: billingError } = await api.from('client_billing_profiles')
-                    .select(fiscalFields.join(',')).eq('client_code', customerCode).maybeSingle();
+                const [billingRes, detailsRes, rubricaRes, userRes] = await Promise.all([
+                    api.from('client_billing_profiles').select(fiscalFields.join(',')).eq('client_code', customerCode).maybeSingle(),
+                    api.from('client_profile_details').select('*').eq('client_code', customerCode).maybeSingle(),
+                    api.rpc('client_rubrica_profile'),
+                    api.auth.getUser()
+                ]);
                 if (check !== accessCheck) return;
-                if (billingError) throw billingError;
-                for (const field of fiscalFields) {
-                    fiscalForm.elements[field].value = billing?.[field] ?? '';
-                }
+                if (billingRes.error) throw billingRes.error;
+                const billing = billingRes.data || null;
+                const details = detailsRes.error ? null : (detailsRes.data || null);
+                const r = rubricaRes.error ? {} : (rubricaRes.data || {});
+                const loginEmail = userRes?.data?.user?.email || '';
+                const fatt = r.fatturazione || parseAddress(r.indirizzoSede);
+                const values = {
+                    legal_name: firstFilled(r.ragioneSociale, billing?.legal_name, account.business_name),
+                    vat_number: firstFilled(r.partitaIva, billing?.vat_number).replace(/\s+/g, ''),
+                    street_address: firstFilled(fatt.via, billing?.street_address),
+                    postal_code: firstFilled(fatt.cap, billing?.postal_code),
+                    city: firstFilled(fatt.comune, billing?.city),
+                    province: firstFilled(fatt.provincia, billing?.province),
+                    tax_code: firstFilled(r.codiceFiscale, billing?.tax_code),
+                    recipient_code: firstFilled(r.codiceUnivoco, billing?.recipient_code),
+                    certified_email: firstFilled(r.pec, billing?.certified_email),
+                    contact_name: firstFilled(r.referente, details?.contact_name),
+                    phone: firstFilled(r.telefono, details?.phone),
+                    mobile: firstFilled(r.cellulare, details?.mobile),
+                    email: firstFilled(r.email, details?.email, loginEmail),
+                    website: firstFilled(r.sitoWeb, details?.website),
+                    shipping_contact: firstFilled(r.referenteSpedizione, details?.shipping_contact),
+                    shipping_phone: firstFilled(r.telefonoSpedizione, details?.shipping_phone),
+                    delivery_hours: firstFilled(r.orariConsegna, details?.delivery_hours),
+                    delivery_notes: firstFilled(r.noteConsegna, details?.delivery_notes)
+                };
+                const shipKnown = typeof r.spedizioneUguale === 'boolean' ? r.spedizioneUguale : (details ? details.shipping_same : !r.indirizzoSpedizione);
+                const sped = r.spedizione || (r.indirizzoSpedizione ? parseAddress(r.indirizzoSpedizione) : null);
+                Object.assign(values, {
+                    shipping_at: firstFilled(sped?.presso, details?.shipping_at),
+                    shipping_street: firstFilled(sped?.via, details?.shipping_street),
+                    shipping_postal_code: firstFilled(sped?.cap, details?.shipping_postal_code),
+                    shipping_city: firstFilled(sped?.comune, details?.shipping_city),
+                    shipping_province: firstFilled(sped?.provincia, details?.shipping_province)
+                });
+                const sito = r.sito || {};
+                Object.assign(values, {
+                    listing_name: firstFilled(sito.nome, details?.listing_name),
+                    listing_kind: firstFilled(sito.tipo, details?.listing_kind, 'agenzia'),
+                    listing_street: firstFilled(sito.indirizzo, details?.listing_street),
+                    listing_city: firstFilled(sito.comune, details?.listing_city),
+                    listing_province: firstFilled(sito.provincia, details?.listing_province),
+                    listing_phone: firstFilled(sito.telefono, details?.listing_phone),
+                    listing_mobile: firstFilled(sito.cellulare, details?.listing_mobile),
+                    listing_website: firstFilled(sito.web, details?.listing_website)
+                });
+                for (const [name, value] of Object.entries(values)) setField(name, value);
+                shipSame.checked = shipKnown !== false;
+                listingChosen = details?.listing_consent ?? null;
+                listingTouched = false;
+                listingConsent.checked = listingChosen ?? Boolean(sito.visibile);
+                listingSince.hidden = !(details?.listing_consent && details?.listing_consent_at);
+                if (!listingSince.hidden) listingSince.textContent = 'Consenso dato il ' + new Date(details.listing_consent_at).toLocaleDateString('it-IT') + '.';
+                profileLogo = firstFilled(r.logo, details?.logo) || null;
+                syncShipping(); syncListing(); renderLogo();
                 fiscalForm.hidden = false;
                 fiscalStatus.textContent = '';
                 fiscalLoaded = true;
-                fiscalComplete = Boolean(billing);
+                fiscalComplete = profileReady(billing, details);
                 showCustomerPage(customerPage);
                 await startOrdering(customerCode, check);
             } catch {
@@ -6944,25 +7234,47 @@
         fiscalForm.addEventListener('submit', async event => {
             event.preventDefault();
             if (!customerCode || !fiscalLoaded || saveFiscal.disabled) return;
-            const billing = {};
-            for (const field of fiscalFields) {
-                const input = fiscalForm.elements[field];
+            for (const name of [...fiscalFields, ...detailFields]) {
+                const input = fiscalForm.elements[name];
+                if (!input || input.tagName === 'SELECT') continue;
                 input.value = input.value.trim();
-                if (['province', 'tax_code', 'recipient_code'].includes(field)) input.value = input.value.toUpperCase();
-                billing[field] = input.value || null;
+                if (upperFields.includes(name)) input.value = input.value.toUpperCase();
+                if (name === 'vat_number') input.value = input.value.replace(/\s+/g, '');
+                if ((name === 'website' || name === 'listing_website') && input.value && !/^https?:\/\//i.test(input.value)) input.value = 'https://' + input.value;
             }
-            if (!fiscalForm.reportValidity()) return;
+            syncShipping(); syncListing();
+            if (!fiscalForm.reportValidity()) { fiscalFeedback.textContent = 'Controlla i campi evidenziati.'; return; }
+            const value = name => fiscalForm.elements[name].value || null;
+            const billing = Object.fromEntries(fiscalFields.map(name => [name, value(name)]));
+            const same = shipSame.checked;
+            const details = Object.fromEntries(detailFields.map(name => [name, value(name)]));
+            Object.assign(details, { shipping_same: same, logo: profileLogo });
+            if (same) for (const name of ['shipping_at', 'shipping_street', 'shipping_postal_code', 'shipping_city', 'shipping_province']) details[name] = null;
+            // Il consenso al sito vale solo se il cliente ha scelto lui (spunta toccata o già salvata in passato).
+            details.listing_consent = (listingTouched || listingChosen !== null) ? listingConsent.checked : null;
+            if (!details.listing_kind) details.listing_kind = 'agenzia';
 
             const check = accessCheck;
             saveFiscal.disabled = true;
             fiscalFeedback.textContent = 'Salvataggio…';
             try {
-                const { error } = await api.from('client_billing_profiles')
+                const saved = await api.from('client_billing_profiles')
                     .upsert({ client_code: customerCode, ...billing }, { onConflict: 'client_code' });
                 if (check !== accessCheck) return;
-                if (error) throw error;
-                fiscalComplete = true;
-                fiscalFeedback.textContent = 'Dati salvati. Puoi inviare i tuoi ordini.';
+                if (saved.error) throw saved.error;
+                const savedDetails = await api.from('client_profile_details')
+                    .upsert({ client_code: customerCode, ...details }, { onConflict: 'client_code' })
+                    .select('listing_consent,listing_consent_at').single();
+                if (check !== accessCheck) return;
+                if (savedDetails.error) throw savedDetails.error;
+                listingChosen = savedDetails.data?.listing_consent ?? null;
+                listingTouched = false;
+                listingSince.hidden = !(savedDetails.data?.listing_consent && savedDetails.data?.listing_consent_at);
+                if (!listingSince.hidden) listingSince.textContent = 'Consenso dato il ' + new Date(savedDetails.data.listing_consent_at).toLocaleDateString('it-IT') + '.';
+                fiscalComplete = profileReady(billing, details);
+                fiscalFeedback.textContent = details.listing_consent === true ? 'Profilo salvato ✓ Ora compari sul sito 24pet.it.'
+                    : details.listing_consent === false ? 'Profilo salvato ✓ Non compari sul sito 24pet.it.'
+                    : 'Profilo salvato ✓ Puoi inviare i tuoi ordini.';
                 showCustomerPage(customerPage);
                 renderCart();
             } catch {
@@ -7346,6 +7658,11 @@
             if (error) throw error;
             return data || [];
         };
+        window.petCloud.fetchClient = async code => {
+            const { data, error } = await api.from('admin_clients').select('code,data').eq('code', code).maybeSingle();
+            if (error) throw error;
+            return data;
+        };
         window.petAdminInvite = async payload => {
             const { data, error } = await api.functions.invoke('invite-client', { body: payload });
             if (error) {
@@ -7534,7 +7851,7 @@
             inboxStatus.textContent = 'Caricamento…';
             try {
                 const { data, error } = await api.from('partner_requests')
-                    .select('business_name,business_type,email,created_at')
+                    .select('id,business_name,business_type,email,created_at')
                     .order('created_at', { ascending: false }).limit(50);
                 if (error) throw error;
                 window.petAdminActivity.partnerRequests = data.map(request => request.created_at);
@@ -7565,6 +7882,22 @@
                         });
                         row.append(create);
                     }
+                    // Rifiuto: la richiesta viene cancellata, con doppia conferma.
+                    const reject = document.createElement('button');
+                    reject.type = 'button';
+                    reject.className = 'pet-link-button pet-reject-button';
+                    reject.textContent = 'Rifiuta';
+                    reject.addEventListener('click', async () => {
+                        const ok = await petConfirmDelete('Rifiutare la richiesta di ' + request.business_name + '?',
+                            'La richiesta viene cancellata e non compare più qui. Non mandiamo nessuna email: se vuoi avvisarlo, scrivi tu a ' + request.email + '.', ['Rifiuta', 'Sì, rifiuta la richiesta']);
+                        if (!ok) return;
+                        reject.disabled = true;
+                        const { error } = await api.from('partner_requests').delete().eq('id', request.id);
+                        if (error) { reject.disabled = false; M.toast({ html: 'Rifiuto non riuscito. Riprova.', classes: 'rounded' }); return; }
+                        M.toast({ html: 'Richiesta rifiutata', classes: 'rounded' });
+                        loadPartnerRequests();
+                    });
+                    row.append(reject);
                     inbox.append(row);
                 }
                 inboxStatus.textContent = data.length ? 'Ultime richieste ricevute' : 'Nessuna richiesta ricevuta.';
