@@ -725,7 +725,7 @@
         .pet-logo-rules { margin: 0 0 12px; padding-left: 18px; color: #4f4559; }
         .pet-logo-rules li { list-style: disc; margin: 2px 0; }
         .pet-logo-field { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; }
-        .pet-logo-preview { display: grid; place-items: center; width: 240px; max-width: 100%; aspect-ratio: 3 / 1; padding: 8px; border: 1px dashed #b9adbd; border-radius: 8px; background: #fff; color: #685e72; font-size: .85rem; }
+        .pet-logo-preview { display: grid; place-items: center; width: 150px; max-width: 100%; aspect-ratio: 1 / 1; padding: 8px; border: 1px dashed #b9adbd; border-radius: 8px; background: #fff; color: #685e72; font-size: .85rem; }
         .pet-logo-preview img { max-width: 100%; max-height: 100%; object-fit: contain; }
         .pet-logo-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
         .pet-logo-upload { display: inline-flex; align-items: center; min-height: 44px; border: 1px solid var(--plum); border-radius: 8px; color: var(--plum); text-transform: none; cursor: pointer; }
@@ -1050,7 +1050,7 @@
                             <legend>Logo per le etichette</legend>
                             <p class="pet-logo-help">Facoltativo, ma consigliato: lo stampiamo sull’etichetta delle urne che vi spediamo, così l’etichetta è personalizzata e più bella da consegnare alle famiglie.</p>
                             <ul class="pet-logo-rules">
-                                <li>Meglio <strong>orizzontale</strong>, circa 3 volte più largo che alto (per esempio 900 × 300 pixel): sull’etichetta viene più grande e leggibile. Se hai solo il logo quadrato va bene lo stesso, ma verrà più piccolo.</li>
+                                <li>Formato <strong>quadrato</strong>, per esempio 800 × 800 pixel. Se hai solo la versione orizzontale va bene lo stesso.</li>
                                 <li><strong>Solo il logo</strong>: niente numeri di telefono, indirizzi o altre scritte.</li>
                                 <li>Su <strong>sfondo bianco</strong>, possibilmente il file originale e non uno screenshot: l’etichetta si stampa in bianco e nero.</li>
                                 <li>File PNG o JPG.</li>
@@ -4886,8 +4886,9 @@
             body { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; color: #000; }
             .lab { width: 62mm; height: 100mm; padding: 3.5mm 3.5mm 3mm; display: flex; flex-direction: column; overflow: hidden; break-after: page; page-break-after: always; }
             .lab:last-child { break-after: auto; page-break-after: auto; }
-            .lab-logo { height: 17mm; display: flex; align-items: center; justify-content: center; }
-            .lab-logo img { max-width: 52mm; max-height: 17mm; object-fit: contain; filter: grayscale(1) contrast(1.3); }
+            /* Logo: un quadrato arriva a 28 × 28 mm, un orizzontale occupa tutta la larghezza (spazio libero preso sopra il codice a barre) */
+            .lab-logo { min-height: 17mm; max-height: 28mm; display: flex; align-items: center; justify-content: center; }
+            .lab-logo img { max-width: 55mm; max-height: 28mm; object-fit: contain; filter: grayscale(1) contrast(1.3); }
             .lab-client { height: 17mm; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 5mm; font-weight: 800; line-height: 1.1; }
             .lab-rule { border-top: .35mm solid #000; margin: 2.2mm 0; }
             .lab-model { display: flex; align-items: center; gap: 3mm; }
@@ -7135,8 +7136,11 @@
                 if (data.length > 290000) { logoError.textContent = 'Il logo è troppo pesante: prova con un file più semplice.'; return; }
                 profileLogo = data;
                 renderLogo();
-                if (w0 < h0 * 1.6) logoError.classList.add('is-warn');
-                if (w0 < h0 * 1.6) logoError.textContent = 'Va bene, ma il logo è quadrato o verticale: sull’etichetta verrà piccolo. Se ne hai una versione orizzontale, caricala al suo posto.';
+                const ratio = w0 / h0;
+                if (ratio > 1.4 || ratio < 0.7) {
+                    logoError.classList.add('is-warn');
+                    logoError.textContent = 'Va bene così. Se hai anche una versione quadrata del logo, caricala al suo posto: è il formato che usiamo meglio.';
+                }
             };
             img.onerror = () => { URL.revokeObjectURL(url); logoError.textContent = 'Non riesco a leggere questa immagine.'; };
             img.src = url;
