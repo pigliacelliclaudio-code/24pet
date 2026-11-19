@@ -1242,6 +1242,9 @@
                         <h2 id="adm-cost-title">Calcolo dei costi</h2>
                         <p class="adm-note">Con questi valori e con tempi, grammi, lavoro ed extra di ogni misura (in «Modifica») la dashboard calcola il costo di ogni urna. Ogni nuovo ordine salva il costo calcolato in quel momento: gli ordini già fatti non cambiano.</p>
                         <div id="adm-cost-fields" class="adm-cost-grid"></div>
+                        <h3 class="adm-cost-sub">Carta di riempimento</h3>
+                        <p class="adm-note" id="adm-cost-paper-note"></p>
+                        <div id="adm-cost-paper" class="adm-cost-grid"></div>
                         <h3 class="adm-cost-sub">Stampanti</h3>
                         <div id="adm-cost-printers" class="adm-cost-printers"></div>
                         <h3 class="adm-cost-sub">Prezzi dal Magazzino</h3>
@@ -3043,11 +3046,14 @@
     let petCostSettings = {};
     const COST_FIELDS = [
         ['scarto', 'Scarto di stampa', '% in più di filamento', 'es. 10'],
-        ['cartaScatola', 'Carta nella scatola dell’urna', '€ per urna, IVA esclusa', 'es. 0,10'],
-        ['cartaCartone', 'Carta e nastro nel cartone di spedizione', '€ per cartone, IVA esclusa', 'es. 0,50'],
         ['kwh', 'Prezzo energia', '€ al kWh, IVA esclusa (bolletta: imponibile ÷ kWh)', 'es. 0,25'],
         ['usura', 'Usura e manutenzione', '€ per ora di stampa', 'es. 0,20'],
         ['oraLavoro', 'Manodopera', '€ all’ora', 'es. 15']
+    ];
+    const PAPER_FIELDS = [
+        ['rotoloPrezzo', 'Rotolo di carta: prezzo', '€ per rotolo, IVA esclusa', 'es. 25'],
+        ['rotoloMetri', 'Rotolo di carta: lunghezza', 'metri per rotolo', 'es. 250'],
+        ['nastroCartone', 'Nastro adesivo', '€ per cartone di spedizione, IVA esclusa', 'es. 0,15']
     ];
     function admCostNum(v) { const n = parseFloat(String(v ?? '').replace(',', '.')); return Number.isFinite(n) && n >= 0 ? n : 0; }
     // Stampanti: consumo medio in watt × prezzo dell'energia -> costo per ora di stampa (media tra le stampanti)
@@ -3125,11 +3131,15 @@
         return { avg: priced.length ? priced.reduce((s, x) => s + x, 0) / priced.length : 0, priced: priced.length, total: codes.length };
     }
     // Imballo: carta nella scatola dell'urna + quota del cartone di spedizione (cartone dal Magazzino + carta e nastro) divisa per le urne del cartone
+    function admPaperPerCm() { const c = petCostSettings || {}; const m = admCostNum(c.rotoloMetri); return m ? admCostNum(c.rotoloPrezzo) / (m * 100) : 0; }
+    function admPaperCm(boxId) { return boxId ? admCostNum((petCostSettings.cartaCm || {})[boxId]) : 0; }
     function admPackingPerUrn(v) {
         const c = petCostSettings || {};
         const per = Math.max(1, parseInt(petBoxSettings.perCartone, 10) || 8);
-        const cartone = admCostNum(admBox(petBoxSettings.cartone)?.prezzo);
-        return (v?.scatola ? admCostNum(c.cartaScatola) : 0) + (cartone + admCostNum(c.cartaCartone)) / per;
+        const eurCm = admPaperPerCm();
+        const cartoneId = petBoxSettings.cartone;
+        const cartone = admCostNum(admBox(cartoneId)?.prezzo) + admPaperCm(cartoneId) * eurCm + admCostNum(c.nastroCartone);
+        return (v?.scatola ? admPaperCm(v.scatola) * eurCm : 0) + cartone / per;
     }
     function admCostBreakdown(v) {
         const c = petCostSettings || {};
@@ -3174,6 +3184,18 @@
         box.replaceChildren(...COST_FIELDS.map(([k, label, hint, ph]) => mk('adm-cost-' + k, label, hint, ph, c[k])));
         admPrinterDraft = null;
         renderPrinters();
+        const paper = document.getElementById('adm-cost-paper');
+        if (paper) {
+            const eurCm = admPaperPerCm();
+            const list = admBoxes();
+            paper.replaceChildren(...PAPER_FIELDS.map(([k, label, hint, ph]) => mk('adm-cost-' + k, label, hint, ph, c[k])), ...(list.length ? list.map(b => {
+                const isCarton = b.id === petBoxSettings.cartone;
+                const f = mk('adm-cost-cm-' + b.id, (isCarton ? 'Cartone di spedizione ' : 'Scatola ') + b.nome, 'cm di carta' + (eurCm && (petCostSettings.cartaCm || {})[b.id] ? ' · ' + admMoney.format(admPaperCm(b.id) * eurCm) : ''), 'es. ' + (isCarton ? '150' : '40'), (petCostSettings.cartaCm || {})[b.id], 'Centimetri di carta per ' + b.nome);
+                return f;
+            }) : [admEl('p', 'adm-muted', 'Crea le scatole nel Magazzino per indicare la carta.')]));
+            const pn = document.getElementById('adm-cost-paper-note');
+            if (pn) pn.textContent = eurCm ? 'La carta ti costa ' + admMoney.format(eurCm * 100) + ' al metro.' : 'Inserisci prezzo e lunghezza del rotolo per calcolare il costo della carta.';
+        }
         const info = document.getElementById('adm-cost-stockinfo');
         const col = admColorKgPrice(), wp = admFilamentPrice(admWhiteCode());
         const boxes = admBoxes(), pricedBoxes = boxes.filter(b => Number(b.prezzo) > 0).length;
@@ -3188,13 +3210,23 @@
     async function admSaveCostSettings() {
         const next = {};
         const status = document.getElementById('adm-cost-status');
-        for (const [k] of COST_FIELDS) {
+        const ALL_FIELDS = [...COST_FIELDS, ...PAPER_FIELDS];
+        for (const [k] of ALL_FIELDS) {
             const raw = document.getElementById('adm-cost-' + k).value.trim();
             if (!raw) continue;
             const n = parseFloat(raw.replace(',', '.'));
-            if (!Number.isFinite(n) || n < 0) { status.textContent = 'Controlla il valore di «' + COST_FIELDS.find(f => f[0] === k)[1] + '».'; return; }
+            if (!Number.isFinite(n) || n < 0) { status.textContent = 'Controlla il valore di «' + ALL_FIELDS.find(f => f[0] === k)[1] + '».'; return; }
             next[k] = n;
         }
+        const cm = {};
+        for (const b of admBoxes()) {
+            const raw = document.getElementById('adm-cost-cm-' + b.id)?.value.trim();
+            if (!raw) continue;
+            const n = parseFloat(raw.replace(',', '.'));
+            if (!Number.isFinite(n) || n < 0 || n > 10000) { status.textContent = 'Controlla i cm di carta di ' + b.nome + '.'; return; }
+            cm[b.id] = n;
+        }
+        if (Object.keys(cm).length) next.cartaCm = cm;
         admReadPrinterDraft();
         const printers = [];
         for (const p of admPrinters()) {
@@ -3214,7 +3246,7 @@
             await window.petCloud.saveSetting('costi', next);
             petCostSettings = next;
             admPrinterDraft = null;
-            renderPrinters();
+            renderCostSettings();
             status.textContent = 'Salvato ✓';
             setTimeout(() => { if (status.textContent === 'Salvato ✓') status.textContent = ''; }, 2500);
             renderCatalogo();
