@@ -734,6 +734,7 @@
         #pet-logo-remove { min-height: 44px; color: #b00020; text-transform: none; }
         .pet-logo-error { margin: 8px 0 0; color: #b00020; font-weight: 600; }
         .pet-logo-error:empty { display: none; }
+        .pet-logo-error.is-warn { color: #8a5a00; font-weight: 500; }
         .pet-consent { align-items: flex-start; font-weight: 700; }
         .pet-consent input[type="checkbox"] { margin-top: 2px; flex: none; }
         .pet-consent-legal { margin: 10px 0 0; color: #685e72; font-size: .82rem; line-height: 1.45; }
@@ -1049,16 +1050,16 @@
                             <legend>Logo per le etichette</legend>
                             <p class="pet-logo-help">Facoltativo, ma consigliato: lo stampiamo sull’etichetta delle urne che vi spediamo, così l’etichetta è personalizzata e più bella da consegnare alle famiglie.</p>
                             <ul class="pet-logo-rules">
-                                <li><strong>Formato rettangolare orizzontale</strong>, circa 3 volte più largo che alto (per esempio 900 × 300 pixel).</li>
+                                <li>Meglio <strong>orizzontale</strong>, circa 3 volte più largo che alto (per esempio 900 × 300 pixel): sull’etichetta viene più grande e leggibile. Se hai solo il logo quadrato va bene lo stesso, ma verrà più piccolo.</li>
                                 <li><strong>Solo il logo</strong>: niente numeri di telefono, indirizzi o altre scritte.</li>
-                                <li>Meglio su <strong>sfondo bianco</strong>: l’etichetta si stampa in bianco e nero.</li>
+                                <li>Su <strong>sfondo bianco</strong>, possibilmente il file originale e non uno screenshot: l’etichetta si stampa in bianco e nero.</li>
                                 <li>File PNG o JPG.</li>
                             </ul>
                             <div class="pet-logo-field">
                                 <div id="pet-logo-preview" class="pet-logo-preview"><span>Nessun logo caricato</span></div>
                                 <div class="pet-logo-actions">
                                     <label class="btn btn-flat pet-logo-upload" for="pet-logo-file"><i class="material-icons left" aria-hidden="true">upload</i>Carica il logo</label>
-                                    <input id="pet-logo-file" type="file" accept="image/png,image/jpeg,image/webp" class="visually-hidden-file">
+                                    <input id="pet-logo-file" type="file" accept="image/png,image/jpeg,image/webp,image/avif" class="visually-hidden-file">
                                     <button id="pet-logo-remove" class="btn-flat" type="button" hidden>Togli il logo</button>
                                 </div>
                             </div>
@@ -1303,7 +1304,7 @@
                     <div class="adm-logo-field">
                         <div id="adm-logo-preview" class="adm-logo-preview"></div>
                         <div class="adm-logo-actions">
-                            <label class="adm-action" id="adm-logo-pick"><i class="material-icons" aria-hidden="true">upload</i><span>Carica logo</span><input id="adm-logo-file" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" class="adm-visually-hidden"></label>
+                            <label class="adm-action" id="adm-logo-pick"><i class="material-icons" aria-hidden="true">upload</i><span>Carica logo</span><input id="adm-logo-file" type="file" accept="image/png,image/jpeg,image/webp,image/avif,image/svg+xml" class="adm-visually-hidden"></label>
                             <button type="button" class="adm-action adm-action-danger" id="adm-logo-remove" hidden><i class="material-icons" aria-hidden="true">delete</i><span>Togli logo</span></button>
                         </div>
                     </div>
@@ -4934,13 +4935,13 @@
         const error = document.getElementById('adm-client-form-error');
         error.textContent = '';
         if (!file) return;
-        if (!/^image\/(png|jpeg|webp|svg\+xml)$/.test(file.type)) { error.textContent = 'Il logo deve essere un’immagine PNG, JPG, WebP o SVG.'; return; }
+        if (!/^image\/(png|jpeg|webp|avif|svg\+xml)$/.test(file.type)) { error.textContent = 'Il logo deve essere un’immagine PNG, JPG, WebP, AVIF o SVG.'; return; }
         if (file.size > 8 * 1024 * 1024) { error.textContent = 'L’immagine è troppo grande (massimo 8 MB).'; return; }
         const url = URL.createObjectURL(file);
         const img = new Image();
         img.onload = () => {
             const w0 = img.naturalWidth || 600, h0 = img.naturalHeight || 240;
-            const scale = Math.min(1, 640 / w0, 260 / h0);
+            const scale = Math.min(1, 800 / w0, 800 / h0);
             const canvas = document.createElement('canvas');
             canvas.width = Math.max(1, Math.round(w0 * scale)); canvas.height = Math.max(1, Math.round(h0 * scale));
             const ctx = canvas.getContext('2d');
@@ -7114,14 +7115,15 @@
             const file = event.target.files[0];
             event.target.value = '';
             logoError.textContent = '';
+            logoError.classList.remove('is-warn');
             if (!file) return;
-            if (!/^image\/(png|jpeg|webp)$/.test(file.type)) { logoError.textContent = 'Il logo deve essere un’immagine PNG o JPG.'; return; }
+            if (!/^image\/(png|jpeg|webp|avif)$/.test(file.type)) { logoError.textContent = 'Il logo deve essere un’immagine PNG o JPG.'; return; }
             if (file.size > 8 * 1024 * 1024) { logoError.textContent = 'L’immagine è troppo grande (massimo 8 MB).'; return; }
             const url = URL.createObjectURL(file);
             const img = new Image();
             img.onload = () => {
                 const w0 = img.naturalWidth || 600, h0 = img.naturalHeight || 200;
-                const scale = Math.min(1, 640 / w0, 260 / h0);
+                const scale = Math.min(1, 800 / w0, 800 / h0);
                 const canvas = document.createElement('canvas');
                 canvas.width = Math.max(1, Math.round(w0 * scale)); canvas.height = Math.max(1, Math.round(h0 * scale));
                 const ctx = canvas.getContext('2d');
@@ -7133,7 +7135,8 @@
                 if (data.length > 290000) { logoError.textContent = 'Il logo è troppo pesante: prova con un file più semplice.'; return; }
                 profileLogo = data;
                 renderLogo();
-                if (w0 < h0 * 1.6) logoError.textContent = 'Il logo sembra quadrato o verticale: sull’etichetta verrà piccolo. Se ce l’hai, caricane una versione orizzontale.';
+                if (w0 < h0 * 1.6) logoError.classList.add('is-warn');
+                if (w0 < h0 * 1.6) logoError.textContent = 'Va bene, ma il logo è quadrato o verticale: sull’etichetta verrà piccolo. Se ne hai una versione orizzontale, caricala al suo posto.';
             };
             img.onerror = () => { URL.revokeObjectURL(url); logoError.textContent = 'Non riesco a leggere questa immagine.'; };
             img.src = url;
