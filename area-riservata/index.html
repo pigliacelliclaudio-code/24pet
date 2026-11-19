@@ -382,7 +382,12 @@
             .adm-scan-dialog { width: 100%; max-width: 100%; height: 100dvh; max-height: 100dvh; margin: 0; border-radius: 0; }
         }
         .adm-cost-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px 14px; margin-top: 10px; }
-        .adm-cost-boxes { padding-top: 10px; border-top: 1px solid var(--line); }
+        .adm-cost-sub { margin: 16px 0 0; padding-top: 12px; border-top: 1px solid var(--line); font-size: 1rem; font-weight: 700; }
+        .adm-cost-printers { display: grid; gap: 10px; margin-top: 10px; justify-items: start; }
+        .adm-printer-row { display: grid; grid-template-columns: minmax(160px, 1.4fr) minmax(130px, 1fr) minmax(130px, 1fr) auto; gap: 10px 14px; align-items: end; width: 100%; }
+        .adm-printer-del { margin-bottom: 2px; }
+        .adm-printer-sum { margin: 0; }
+        @media (max-width: 640px) { .adm-printer-row { grid-template-columns: 1fr 1fr auto; } .adm-printer-row > :first-child { grid-column: 1 / -1; } }
         .adm-cost-input { width: 100%; height: 40px !important; margin: 0 !important; padding: 6px 10px !important; border: 1px solid #d9cfdc !important; border-radius: 8px !important; box-sizing: border-box; font: inherit; }
         .adm-cost-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 14px; }
         .adm-cost-calc strong { color: var(--plum); }
@@ -1182,7 +1187,10 @@
                         <h2 id="adm-cost-title">Calcolo dei costi</h2>
                         <p class="adm-note">Con questi valori e con tempi, grammi, lavoro ed extra di ogni misura (in «Modifica») la dashboard calcola il costo di ogni urna. Il costo di laboratorio usato negli ordini cambia solo se premi «Usa il costo calcolato».</p>
                         <div id="adm-cost-fields" class="adm-cost-grid"></div>
-                        <div id="adm-cost-boxes" class="adm-cost-grid adm-cost-boxes"></div>
+                        <h3 class="adm-cost-sub">Stampanti</h3>
+                        <div id="adm-cost-printers" class="adm-cost-printers"></div>
+                        <h3 class="adm-cost-sub">Scatole</h3>
+                        <div id="adm-cost-boxes" class="adm-cost-grid"></div>
                         <div class="adm-cost-actions">
                             <button type="button" class="adm-action adm-action-primary" onclick="admSaveCostSettings()"><i class="material-icons" aria-hidden="true">save</i><span>Salva i valori</span></button>
                             <span id="adm-cost-status" class="adm-filament-status" role="status"></span>
@@ -2835,19 +2843,79 @@
         ['kgColore', 'Filamento colorato', '€ al kg', 'es. 23,99'],
         ['kgBianco', 'Filamento bianco', '€ al kg', 'es. 23,99'],
         ['scarto', 'Scarto di stampa', '% in più di filamento', 'es. 10'],
-        ['watt', 'Consumo stampante', 'watt medi', 'es. 120'],
-        ['kwh', 'Costo energia', '€ al kWh', 'es. 0,30'],
         ['usura', 'Usura e manutenzione', '€ per ora di stampa', 'es. 0,20'],
         ['oraLavoro', 'Manodopera', '€ all’ora', 'es. 15']
     ];
     function admCostNum(v) { const n = parseFloat(String(v ?? '').replace(',', '.')); return Number.isFinite(n) && n >= 0 ? n : 0; }
+    // Stampanti: corrente al mese e ore di stampa al mese -> costo medio per ora di stampa
+    let admPrinterDraft = null;
+    function admPrinters() { return admPrinterDraft || (petCostSettings.stampanti || []); }
+    function admPrinterHourCost() {
+        const ok = (petCostSettings.stampanti || []).filter(p => admCostNum(p.corrente) > 0 && admCostNum(p.ore) > 0);
+        return ok.length ? ok.reduce((s, p) => s + admCostNum(p.corrente) / admCostNum(p.ore), 0) / ok.length : 0;
+    }
+    function admReadPrinterDraft() {
+        if (!admPrinterDraft) return;
+        admPrinterDraft = admPrinterDraft.map(p => ({
+            id: p.id,
+            nome: document.getElementById('adm-pr-nome-' + p.id)?.value.trim() ?? p.nome,
+            corrente: document.getElementById('adm-pr-cor-' + p.id)?.value.trim() ?? p.corrente,
+            ore: document.getElementById('adm-pr-ore-' + p.id)?.value.trim() ?? p.ore
+        }));
+    }
+    function admAddPrinter() {
+        admReadPrinterDraft();
+        if (!admPrinterDraft) admPrinterDraft = admPrinters().map(p => Object.assign({}, p));
+        admPrinterDraft.push({ id: 'p-' + Date.now().toString(36), nome: 'Stampante ' + (admPrinterDraft.length + 1), corrente: '', ore: '' });
+        renderPrinters();
+        document.getElementById('adm-pr-nome-' + admPrinterDraft[admPrinterDraft.length - 1].id)?.focus();
+    }
+    async function admRemovePrinter(id) {
+        admReadPrinterDraft();
+        if (!admPrinterDraft) admPrinterDraft = admPrinters().map(p => Object.assign({}, p));
+        const pr = admPrinterDraft.find(p => p.id === id);
+        if (!(await petConfirmDelete('Eliminare ' + (pr?.nome || 'la stampante') + '?', 'Esce dal calcolo dei costi quando premi «Salva i valori».'))) return;
+        admPrinterDraft = admPrinterDraft.filter(p => p.id !== id);
+        renderPrinters();
+    }
+    function renderPrinters() {
+        const box = document.getElementById('adm-cost-printers');
+        if (!box) return;
+        const list = admPrinters();
+        const rows = list.map(p => {
+            const row = admEl('div', 'adm-printer-row');
+            const mk = (pre, label, value, ph, mode) => {
+                const f = admEl('label', 'adm-field'); f.append(document.createTextNode(label));
+                const i = document.createElement('input');
+                i.type = 'text'; i.className = 'browser-default adm-cost-input'; i.id = pre + p.id; i.placeholder = ph; i.autocomplete = 'off';
+                if (mode) i.inputMode = mode;
+                i.value = value === undefined || value === null ? '' : (mode ? String(value).replace('.', ',') : String(value));
+                f.append(i); return f;
+            };
+            const del = admEl('button', 'adm-icon-button adm-printer-del');
+            del.type = 'button'; del.title = 'Elimina ' + (p.nome || 'stampante'); del.setAttribute('aria-label', del.title);
+            del.append(admIcon('delete'));
+            del.addEventListener('click', () => admRemovePrinter(p.id));
+            row.append(mk('adm-pr-nome-', 'Nome', p.nome, 'es. Bambu P1S n.1'), mk('adm-pr-cor-', 'Corrente al mese (€)', p.corrente, 'es. 12', 'decimal'), mk('adm-pr-ore-', 'Ore di stampa al mese', p.ore, 'es. 300', 'decimal'), del);
+            return row;
+        });
+        const saved = (petCostSettings.stampanti || []);
+        const tot = saved.reduce((s, p) => s + admCostNum(p.corrente), 0);
+        const hour = admPrinterHourCost();
+        const sum = admEl('p', 'adm-note adm-printer-sum', saved.length
+            ? saved.length + (saved.length === 1 ? ' stampante' : ' stampanti') + ' · corrente ' + admMoney.format(tot) + ' al mese' + (hour ? ' · in media ' + admMoney.format(hour) + ' per ora di stampa' : ' · indica le ore di stampa per calcolare il costo orario')
+            : 'Nessuna stampante: aggiungile per calcolare il costo della corrente di ogni urna.');
+        const add = admEl('button', 'pet-link-button', '+ Aggiungi stampante');
+        add.type = 'button'; add.addEventListener('click', admAddPrinter);
+        box.replaceChildren(...rows, add, sum);
+    }
     function admCostBreakdown(v) {
         const c = petCostSettings || {};
         const gc = Number(v?.grammiColore) || 0, gb = Number(v?.grammiBianco) || 0, min = Number(v?.tempoStampa) || 0;
         const scarto = 1 + admCostNum(c.scarto) / 100;
         const parts = {
             filamento: (gc * admCostNum(c.kgColore) + gb * admCostNum(c.kgBianco)) / 1000 * scarto,
-            energia: min / 60 * admCostNum(c.watt) / 1000 * admCostNum(c.kwh),
+            energia: min / 60 * admPrinterHourCost(),
             usura: min / 60 * admCostNum(c.usura),
             lavoro: (Number(v?.minutiLavoro) || 0) / 60 * admCostNum(c.oraLavoro),
             scatola: v?.scatola ? admCostNum((c.scatole || {})[v.scatola]) : 0,
@@ -2880,6 +2948,8 @@
             return field;
         };
         box.replaceChildren(...COST_FIELDS.map(([k, label, hint, ph]) => mk('adm-cost-' + k, label, hint, ph, c[k])));
+        admPrinterDraft = null;
+        renderPrinters();
         const boxes = document.getElementById('adm-cost-boxes');
         const list = admBoxes();
         boxes.replaceChildren(...(list.length ? list.map(b => mk('adm-cost-box-' + b.id, 'Scatola ' + b.nome, '€ al pezzo', 'es. 0,80', (c.scatole || {})[b.id], 'Costo scatola ' + b.nome))
@@ -2902,9 +2972,26 @@
             if (!Number.isFinite(n) || n < 0) { status.textContent = 'Controlla il costo della scatola ' + b.nome + '.'; return; }
             next.scatole[b.id] = n;
         }
+        admReadPrinterDraft();
+        const printers = [];
+        for (const p of admPrinters()) {
+            const nome = String(p.nome || '').trim() || 'Stampante ' + (printers.length + 1);
+            const pr = { id: p.id, nome };
+            for (const [key, label] of [['corrente', 'corrente al mese'], ['ore', 'ore di stampa al mese']]) {
+                const raw = String(p[key] ?? '').trim();
+                if (!raw) continue;
+                const n = parseFloat(raw.replace(',', '.'));
+                if (!Number.isFinite(n) || n < 0) { status.textContent = 'Controlla «' + label + '» di ' + nome + '.'; return; }
+                pr[key] = n;
+            }
+            printers.push(pr);
+        }
+        if (printers.length) next.stampanti = printers;
         try {
             await window.petCloud.saveSetting('costi', next);
             petCostSettings = next;
+            admPrinterDraft = null;
+            renderPrinters();
             status.textContent = 'Salvato ✓';
             setTimeout(() => { if (status.textContent === 'Salvato ✓') status.textContent = ''; }, 2500);
             renderCatalogo();
