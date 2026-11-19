@@ -393,6 +393,8 @@
         .adm-printer-row { display: grid; grid-template-columns: minmax(160px, 1.4fr) minmax(130px, 1fr) minmax(130px, 1fr) auto; gap: 10px 14px; align-items: end; width: 100%; }
         .adm-printer-del { margin-bottom: 2px; }
         .adm-printer-sum { margin: 0; }
+        .adm-printer-est { grid-column: 1 / -1; margin-top: -4px; color: var(--muted); }
+        .adm-printer-est:empty { display: none; }
         @media (max-width: 640px) { .adm-printer-row { grid-template-columns: 1fr 1fr auto; } .adm-printer-row > :first-child { grid-column: 1 / -1; } }
         .adm-cost-input { width: 100%; height: 40px !important; margin: 0 !important; padding: 6px 10px !important; border: 1px solid #d9cfdc !important; border-radius: 8px !important; box-sizing: border-box; font: inherit; }
         .adm-cost-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 14px; }
@@ -2899,30 +2901,32 @@
     let petCostSettings = {};
     const COST_FIELDS = [
         ['scarto', 'Scarto di stampa', '% in più di filamento', 'es. 10'],
+        ['kwh', 'Prezzo energia', '€ al kWh, tutto compreso (bolletta: totale € ÷ kWh)', 'es. 0,30'],
         ['usura', 'Usura e manutenzione', '€ per ora di stampa', 'es. 0,20'],
         ['oraLavoro', 'Manodopera', '€ all’ora', 'es. 15']
     ];
     function admCostNum(v) { const n = parseFloat(String(v ?? '').replace(',', '.')); return Number.isFinite(n) && n >= 0 ? n : 0; }
-    // Stampanti: corrente al mese e ore di stampa al mese -> costo medio per ora di stampa
+    // Stampanti: consumo medio in watt × prezzo dell'energia -> costo per ora di stampa (media tra le stampanti)
     let admPrinterDraft = null;
     function admPrinters() { return admPrinterDraft || (petCostSettings.stampanti || []); }
     function admPrinterHourCost() {
-        const ok = (petCostSettings.stampanti || []).filter(p => admCostNum(p.corrente) > 0 && admCostNum(p.ore) > 0);
-        return ok.length ? ok.reduce((s, p) => s + admCostNum(p.corrente) / admCostNum(p.ore), 0) / ok.length : 0;
+        const kwh = admCostNum(petCostSettings.kwh);
+        const ok = (petCostSettings.stampanti || []).filter(p => admCostNum(p.watt) > 0);
+        return ok.length && kwh ? ok.reduce((s, p) => s + admCostNum(p.watt) / 1000 * kwh, 0) / ok.length : 0;
     }
     function admReadPrinterDraft() {
         if (!admPrinterDraft) return;
         admPrinterDraft = admPrinterDraft.map(p => ({
             id: p.id,
             nome: document.getElementById('adm-pr-nome-' + p.id)?.value.trim() ?? p.nome,
-            corrente: document.getElementById('adm-pr-cor-' + p.id)?.value.trim() ?? p.corrente,
+            watt: document.getElementById('adm-pr-watt-' + p.id)?.value.trim() ?? p.watt,
             ore: document.getElementById('adm-pr-ore-' + p.id)?.value.trim() ?? p.ore
         }));
     }
     function admAddPrinter() {
         admReadPrinterDraft();
         if (!admPrinterDraft) admPrinterDraft = admPrinters().map(p => Object.assign({}, p));
-        admPrinterDraft.push({ id: 'p-' + Date.now().toString(36), nome: 'Stampante ' + (admPrinterDraft.length + 1), corrente: '', ore: '' });
+        admPrinterDraft.push({ id: 'p-' + Date.now().toString(36), nome: 'Stampante ' + (admPrinterDraft.length + 1), watt: '', ore: '' });
         renderPrinters();
         document.getElementById('adm-pr-nome-' + admPrinterDraft[admPrinterDraft.length - 1].id)?.focus();
     }
@@ -2952,18 +2956,22 @@
             del.type = 'button'; del.title = 'Elimina ' + (p.nome || 'stampante'); del.setAttribute('aria-label', del.title);
             del.append(admIcon('delete'));
             del.addEventListener('click', () => admRemovePrinter(p.id));
-            row.append(mk('adm-pr-nome-', 'Nome', p.nome, 'es. Bambu P1S n.1'), mk('adm-pr-cor-', 'Corrente al mese (€)', p.corrente, 'es. 12', 'decimal'), mk('adm-pr-ore-', 'Ore di stampa al mese', p.ore, 'es. 300', 'decimal'), del);
+            const kwh = admCostNum(petCostSettings.kwh), w = admCostNum(p.watt), h = admCostNum(p.ore);
+            const est = admEl('small', 'adm-printer-est', w && kwh ? admMoney.format(w / 1000 * kwh) + ' per ora di stampa' + (h ? ' · ≈ ' + admMoney.format(w / 1000 * kwh * h) + ' al mese' : '') : '');
+            row.append(mk('adm-pr-nome-', 'Nome', p.nome, 'es. Bambu P1S n.1'), mk('adm-pr-watt-', 'Consumo medio (W)', p.watt, 'es. 110', 'decimal'), mk('adm-pr-ore-', 'Ore di stampa al mese', p.ore, 'facoltativo', 'decimal'), del, est);
             return row;
         });
         const saved = (petCostSettings.stampanti || []);
-        const tot = saved.reduce((s, p) => s + admCostNum(p.corrente), 0);
+        const kwh = admCostNum(petCostSettings.kwh);
+        const tot = saved.reduce((s, p) => s + admCostNum(p.watt) / 1000 * kwh * admCostNum(p.ore), 0);
         const hour = admPrinterHourCost();
         const sum = admEl('p', 'adm-note adm-printer-sum', saved.length
-            ? saved.length + (saved.length === 1 ? ' stampante' : ' stampanti') + ' · corrente ' + admMoney.format(tot) + ' al mese' + (hour ? ' · in media ' + admMoney.format(hour) + ' per ora di stampa' : ' · indica le ore di stampa per calcolare il costo orario')
+            ? saved.length + (saved.length === 1 ? ' stampante' : ' stampanti') + (hour ? ' · in media ' + admMoney.format(hour) + ' di corrente per ora di stampa' + (tot ? ' · ≈ ' + admMoney.format(tot) + ' al mese in tutto' : '') : kwh ? ' · indica il consumo in watt' : ' · indica il prezzo dell’energia')
             : 'Nessuna stampante: aggiungile per calcolare il costo della corrente di ogni urna.');
+        const how = admEl('p', 'adm-note', 'Il consumo più preciso lo misuri con una presa smart con misura dei consumi (es. Shelly Plug S o Tapo P110): fai una stampa, leggi i kWh consumati e dividili per le ore. Per una Bambu P1S con il PLA le misure pubblicate danno circa 105–120 W medi.');
         const add = admEl('button', 'pet-link-button', '+ Aggiungi stampante');
         add.type = 'button'; add.addEventListener('click', admAddPrinter);
-        box.replaceChildren(...rows, add, sum);
+        box.replaceChildren(...rows, add, sum, how);
     }
     // Prezzi dal Magazzino: bianco = bobina impostata come bianco; colorato = media dei colori del catalogo con prezzo
     function admColorKgPrice() {
@@ -3019,7 +3027,7 @@
         const boxes = admBoxes(), pricedBoxes = boxes.filter(b => Number(b.prezzo) > 0).length;
         const li = (label, text, ok) => { const e = admEl('li', ok ? '' : 'is-missing'); e.append(admEl('strong', '', label + ': '), document.createTextNode(text)); return e; };
         info.replaceChildren(
-            li('Filamento colorato', col.priced ? 'in media ' + admMoney.format(col.avg) + ' al kg (' + col.priced + ' colori su ' + col.total + ' con prezzo)' : 'prezzi da inserire', col.priced === col.total && col.total > 0),
+            li('Filamento colorato', col.priced ? 'in media ' + admMoney.format(col.avg) + ' al kg (' + col.priced + ' su ' + col.total + (col.total === 1 ? ' colore' : ' colori') + ' con prezzo)' : 'prezzi da inserire', col.priced === col.total && col.total > 0),
             li('Filamento bianco', wp ? admMoney.format(wp) + ' al kg' : 'prezzo da inserire', !!wp),
             li('Scatole', boxes.length ? pricedBoxes + ' su ' + boxes.length + ' con prezzo' : 'nessuna scatola creata', boxes.length > 0 && pricedBoxes === boxes.length));
     }
@@ -3038,7 +3046,7 @@
         for (const p of admPrinters()) {
             const nome = String(p.nome || '').trim() || 'Stampante ' + (printers.length + 1);
             const pr = { id: p.id, nome };
-            for (const [key, label] of [['corrente', 'corrente al mese'], ['ore', 'ore di stampa al mese']]) {
+            for (const [key, label] of [['watt', 'consumo medio'], ['ore', 'ore di stampa al mese']]) {
                 const raw = String(p[key] ?? '').trim();
                 if (!raw) continue;
                 const n = parseFloat(raw.replace(',', '.'));
