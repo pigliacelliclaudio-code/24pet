@@ -367,6 +367,37 @@
         .adm-scan-progress.is-complete { background: #e4f3e8; color: #1b6434; }
         .adm-scan-bar { display: block; height: 8px; border-radius: 99px; background: #fff; overflow: hidden; }
         .adm-scan-bar i { display: block; height: 100%; background: currentColor; transition: width .2s; }
+        .adm-print-dialog { width: min(640px, calc(100vw - 24px)); }
+        .adm-print-dialog header p { margin: 2px 0 0; }
+        .adm-print-progress { display: flex; align-items: center; gap: 12px; padding: 12px 20px 4px; }
+        .adm-ring { position: relative; display: inline-grid; place-items: center; flex: none; }
+        .adm-ring svg { transform: rotate(-90deg); display: block; }
+        .adm-ring .bg { stroke: #eee6f0; }
+        .adm-ring .fg { stroke: #8c0066; stroke-linecap: round; transition: stroke-dashoffset .35s ease; }
+        .adm-ring.is-full .fg { stroke: #2e7d4a; }
+        .adm-ring b { position: absolute; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--plum); }
+        .adm-ring.is-full b { color: #2e7d4a; }
+        .adm-print-progress strong { font-size: 1.05rem; }
+        .adm-print-group h3 { display: flex; align-items: center; gap: 10px; }
+        .adm-order-ring { display: inline-flex; align-items: center; gap: 6px; font-size: .82rem; font-weight: 700; color: var(--muted); }
+        .adm-print-body { padding: 8px 20px 16px; overflow-y: auto; max-height: min(62vh, 640px); }
+        .adm-print-group h3 { margin: 14px 0 6px; font-size: 1rem; font-weight: 800; color: var(--plum); }
+        .adm-print-group h3 small { margin-left: auto; font-weight: 600; color: var(--muted); }
+        .adm-print-list { display: grid; gap: 6px; margin: 0; }
+        .adm-print-item { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: #fff; }
+        .adm-print-item.is-done { background: #f1f8f2; border-color: #cfe5d3; }
+        .adm-print-item.is-done .adm-print-name { color: #557060; text-decoration: line-through; }
+        .adm-print-tick { width: 44px; height: 44px; border: 0; border-radius: 50%; background: #f3edf4; color: #8c0066; cursor: pointer; display: grid; place-items: center; }
+        .adm-print-item.is-done .adm-print-tick { background: #2e7d4a; color: #fff; }
+        .adm-print-tick .material-icons { font-size: 26px; }
+        .adm-print-name { display: flex; align-items: center; gap: 8px; min-width: 0; font-weight: 600; }
+        .adm-print-qty { font-variant-numeric: tabular-nums; font-weight: 800; white-space: nowrap; }
+        .adm-print-steps { display: flex; gap: 4px; }
+        .adm-print-steps button { width: 36px; height: 36px; border: 1px solid var(--line); border-radius: 8px; background: #fff; cursor: pointer; display: grid; place-items: center; }
+        .adm-print-steps button:disabled { opacity: .35; cursor: default; }
+        .adm-print-saved { margin-right: auto; color: var(--muted); font-size: .9rem; }
+        .adm-print-item.is-single { grid-template-columns: auto minmax(0, 1fr) auto; }
+        @media (max-width: 520px) { .adm-print-item { gap: 8px; padding: 6px 8px; } .adm-print-steps button { width: 34px; height: 34px; } .adm-print-dialog header h2 { font-size: 1.2rem; } }
         .adm-scan-list { display: grid; gap: 4px; margin: 0; }
         .adm-scan-list li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; font-size: .92rem; }
         .adm-scan-list li .material-icons { color: #b9adbd; font-size: 20px; }
@@ -953,6 +984,18 @@
                 <button type="submit" class="adm-action adm-action-primary"><i class="material-icons" aria-hidden="true">save</i><span>Salva</span></button>
             </footer>
         </form>
+    </dialog>
+    <dialog class="pet-inbox-dialog adm-client-dialog adm-print-dialog" id="adm-print-dialog" aria-labelledby="adm-print-title">
+        <header>
+            <div><h2 id="adm-print-title">Lista di stampa</h2><p id="adm-print-sub" class="adm-note"></p></div>
+            <button class="pet-inbox-close" type="button" aria-label="Chiudi" onclick="admClosePrintList()"><i class="material-icons" aria-hidden="true">close</i></button>
+        </header>
+        <div class="adm-print-progress"><span id="adm-print-ring"></span><strong id="adm-print-count" role="status"></strong></div>
+        <div id="adm-print-body" class="adm-print-body"></div>
+        <footer class="adm-form-footer">
+            <span id="adm-print-saved" class="adm-print-saved" role="status"></span>
+            <button type="button" class="adm-action adm-action-primary" onclick="admClosePrintList()">Fatto</button>
+        </footer>
     </dialog>
     <dialog class="pet-inbox-dialog adm-client-dialog adm-stock-dialog" id="adm-box-dialog" aria-labelledby="adm-box-dialog-title">
         <header>
@@ -2605,6 +2648,10 @@
             petStore.busy = false;
         }
     }
+    // Salva subito quello che resta in sospeso quando la pagina va in secondo piano o si chiude
+    const petFlushNow = () => { if (petStore.mode === 'cloud' && petStore.pending.size && !petStore.busy) { clearTimeout(petStore.timer); petFlush(); } };
+    window.addEventListener('pagehide', petFlushNow);
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') petFlushNow(); });
     window.addEventListener('beforeunload', event => {
         if (petStore.mode === 'cloud' && (petStore.pending.size || petStore.busy)) { event.preventDefault(); event.returnValue = ''; }
     });
@@ -4230,6 +4277,10 @@
         who.append(admEl('span', 'pet-order-date', '#' + admOrderNumber(o) + ' · ' + (o.data ? admDate.format(new Date(o.data + 'T00:00:00Z')) : '—') + (o.tipo === 'Rivenditore' ? ' · Rivenditore' : '')));
         const state = admEl('span', 'pet-order-state');
         state.append(o.pagato ? admBadge('Pagato', 'ok') : admBadge('Da pagare', 'warn'), o.evaso ? admBadge('Evaso', 'ok') : admBadge('Da evadere', 'neutral'));
+        if (!o.evaso) {
+            const pr = admPrintProgress(o);
+            if (pr.done) { const ring = admEl('span', 'adm-order-ring'); ring.append(admRing(pr.done, pr.tot, 22), document.createTextNode(pr.done >= pr.tot ? 'stampate ✓' : Math.round(pr.done / pr.tot * 100) + '% · ' + pr.done + '/' + pr.tot)); ring.title = 'Urne stampate: ' + pr.done + ' di ' + pr.tot; state.append(ring); }
+        }
         const stockPlan = !o.evaso && petStockLoaded ? admOrderPlanCache?.plan.get(o.id) : null;
         if (stockPlan) {
             if (stockPlan.anyShort) state.append(admBadge('Manca materiale', 'warn'));
@@ -4256,6 +4307,7 @@
             action(o.pagato ? 'undo' : 'paid', o.pagato ? 'Segna da pagare' : 'Segna pagato', () => admToggleOrder(o.id, 'pagato')),
             action(o.evaso ? 'undo' : 'local_shipping', o.evaso ? 'Segna da evadere' : 'Segna evaso', () => admToggleOrder(o.id, 'evaso')),
             action('receipt', 'Conferma d’ordine', () => stampaRiepilogoCliente(o.id)),
+            action('checklist', 'Lista di stampa', () => admOpenPrintList(o.id), 'adm-action-primary'),
             action('print', 'Scheda produzione', () => stampaSchedaProduzioneSingola(o.id)),
             action('label', 'Etichette', () => stampaEtichetteOrdine(o.id)),
             action('fact_check', 'Controlla spedizione', () => admOpenScanner(o.id)),
@@ -4760,6 +4812,123 @@
         dot.style.backgroundColor = mappaColoriHex[colore] || '#ccc';
         return dot;
     }
+    // === LISTA DI STAMPA: urne stampate per ordine, salvate subito nell'ordine (campo «stampate») ===
+    let admPrintOrderId = null;
+    // Cerchio di avanzamento: si chiude man mano che le urne vengono segnate come stampate
+    function admRing(done, tot, size, label) {
+        const pct = tot ? Math.round(done / tot * 100) : 0;
+        const stroke = Math.max(3, Math.round(size / 9)), r = (size - stroke) / 2, c = 2 * Math.PI * r;
+        const wrap = admEl('span', 'adm-ring' + (tot && done >= tot ? ' is-full' : ''));
+        wrap.style.width = wrap.style.height = size + 'px';
+        wrap.setAttribute('role', 'img');
+        wrap.setAttribute('aria-label', (label || 'Stampate') + ': ' + pct + '%');
+        const ns = 'http://www.w3.org/2000/svg';
+        const svg = document.createElementNS(ns, 'svg');
+        svg.setAttribute('width', size); svg.setAttribute('height', size); svg.setAttribute('viewBox', '0 0 ' + size + ' ' + size);
+        for (const cls of ['bg', 'fg']) {
+            const circle = document.createElementNS(ns, 'circle');
+            circle.setAttribute('class', cls); circle.setAttribute('cx', size / 2); circle.setAttribute('cy', size / 2); circle.setAttribute('r', r);
+            circle.setAttribute('fill', 'none'); circle.setAttribute('stroke-width', stroke);
+            if (cls === 'fg') { circle.setAttribute('stroke-dasharray', c); circle.setAttribute('stroke-dashoffset', c * (1 - pct / 100)); }
+            svg.append(circle);
+        }
+        wrap.append(svg);
+        if (size >= 32) {
+            const text = admEl('b', '', tot && done >= tot ? '✓' : pct + '%');
+            text.style.fontSize = Math.max(10, Math.round(size / 4.2)) + 'px';
+            wrap.append(text);
+        }
+        return wrap;
+    }
+    function admPrintProgress(o) {
+        const need = admOrderCodeNeed(o);
+        let tot = 0, done = 0;
+        for (const [code, v] of need) { tot += v.qty; done += Math.min(Number(o.stampate?.[code]) || 0, v.qty); }
+        return { tot, done };
+    }
+    function admOpenPrintList(id) {
+        const o = orders.find(x => x.id === id);
+        if (!o) return;
+        admPrintOrderId = id;
+        document.getElementById('adm-print-title').textContent = 'Lista di stampa · ' + (o.cliente || 'Senza nome');
+        document.getElementById('adm-print-sub').textContent = '#' + admOrderNumber(o) + ' · tocca il cerchio quando un’urna è stampata. Si salva da sola.';
+        document.getElementById('adm-print-saved').textContent = '';
+        admRenderPrintList();
+        document.getElementById('adm-print-dialog').showModal();
+    }
+    function admSetPrinted(code, value) {
+        const o = orders.find(x => x.id === admPrintOrderId);
+        if (!o) return;
+        const need = admOrderCodeNeed(o).get(code);
+        if (!need) return;
+        const n = Math.max(0, Math.min(need.qty, value));
+        o.stampate = Object.assign({}, o.stampate || {});
+        if (n) o.stampate[code] = n; else delete o.stampate[code];
+        if (!Object.keys(o.stampate).length) delete o.stampate;
+        petSave('orders');
+        document.getElementById('adm-print-saved').textContent = 'Salvataggio…';
+        clearTimeout(admSetPrinted.t);
+        admSetPrinted.t = setTimeout(() => { const el = document.getElementById('adm-print-saved'); if (el) el.textContent = petStore.mode === 'cloud' ? 'Salvato ✓' : 'Salvato in questo browser ✓'; }, 900);
+        admRenderPrintList();
+    }
+    function admRenderPrintList() {
+        const o = orders.find(x => x.id === admPrintOrderId);
+        const body = document.getElementById('adm-print-body');
+        if (!o) { body.replaceChildren(); return; }
+        const need = admOrderCodeNeed(o);
+        const groups = new Map();
+        for (const [code, v] of need) {
+            const key = v.item.modello + ' · ' + (v.item.dimensione || '');
+            if (!groups.has(key)) groups.set(key, []);
+            groups.get(key).push([code, v]);
+        }
+        const nodes = [];
+        for (const [key, rows] of [...groups].sort((a, b) => a[0].localeCompare(b[0], 'it'))) {
+            const section = admEl('section', 'adm-print-group');
+            const gTot = rows.reduce((t, [, v]) => t + v.qty, 0);
+            const gDone = rows.reduce((t, [c, v]) => t + Math.min(Number(o.stampate?.[c]) || 0, v.qty), 0);
+            const h3 = admEl('h3', '');
+            h3.append(admRing(gDone, gTot, 34, key), document.createTextNode(key), admEl('small', '', gDone + '/' + gTot));
+            section.append(h3);
+            const ul = admEl('ul', 'adm-print-list');
+            for (const [code, { qty, item }] of rows.sort((a, b) => String(a[1].item.colore).localeCompare(String(b[1].item.colore), 'it'))) {
+                const done = Math.min(Number(o.stampate?.[code]) || 0, qty);
+                const full = done >= qty;
+                const li = admEl('li', 'adm-print-item' + (full ? ' is-done' : ''));
+                const tick = admEl('button', 'adm-print-tick');
+                tick.type = 'button';
+                tick.append(admIcon(full ? 'check' : qty > 1 && done ? 'add' : 'radio_button_unchecked'));
+                tick.setAttribute('aria-label', full ? 'Segna ' + item.colore + ' come da stampare' : 'Segna una ' + item.colore + ' come stampata');
+                tick.addEventListener('click', () => { if (full && qty > 1) return; admSetPrinted(code, full ? 0 : done + 1); });
+                const name = admEl('span', 'adm-print-name');
+                name.append(swatchAdmin(item.colore), document.createTextNode(item.colore || 'Colore non indicato'));
+                const steps = admEl('span', 'adm-print-steps');
+                const minus = admEl('button', ''); minus.type = 'button'; minus.append(admIcon('remove')); minus.disabled = !done; minus.setAttribute('aria-label', 'Una in meno');
+                minus.addEventListener('click', () => admSetPrinted(code, done - 1));
+                const all = admEl('button', ''); all.type = 'button'; all.append(admIcon('done_all')); all.disabled = full; all.title = 'Tutte stampate'; all.setAttribute('aria-label', 'Tutte stampate');
+                all.addEventListener('click', () => admSetPrinted(code, qty));
+                steps.append(minus, all);
+                li.append(tick, name, admEl('span', 'adm-print-qty', done + '/' + qty));
+                if (qty > 1) li.append(steps); else li.classList.add('is-single');
+                ul.append(li);
+            }
+            section.append(ul);
+            nodes.push(section);
+        }
+        body.replaceChildren(...nodes);
+        const p = admPrintProgress(o);
+        document.getElementById('adm-print-ring').replaceChildren(admRing(p.done, p.tot, 72, 'Ordine stampato'));
+        document.getElementById('adm-print-count').textContent = p.done === p.tot && p.tot ? 'Tutte stampate ✓ (' + p.tot + ')' : p.done + ' di ' + p.tot + ' stampate';
+    }
+    function admClosePrintList() {
+        const dialog = document.getElementById('adm-print-dialog');
+        if (dialog.open) dialog.close();
+    }
+    document.getElementById('adm-print-dialog')?.addEventListener('close', () => {
+        admPrintOrderId = null;
+        if (petStore.pending.size) { clearTimeout(petStore.timer); petFlush(); }
+        loadOrders();
+    });
     function admOrderCodeNeed(order) {
         const need = new Map();
         for (const a of order.articoli || []) {
