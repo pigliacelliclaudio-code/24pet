@@ -383,6 +383,9 @@
         }
         .adm-cost-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px 14px; margin-top: 10px; }
         .adm-cost-sub { margin: 16px 0 0; padding-top: 12px; border-top: 1px solid var(--line); font-size: 1rem; font-weight: 700; }
+        .adm-ship-hint { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: 0 0 10px; color: var(--muted); }
+        .adm-ship-hint:empty { display: none; }
+        .adm-ship-hint .material-icons { font-size: 18px; color: var(--plum); }
         .adm-cost-stockinfo { margin: 8px 0 0; padding-left: 18px; }
         .adm-cost-stockinfo li { margin: 2px 0; }
         .adm-cost-stockinfo li.is-missing { color: #9a5500; }
@@ -655,7 +658,19 @@
         .pet-cart button { cursor:pointer; color:#83045e; background:white; border:1px solid #ece2ea; border-radius:6px; padding:8px; }
         .pet-checkout { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px 26px; background:#faf2f7; border-radius:9px; padding:14px 18px; margin-top:16px; }
         .pet-checkout strong { display:block; color:#4a004c; }
-        #pet-cart-total { font-size:1.45rem; }
+        #pet-cart-total { font-size:1.1rem; }
+        .pet-cart-summary { min-width: 0; flex: 1 1 280px; max-width: 440px; }
+        .pet-cart-lines { margin: 0; display: grid; gap: 4px; }
+        .pet-cart-lines > div { display: flex; justify-content: space-between; gap: 16px; }
+        .pet-cart-lines dt { font-weight: 600; }
+        .pet-cart-lines dd { margin: 0; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+        .pet-cart-lines .is-discount dd { color: #1b6434; }
+        .pet-cart-lines .is-total { margin-top: 4px; padding-top: 6px; border-top: 1px solid #e3d8e6; font-size: 1.3rem; }
+        .pet-cart-lines small { display: block; font-weight: 400; color: #6b5b70; font-size: .8rem; }
+        .pet-ship-progress { margin-top: 10px; }
+        .pet-ship-bar { display: block; height: 8px; border-radius: 99px; background: #eee6f0; overflow: hidden; }
+        .pet-ship-bar span { display: block; height: 100%; border-radius: 99px; background: #8c0066; }
+        .pet-ship-progress p { margin: 6px 0 0; font-weight: 600; color: #4a004a; }
         .pet-checkout p { margin:4px 0 0; }
         .pet-order-consent { margin:0; }
         .pet-order-consent label { margin-top:4px; color:#403646; }
@@ -800,7 +815,13 @@
                         </table>
                     </div>
                     <div class="pet-checkout">
-                        <div><strong>Subtotale di listino</strong><strong id="pet-cart-total">—</strong><p>Prezzo finale, spedizione e pagamento saranno indicati nella conferma di 24Pet.</p></div>
+                        <div class="pet-cart-summary">
+                            <dl id="pet-cart-lines" class="pet-cart-lines">
+                                <div><dt>Subtotale di listino</dt><dd id="pet-cart-total">—</dd></div>
+                            </dl>
+                            <div id="pet-ship-progress" class="pet-ship-progress" hidden><span class="pet-ship-bar"><span id="pet-ship-fill"></span></span><p id="pet-ship-text"></p></div>
+                            <p>Importi IVA esclusa. Il prezzo finale e il pagamento sono confermati da 24Pet.</p>
+                        </div>
                         <div class="pet-order-consent">
                             <a href="/condizioni-v1/" target="_blank" rel="noopener">Leggi i Termini e condizioni di vendita</a>
                             <label><input type="checkbox" id="pet-request-terms" required> Ho letto e accetto i Termini e condizioni di vendita.</label>
@@ -1249,6 +1270,20 @@
                             <label class="adm-field">Urne per cartone<input id="adm-box-per" type="number" min="1" max="100" step="1" class="browser-default adm-ship-qty" onchange="admSaveCartonSettings()"></label>
                         </div>
                     </section>
+                    <section class="pet-home-card adm-stock-card" aria-labelledby="adm-ship-title">
+                        <h2 id="adm-ship-title">Spese di spedizione per i clienti</h2>
+                        <p class="adm-note">I clienti vedono la spedizione mentre compongono l’ordine. I cartoni si contano con «Urne per cartone» qui sopra.</p>
+                        <div class="adm-cost-grid">
+                            <label class="adm-field">Primo cartone (€)<input id="adm-ship-primo" type="text" inputmode="decimal" class="browser-default adm-cost-input" placeholder="15" autocomplete="off"><small>IVA esclusa</small></label>
+                            <label class="adm-field">Ogni cartone in più (€)<input id="adm-ship-extra" type="text" inputmode="decimal" class="browser-default adm-cost-input" placeholder="5" autocomplete="off"><small>IVA esclusa</small></label>
+                            <label class="adm-field">Spedizione inclusa da (€)<input id="adm-ship-soglia" type="text" inputmode="decimal" class="browser-default adm-cost-input" placeholder="400" autocomplete="off"><small>ordine IVA esclusa, dopo gli sconti</small></label>
+                        </div>
+                        <p id="adm-ship-example" class="adm-note"></p>
+                        <div class="adm-cost-actions">
+                            <button type="button" class="adm-action adm-action-primary" onclick="admSaveShipSettings()"><i class="material-icons" aria-hidden="true">save</i><span>Salva</span></button>
+                            <span id="adm-ship-status" class="adm-filament-status" role="status"></span>
+                        </div>
+                    </section>
                     <div class="pet-home-grid adm-grid">
                         <section class="pet-home-card" aria-labelledby="adm-stock-moves-title">
                             <h2 id="adm-stock-moves-title">Ultimi movimenti</h2>
@@ -1409,6 +1444,7 @@
                                         <label for="scontoExtraPerc">Sconto Extra (%)</label>
                                     </div>
                                 </div>
+                                <p id="adm-ship-hint" class="adm-ship-hint" aria-live="polite"></p>
 
                                 <div class="row" style="margin-bottom: 5px;">
                                     <div class="col s12">
@@ -1768,17 +1804,19 @@
     async function petLoadFilaments() {
         if (petStore.mode !== 'cloud' || typeof window.petCloud?.filamentMoves !== 'function') return;
         try {
-            const [moves, settings, boxMoves, boxSettings, costSettings] = await Promise.all([window.petCloud.filamentMoves(), window.petCloud.getSetting('magazzino'), window.petCloud.boxMoves(), window.petCloud.getSetting('scatole'), window.petCloud.getSetting('costi')]);
+            const [moves, settings, boxMoves, boxSettings, costSettings, shipSettings] = await Promise.all([window.petCloud.filamentMoves(), window.petCloud.getSetting('magazzino'), window.petCloud.boxMoves(), window.petCloud.getSetting('scatole'), window.petCloud.getSetting('costi'), window.petCloud.getSetting('spedizione')]);
             petFilamentMoves = moves || [];
             petStockSettings = Object.assign({ bianco: '11100' }, settings || {});
             petBoxMoves = boxMoves || [];
             petBoxSettings = Object.assign({ lista: [], cartone: '', perCartone: 8 }, boxSettings || {});
             petCostSettings = costSettings || {};
+            petShipSettings = shipSettings || {};
             petStockLoaded = true;
         } catch { return; }
         renderMagazzino();
         loadOrders();
         renderCostSettings();
+        renderShipSettings();
         renderCatalogo();
         if (typeof aggiornaUICarrello === 'function') aggiornaUICarrello();
     }
@@ -1998,7 +2036,7 @@
     async function admSaveCartonSettings() {
         petBoxSettings.cartone = document.getElementById('adm-box-cartone').value;
         petBoxSettings.perCartone = Math.max(1, Math.min(100, parseInt(document.getElementById('adm-box-per').value, 10) || 8));
-        if (await admSaveBoxSettings()) { M.toast({ html: 'Impostazioni di spedizione salvate', classes: 'rounded' }); renderMagazzino(); }
+        if (await admSaveBoxSettings()) { M.toast({ html: 'Impostazioni di spedizione salvate', classes: 'rounded' }); renderMagazzino(); renderShipSettings(); }
     }
 
     async function admAddStock(code, grams, kind, note) {
@@ -2074,6 +2112,67 @@
         await admAddStock(code, grams, mode, note || (mode === 'carico' ? value + (value === 1 ? ' bobina da 1 kg' : ' bobine da 1 kg') : 'Peso verificato: ' + Math.round(value) + ' g'));
     }
 
+
+    // === SPESE DI SPEDIZIONE: primo cartone + ogni cartone in più; gratis dalla soglia (IVA esclusa, dopo gli sconti) ===
+    let petShipSettings = {};
+    function petShippingQuote(pieces, net, t) {
+        t = t || {};
+        const per = Math.max(1, parseInt(t.perCartone, 10) || 8);
+        const primo = Number(t.primo ?? 15), extra = Number(t.extra ?? 5), soglia = Number(t.soglia ?? 400);
+        const cartoni = pieces > 0 ? Math.ceil(pieces / per) : 0;
+        const tariffa = cartoni ? Math.round((primo + (cartoni - 1) * extra) * 100) / 100 : 0;
+        const gratis = soglia > 0 && net >= soglia - 0.005;
+        return { cartoni, per, tariffa, gratis, addebito: gratis ? 0 : tariffa, soglia, mancano: gratis ? 0 : Math.max(0, soglia - net) };
+    }
+    function admShipTerms() { return Object.assign({ primo: 15, extra: 5, soglia: 400 }, petShipSettings, { perCartone: parseInt(petBoxSettings.perCartone, 10) || 8 }); }
+    function renderShipSettings() {
+        const t = admShipTerms();
+        for (const k of ['primo', 'extra', 'soglia']) { const el = document.getElementById('adm-ship-' + k); if (el) el.value = String(t[k]).replace('.', ','); }
+        const ex = document.getElementById('adm-ship-example');
+        if (ex) ex.textContent = 'Esempio: ' + [8, 9, 17, 30].map(n => n + ' urne → ' + admMoney.format(petShippingQuote(n, 0, t).tariffa)).join(' · ') + ' (+ IVA). Da ' + admMoney.format(t.soglia) + ' di ordine, IVA esclusa e dopo gli sconti, la spedizione è inclusa.';
+    }
+    async function admSaveShipSettings() {
+        const status = document.getElementById('adm-ship-status');
+        const next = {};
+        for (const [k, label] of [['primo', 'Primo cartone'], ['extra', 'Ogni cartone in più'], ['soglia', 'Spedizione inclusa da']]) {
+            const n = admParsePrice(document.getElementById('adm-ship-' + k).value);
+            if (n === null || Number.isNaN(n)) { status.textContent = 'Controlla «' + label + '».'; return; }
+            next[k] = n;
+        }
+        try {
+            await window.petCloud.saveSetting('spedizione', next);
+            petShipSettings = next;
+            status.textContent = 'Salvato ✓';
+            setTimeout(() => { if (status.textContent === 'Salvato ✓') status.textContent = ''; }, 2500);
+            renderShipSettings();
+            if (typeof aggiornaUICarrello === 'function') aggiornaUICarrello();
+        } catch { status.textContent = 'Non salvato: riprova.'; }
+    }
+    function admApplyShipping() {
+        const q = admCartShipQuote();
+        if (!q) return;
+        document.getElementById('costoSpedizione').value = q.tariffa.toFixed(2);
+        const sel = document.getElementById('spedizioneACarico');
+        sel.value = q.gratis ? 'Nostro' : 'Cliente';
+        if (window.M && M.FormSelect) M.FormSelect.init(sel);
+        aggiornaUICarrello();
+    }
+    let admLastShipQuote = null;
+    function admCartShipQuote() { return admLastShipQuote; }
+    function admRenderShipHint(pieces, net) {
+        const box = document.getElementById('adm-ship-hint');
+        if (!box) return;
+        box.replaceChildren();
+        admLastShipQuote = null;
+        if (!pieces) return;
+        const q = petShippingQuote(pieces, net, admShipTerms());
+        admLastShipQuote = q;
+        box.append(admIcon('local_shipping'),
+            admEl('span', '', 'Tariffa: ' + admMoney.format(q.tariffa) + ' (' + q.cartoni + (q.cartoni === 1 ? ' cartone' : ' cartoni') + ' da ' + q.per + ') · ' + (q.gratis ? 'ordine da ' + admMoney.format(q.soglia) + ' in su: spedizione inclusa, a carico nostro' : 'sotto ' + admMoney.format(q.soglia) + ': a carico del cliente')));
+        const b = admEl('button', 'pet-link-button', 'Applica');
+        b.type = 'button'; b.addEventListener('click', admApplyShipping);
+        box.append(b);
+    }
 
     // === MAGAZZINO SCATOLE (una per urna dal catalogo + cartoni di spedizione indicati nell'ordine) ===
     let petBoxMoves = [];
@@ -3813,6 +3912,7 @@
         document.getElementById('importo').value = importoFinale.toFixed(2);
         document.getElementById('labelUtile').innerText = "Vero Guadagno (Utile Netto): € " + utileNetto.toFixed(2) + " (+ iva)";
         M.updateTextFields();
+        admRenderShipHint(carrelloCorrente.reduce((s, a) => s + admQty(a), 0), importoProdottiScontato);
         admRenderShipBoxes();
         admRenderCartFilament();
     }
@@ -6187,7 +6287,37 @@
                 td.colSpan = 6;
                 td.textContent = 'Il carrello è vuoto. Aggiungi i prodotti qui sopra.';
             }
-            document.getElementById('pet-cart-total').textContent = customerCart.length && allPriced ? money.format(total) : '—';
+            const lines = document.getElementById('pet-cart-lines');
+            const progress = document.getElementById('pet-ship-progress');
+            const pieces = customerCart.reduce((s, item) => s + (Number(item.quantity) || 0), 0);
+            if (!customerCart.length || !allPriced) {
+                const row = cartLine('Subtotale di listino', '—');
+                row.querySelector('dd').id = 'pet-cart-total';
+                lines.replaceChildren(row);
+                progress.hidden = true;
+            } else {
+                const pct = Number(shippingTerms?.scontoPct) || 0;
+                const discount = Math.round(total * pct) / 100;
+                const net = total - discount;
+                const rows = [cartLine('Subtotale di listino', money.format(total))];
+                if (discount) rows.push(cartLine('Sconto rivenditore ' + pct + '%', '− ' + money.format(discount), 'is-discount'));
+                let shipCost = 0;
+                if (shippingTerms) {
+                    const q = petShippingQuote(pieces, net, shippingTerms);
+                    shipCost = q.addebito;
+                    rows.push(cartLine('Spedizione', q.gratis ? 'Inclusa' : money.format(q.tariffa), q.gratis ? 'is-discount' : '',
+                        pieces + (pieces === 1 ? ' urna' : ' urne') + ' · ' + q.cartoni + (q.cartoni === 1 ? ' cartone' : ' cartoni') + ' da ' + q.per));
+                    progress.hidden = false;
+                    document.getElementById('pet-ship-fill').style.width = Math.min(100, net / q.soglia * 100) + '%';
+                    document.getElementById('pet-ship-text').textContent = q.gratis
+                        ? 'Spedizione inclusa: il tuo ordine raggiunge ' + money.format(q.soglia) + '.'
+                        : 'Ti mancano ' + money.format(q.mancano) + (pct ? ' (già scontati)' : '') + ' per avere la spedizione inclusa, da ' + money.format(q.soglia) + ' di ordine.';
+                } else progress.hidden = true;
+                const tot = cartLine(shippingTerms ? 'Totale indicativo' : 'Totale prodotti', money.format(net + shipCost), 'is-total');
+                tot.querySelector('dd').id = 'pet-cart-total';
+                rows.push(tot);
+                lines.replaceChildren(...rows);
+            }
             sendRequest.disabled = requestSending || !fiscalComplete || !customerCart.length;
         }
 
@@ -6353,7 +6483,23 @@
             }
         }
 
+        let shippingTerms = null;
+        function cartLine(label, value, cls, note) {
+            const row = document.createElement('div');
+            if (cls) row.className = cls;
+            const dt = document.createElement('dt'); dt.textContent = label;
+            if (note) { const sm = document.createElement('small'); sm.textContent = note; dt.append(sm); }
+            const dd = document.createElement('dd'); dd.textContent = value;
+            if (cls === 'is-total-line') dd.id = 'pet-cart-total';
+            row.append(dt, dd);
+            return row;
+        }
         async function startOrdering(clientCode, check) {
+            api.rpc('client_shipping_terms').then(({ data, error }) => {
+                if (check !== accessCheck || error || !data) return;
+                shippingTerms = data;
+                renderCart();
+            });
             const { data, error } = await api.from('client_order_catalog').select('model,size,list_price').order('model');
             if (check !== accessCheck) return;
             if (error || !data?.length) {
