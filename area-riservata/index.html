@@ -423,14 +423,6 @@
         .adm-pay-row.is-overdue { border-color: #e2a1a1; }
         .adm-pay-row .adm-pay-when[hidden] { display: none; }
         @media (max-width: 640px) { .adm-pay-row { grid-template-columns: 1fr 1fr; } .adm-pay-row .adm-pay-del { justify-self: end; } }
-        .adm-ship-new h3, #adm-ship-history h3 { margin: 12px 0 6px; font-size: 1rem; font-weight: 800; color: var(--plum); }
-        .adm-ship-fill { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
-        .adm-ship-past { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 10px; align-items: center; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; margin-bottom: 6px; background: #fff; }
-        .adm-ship-past small { display: block; color: var(--muted); }
-        .adm-shipq-row { display: grid; grid-template-columns: minmax(0, 1fr) auto 78px; gap: 10px; align-items: center; padding: 6px 10px; border: 1px solid var(--line); border-radius: 10px; margin-bottom: 6px; background: #fff; }
-        .adm-shipq-row.is-done { opacity: .55; }
-        .adm-shipq-row input { height: 38px !important; margin: 0 !important; padding: 4px 8px !important; border: 1px solid #d9cfdc !important; border-radius: 8px !important; text-align: center; box-sizing: border-box; width: 100%; }
-        .adm-shipq-row small { color: var(--muted); white-space: nowrap; }
         @media (max-width: 520px) { .adm-print-item { gap: 8px; padding: 6px 8px; } .adm-print-steps button { width: 34px; height: 34px; } .adm-print-dialog header h2 { font-size: 1.2rem; } }
         .adm-scan-list { display: grid; gap: 4px; margin: 0; }
         .adm-scan-list li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; font-size: .92rem; }
@@ -729,6 +721,17 @@
         .pet-checkout strong { display:block; color:#4a004c; }
         #pet-cart-total { font-size:1.1rem; }
         .pet-order-extra { margin-top: 14px; }
+        .pet-stage { margin: 4px 0 12px; }
+        .pet-stage ol { list-style: none; display: flex; gap: 0; margin: 0; padding: 0; counter-reset: st; }
+        .pet-stage li { flex: 1; position: relative; padding-top: 26px; text-align: center; font-size: .82rem; color: #8a7d8e; counter-increment: st; }
+        .pet-stage li::before { content: counter(st); position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 22px; height: 22px; border-radius: 50%; background: #eee6f0; color: #8a7d8e; font-size: .75rem; font-weight: 800; display: grid; place-items: center; z-index: 1; }
+        .pet-stage li::after { content: ''; position: absolute; top: 10px; left: -50%; width: 100%; height: 2px; background: #eee6f0; }
+        .pet-stage li:first-child::after { display: none; }
+        .pet-stage li.is-done, .pet-stage li.is-current { color: #4a004a; font-weight: 700; }
+        .pet-stage li.is-done::before { content: '✓'; background: #2e7d4a; color: #fff; }
+        .pet-stage li.is-current::before { background: #8c0066; color: #fff; }
+        .pet-stage li.is-done::after, .pet-stage li.is-current::after { background: #8c0066; }
+        .pet-stage p { margin: 8px 0 0; text-align: center; }
         .pet-order-extra h3 { margin: 0 0 4px; font-size: 1rem; font-weight: 800; color: #4a004a; }
         .pet-order-extra ul { margin: 6px 0 0; display: grid; gap: 4px; }
         .pet-order-extra li { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; border-bottom: 1px solid #eee6f0; }
@@ -1040,37 +1043,6 @@
         <footer class="adm-form-footer">
             <button type="button" class="adm-action" data-close-dialog>Annulla</button>
             <button type="button" class="adm-action adm-action-primary" onclick="admSavePayments()"><i class="material-icons" aria-hidden="true">save</i><span>Salva</span></button>
-        </footer>
-    </dialog>
-    <dialog class="pet-inbox-dialog adm-client-dialog adm-print-dialog" id="adm-ship-dialog" aria-labelledby="adm-ship-title">
-        <header>
-            <div><h2 id="adm-ship-title">Spedizioni</h2><p id="adm-ship-sub" class="adm-note"></p></div>
-            <button class="pet-inbox-close" type="button" aria-label="Chiudi" data-close-dialog>
-                <i class="material-icons" aria-hidden="true">close</i></button>
-        </header>
-        <div class="adm-print-progress"><span id="adm-ship-ring"></span><strong id="adm-ship-count" role="status"></strong></div>
-        <div class="adm-print-body">
-            <div id="adm-ship-history"></div>
-            <section id="adm-ship-new" class="adm-ship-new">
-                <h3>Nuova spedizione</h3>
-                <div class="adm-form-grid">
-                    <label class="adm-field">Data<input class="browser-default adm-cost-input" id="adm-ship-date" type="date"></label>
-                    <label class="adm-field adm-span-2">Tracciamento (lo vede il cliente)<input class="browser-default adm-cost-input" id="adm-ship-tracking" type="text" maxlength="120" placeholder="es. BRT 123456789" autocomplete="off"></label>
-                    <label class="adm-field adm-span-3">Nota interna<input class="browser-default adm-cost-input" id="adm-ship-note" type="text" maxlength="200" autocomplete="off"></label>
-                </div>
-                <div class="adm-ship-fill">
-                    <button type="button" class="adm-action" onclick="admShipFill('stampate')"><i class="material-icons" aria-hidden="true">checklist</i><span>Solo le stampate</span></button>
-                    <button type="button" class="adm-action" onclick="admShipFill('tutte')"><i class="material-icons" aria-hidden="true">done_all</i><span>Tutte le rimanenti</span></button>
-                    <button type="button" class="adm-action" onclick="admShipFill('zero')"><i class="material-icons" aria-hidden="true">restart_alt</i><span>Azzera</span></button>
-                </div>
-                <div id="adm-ship-items"></div>
-                <p id="adm-ship-error" class="adm-form-error" role="alert"></p>
-            </section>
-        </div>
-        <footer class="adm-form-footer">
-            <span id="adm-ship-total" class="adm-print-saved" role="status"></span>
-            <button type="button" class="adm-action" data-close-dialog>Chiudi</button>
-            <button type="button" class="adm-action adm-action-primary" id="adm-ship-save" onclick="admSaveShipment()"><i class="material-icons" aria-hidden="true">local_shipping</i><span>Registra spedizione</span></button>
         </footer>
     </dialog>
     <dialog class="pet-inbox-dialog adm-client-dialog adm-print-dialog" id="adm-print-dialog" aria-labelledby="adm-print-title">
@@ -3980,7 +3952,7 @@
         const stats = new Map();
         for (const o of orders) {
             const s = stats.get(o.codiceCliente) || { count: 0, revenue: 0, unpaid: 0 };
-            s.count++; s.revenue += o.importo || 0; if (!o.pagato) s.unpaid += o.importo || 0;
+            s.count++; s.revenue += o.importo || 0; if (!o.pagato) s.unpaid += admPayInfo(o).residuo;
             stats.set(o.codiceCliente, s);
         }
         const empty = { count: 0, revenue: 0, unpaid: 0 };
@@ -4353,10 +4325,6 @@
         const order = orders.find(o => o.id === id);
         if (!order) return;
         if (field === 'pagato' && Array.isArray(order.pagamenti) && order.pagamenti.length) { admOpenPayments(id); return; }
-        if (field === 'evaso' && !order.evaso && Array.isArray(order.spedizioni) && order.spedizioni.length) {
-            const pr = admShipProgress(order);
-            if (pr.done < pr.tot && !confirm('Mancano ' + (pr.tot - pr.done) + ' urne da spedire. Segnare comunque l’ordine come evaso per intero?')) return;
-        }
         order[field] = !order[field];
         petSave('orders');
         loadOrders();
@@ -4373,13 +4341,11 @@
         const who = admEl('span', 'pet-order-label', (o.cliente || 'Senza nome'));
         who.append(admEl('span', 'pet-order-date', '#' + admOrderNumber(o) + ' · ' + (o.data ? admDate.format(new Date(o.data + 'T00:00:00Z')) : '—') + (o.tipo === 'Rivenditore' ? ' · Rivenditore' : '')));
         const state = admEl('span', 'pet-order-state');
-        const payI = admPayInfo(o), shipP = admShipProgress(o);
+        const payI = admPayInfo(o);
         const partialPay = !o.pagato && payI.list.length && payI.paid > 0;
-        const partialShip = !o.evaso && Array.isArray(o.spedizioni) && o.spedizioni.length && shipP.done > 0;
         state.append(o.pagato ? admBadge('Pagato', 'ok') : partialPay ? admBadge('Pagato in parte', 'warn') : admBadge('Da pagare', 'warn'),
-            o.evaso ? admBadge('Evaso', 'ok') : partialShip ? admBadge('Spedito in parte', 'neutral') : admBadge('Da evadere', 'neutral'));
+            o.evaso ? admBadge('Evaso', 'ok') : admBadge('Da evadere', 'neutral'));
         if (partialPay) { const r = admEl('span', 'adm-order-ring'); r.append(admRing(payI.paid, payI.total, 22, 'Pagato'), document.createTextNode('pagato ' + Math.round(payI.paid / (payI.total || 1) * 100) + '%')); r.title = 'Pagati ' + admMoney.format(payI.paid) + ' di ' + admMoney.format(payI.total); state.append(r); }
-        if (partialShip) { const r = admEl('span', 'adm-order-ring'); r.append(admRing(shipP.done, shipP.tot, 22, 'Spedite'), document.createTextNode('spedite ' + shipP.done + '/' + shipP.tot)); state.append(r); }
         if (!o.evaso) {
             const pr = admPrintProgress(o);
             if (pr.done) { const ring = admEl('span', 'adm-order-ring'); ring.append(admRing(pr.done, pr.tot, 22), document.createTextNode(pr.done >= pr.tot ? 'stampate ✓' : Math.round(pr.done / pr.tot * 100) + '% · ' + pr.done + '/' + pr.tot)); ring.title = 'Urne stampate: ' + pr.done + ' di ' + pr.tot; state.append(ring); }
@@ -4414,7 +4380,6 @@
             action('checklist', 'Lista di stampa', () => admOpenPrintList(o.id), 'adm-action-primary'),
             action('print', 'Scheda produzione', () => stampaSchedaProduzioneSingola(o.id)),
             action('label', 'Etichette', () => stampaEtichetteOrdine(o.id)),
-            action('local_shipping', Array.isArray(o.spedizioni) && o.spedizioni.length ? 'Spedizioni (' + o.spedizioni.length + ')' : 'Spedizione parziale', () => admOpenShipments(o.id)),
             action('fact_check', 'Controlla spedizione', () => admOpenScanner(o.id)),
             action('edit', 'Modifica', () => preparaModificaOrdine(o.id)),
             action('delete', 'Elimina', () => eliminaOrdine(o.id), 'adm-action-danger')
@@ -5029,123 +4994,7 @@
         M.toast({ html: o.pagato ? 'Ordine pagato per intero' : list.length ? 'Piano di pagamento salvato' : 'Piano tolto', classes: 'rounded' });
     }
 
-    // === SPEDIZIONI PARZIALI (campo «spedizioni» dell'ordine) ===
-    let admShipOrderId = null;
-    function admShippedMap(o) {
-        const m = new Map();
-        for (const s of Array.isArray(o.spedizioni) ? o.spedizioni : []) for (const it of s.articoli || []) m.set(it.code, (m.get(it.code) || 0) + (Number(it.quantita) || 0));
-        return m;
-    }
-    function admShipProgress(o) {
-        const need = admOrderCodeNeed(o), shipped = admShippedMap(o);
-        let tot = 0, done = 0;
-        for (const [code, v] of need) { tot += v.qty; done += Math.min(shipped.get(code) || 0, v.qty); }
-        return { tot, done, need, shipped };
-    }
-    function admOpenShipments(id) {
-        const o = orders.find(x => x.id === id);
-        if (!o) return;
-        admShipOrderId = id;
-        document.getElementById('adm-ship-title').textContent = 'Spedizioni · ' + (o.cliente || 'Senza nome');
-        document.getElementById('adm-ship-sub').textContent = '#' + admOrderNumber(o) + ' · le spedizioni in più sono a carico di 24Pet.';
-        document.getElementById('adm-ship-date').value = admTodayIso();
-        document.getElementById('adm-ship-tracking').value = '';
-        document.getElementById('adm-ship-note').value = '';
-        document.getElementById('adm-ship-error').textContent = '';
-        admRenderShipments();
-        document.getElementById('adm-ship-dialog').showModal();
-    }
-    function admRenderShipments() {
-        const o = orders.find(x => x.id === admShipOrderId);
-        if (!o) return;
-        const pr = admShipProgress(o);
-        document.getElementById('adm-ship-ring').replaceChildren(admRing(pr.done, pr.tot, 72, 'Spedite'));
-        document.getElementById('adm-ship-count').textContent = pr.done >= pr.tot && pr.tot ? 'Tutte spedite ✓ (' + pr.tot + ')' : pr.done + ' di ' + pr.tot + ' spedite';
-        const hist = document.getElementById('adm-ship-history');
-        const list = Array.isArray(o.spedizioni) ? o.spedizioni : [];
-        hist.replaceChildren(...(list.length ? [admEl('h3', '', 'Spedizioni fatte')] : []), ...list.map((s, i) => {
-            const pcs = (s.articoli || []).reduce((t, it) => t + (Number(it.quantita) || 0), 0);
-            const row = admEl('div', 'adm-ship-past');
-            const text = admEl('div', '');
-            text.append(admEl('strong', '', (i + 1) + 'ª · ' + (s.data ? admDate.format(new Date(s.data + 'T00:00:00Z')) : '—') + ' · ' + pcs + (pcs === 1 ? ' urna' : ' urne')),
-                admEl('small', '', [s.tracking ? 'Tracciamento: ' + s.tracking : '', s.nota ? 'Nota: ' + s.nota : ''].filter(Boolean).join(' · ') || 'Senza tracciamento'));
-            const del = admEl('button', 'adm-icon-action'); del.type = 'button'; del.title = 'Elimina questa spedizione'; del.setAttribute('aria-label', 'Elimina la spedizione ' + (i + 1)); del.append(admIcon('delete'));
-            del.addEventListener('click', async () => {
-                if (!(await petConfirmDelete('Eliminare la spedizione del ' + (s.data ? admDate.format(new Date(s.data + 'T00:00:00Z')) : '') + '?', pcs + ' urne tornano «da spedire»' + (o.evaso ? ' e l’ordine torna «Da evadere»' : '') + '. Il cliente non la vedrà più.'))) return;
-                o.spedizioni = list.filter(x => x !== s);
-                if (!o.spedizioni.length) delete o.spedizioni;
-                if (o.evaso) o.evaso = false;
-                petSave('orders');
-                admRenderShipments();
-            });
-            row.append(text, del);
-            return row;
-        }));
-        const left = [...pr.need].map(([code, v]) => [code, v, Math.max(0, v.qty - Math.min(pr.shipped.get(code) || 0, v.qty))]);
-        const newBox = document.getElementById('adm-ship-new');
-        newBox.hidden = left.every(([, , l]) => !l);
-        document.getElementById('adm-ship-save').hidden = newBox.hidden;
-        const items = document.getElementById('adm-ship-items');
-        items.replaceChildren(...left.filter(([, , l]) => l > 0).sort((a, b) => [a[1].item.modello, a[1].item.dimensione, a[1].item.colore].join(' ').localeCompare([b[1].item.modello, b[1].item.dimensione, b[1].item.colore].join(' '), 'it')).map(([code, v, l]) => {
-            const row = admEl('div', 'adm-shipq-row');
-            row.dataset.code = code;
-            const name = admEl('span', 'adm-print-name');
-            name.append(swatchAdmin(v.item.colore), document.createTextNode(v.item.modello + ' ' + (v.item.dimensione || '') + ' · ' + (v.item.colore || '')));
-            const inp = document.createElement('input'); inp.className = 'browser-default'; inp.type = 'number'; inp.min = '0'; inp.max = String(l); inp.step = '1'; inp.value = '0';
-            inp.setAttribute('aria-label', 'Quante ne spedisci di ' + v.item.modello + ' ' + (v.item.dimensione || '') + ' ' + (v.item.colore || ''));
-            inp.addEventListener('input', admShipTotal);
-            row.append(name, admEl('small', '', 'da spedire ' + l), inp);
-            return row;
-        }));
-        admShipTotal();
-    }
-    function admShipFill(mode) {
-        const o = orders.find(x => x.id === admShipOrderId);
-        if (!o) return;
-        const pr = admShipProgress(o);
-        document.querySelectorAll('#adm-ship-items .adm-shipq-row').forEach(row => {
-            const code = row.dataset.code, v = pr.need.get(code), inp = row.querySelector('input');
-            const left = Math.max(0, v.qty - Math.min(pr.shipped.get(code) || 0, v.qty));
-            const printedLeft = Math.max(0, Math.min(Number(o.stampate?.[code]) || 0, v.qty) - Math.min(pr.shipped.get(code) || 0, v.qty));
-            inp.value = String(mode === 'tutte' ? left : mode === 'stampate' ? Math.min(left, printedLeft) : 0);
-        });
-        admShipTotal();
-    }
-    function admShipTotal() {
-        const n = [...document.querySelectorAll('#adm-ship-items input')].reduce((t, i) => t + (parseInt(i.value, 10) || 0), 0);
-        document.getElementById('adm-ship-total').textContent = n ? n + (n === 1 ? ' urna in questa spedizione' : ' urne in questa spedizione') : '';
-    }
-    function admSaveShipment() {
-        const o = orders.find(x => x.id === admShipOrderId);
-        if (!o) return;
-        const error = document.getElementById('adm-ship-error');
-        const pr = admShipProgress(o);
-        const articoli = [];
-        for (const row of document.querySelectorAll('#adm-ship-items .adm-shipq-row')) {
-            const code = row.dataset.code, v = pr.need.get(code);
-            const left = Math.max(0, v.qty - Math.min(pr.shipped.get(code) || 0, v.qty));
-            const n = parseInt(row.querySelector('input').value, 10) || 0;
-            if (n < 0 || n > left) { error.textContent = 'Di ' + v.item.modello + ' ' + (v.item.dimensione || '') + ' ' + (v.item.colore || '') + ' ne restano ' + left + ' da spedire.'; return; }
-            if (n) articoli.push({ code, modello: v.item.modello, dimensione: v.item.dimensione || '', colore: v.item.colore || '', quantita: n });
-        }
-        if (!articoli.length) { error.textContent = 'Indica quante urne parte con questa spedizione (puoi usare «Solo le stampate»).'; return; }
-        const data = document.getElementById('adm-ship-date').value || admTodayIso();
-        o.spedizioni = [...(Array.isArray(o.spedizioni) ? o.spedizioni : []), {
-            id: 'sp-' + Date.now().toString(36), data, articoli,
-            tracking: document.getElementById('adm-ship-tracking').value.trim().slice(0, 120),
-            nota: document.getElementById('adm-ship-note').value.trim().slice(0, 200)
-        }];
-        const after = admShipProgress(o);
-        const complete = after.done >= after.tot;
-        if (complete) o.evaso = true;
-        petSave('orders');
-        error.textContent = '';
-        document.getElementById('adm-ship-tracking').value = '';
-        document.getElementById('adm-ship-note').value = '';
-        admRenderShipments();
-        M.toast({ html: complete ? 'Ultima spedizione registrata: ordine evaso' : 'Spedizione registrata: ' + after.done + ' di ' + after.tot + ' urne spedite', classes: 'green rounded' });
-    }
-    ['adm-pay-dialog', 'adm-ship-dialog'].forEach(id => {
+    ['adm-pay-dialog'].forEach(id => {
         const d = document.getElementById(id);
         d?.querySelectorAll('[data-close-dialog]').forEach(b => b.addEventListener('click', () => d.close()));
         d?.addEventListener('close', () => {
@@ -5585,19 +5434,11 @@
                 ${(() => {
                     const fmt = d => d ? d.split('-').reverse().join('/') : '';
                     const pay = Array.isArray(o.pagamenti) ? o.pagamenti : [];
-                    const ship = Array.isArray(o.spedizioni) ? o.spedizioni : [];
                     let html = '';
                     if (pay.length) {
                         html += '<h5 style="font-weight: bold; color: #4a004a; border-bottom: 1px solid #ccc; padding-bottom: 3px; font-size: 1.05em; margin: 16px 0 5px;">Piano di pagamento</h5>'
                             + '<table style="width: 100%; border-collapse: collapse; font-size: 0.85em;"><tr style="text-align: left; color: #666;"><th style="padding: 3px 4px;">Voce</th><th style="padding: 3px 4px;">Scadenza</th><th style="padding: 3px 4px;">Stato</th><th style="padding: 3px 4px; text-align: right;">Importo</th></tr>'
                             + pay.map(p => '<tr style="border-top: 1px solid #eee;"><td style="padding: 3px 4px;">' + p.tipo + '</td><td style="padding: 3px 4px;">' + (fmt(p.scadenza) || '—') + '</td><td style="padding: 3px 4px;">' + (p.pagato ? 'Pagata' + (p.dataPagamento ? ' il ' + fmt(p.dataPagamento) : '') : 'Da pagare') + '</td><td style="padding: 3px 4px; text-align: right;">€ ' + Number(p.importo || 0).toFixed(2) + '</td></tr>').join('')
-                            + '</table>';
-                    }
-                    if (ship.length) {
-                        const sent = ship.reduce((t, sp) => t + (sp.articoli || []).reduce((u, i) => u + (Number(i.quantita) || 0), 0), 0);
-                        html += '<h5 style="font-weight: bold; color: #4a004a; border-bottom: 1px solid #ccc; padding-bottom: 3px; font-size: 1.05em; margin: 16px 0 5px;">Spedizioni (' + sent + ' di ' + qtaTotaleOrdine + ' pz)</h5>'
-                            + '<table style="width: 100%; border-collapse: collapse; font-size: 0.85em;">'
-                            + ship.map((sp, n) => '<tr style="border-top: 1px solid #eee;"><td style="padding: 3px 4px;">' + (n + 1) + 'ª · ' + fmt(sp.data) + (sp.tracking ? ' · tracciamento ' + sp.tracking : '') + '</td><td style="padding: 3px 4px; text-align: right;">' + (sp.articoli || []).reduce((u, i) => u + (Number(i.quantita) || 0), 0) + ' pz</td></tr>').join('')
                             + '</table>';
                     }
                     return html;
@@ -6065,7 +5906,7 @@
         for (const o of period) {
             revenue += o.importo || 0;
             profit += o.utile || 0;
-            if (!o.pagato) unpaid += o.importo || 0;
+            if (!o.pagato) unpaid += admPayInfo(o).residuo;
             const orderList = admListCents(o);
             listCents += orderList;
             const reseller = o.tipo === 'Rivenditore' ? Math.round(orderList * 0.25) : 0;
@@ -6394,6 +6235,33 @@
         const calendarDate = new Intl.DateTimeFormat('it-IT', { timeZone: 'UTC' });
         const requestDate = new Intl.DateTimeFormat('it-IT', { timeZone: 'Europe/Rome' });
 
+        // Fasi dell'ordine per il cliente: niente percentuali, solo la fase e la consegna prevista
+        const DELIVERY_DAYS = 30;
+        function orderStage(order) {
+            if (order.fulfilled) return { step: 2, label: 'Spedito', tone: 'ok' };
+            if (order.in_production) return { step: 1, label: 'In produzione', tone: 'neutral' };
+            return { step: 0, label: 'Ricevuto', tone: 'neutral' };
+        }
+        function expectedDelivery(order) {
+            const d = new Date(order.order_date + 'T00:00:00Z');
+            if (Number.isNaN(d.getTime())) return '';
+            d.setUTCDate(d.getUTCDate() + DELIVERY_DAYS);
+            return calendarDate.format(d);
+        }
+        function stageTracker(order) {
+            const st = orderStage(order);
+            const box = document.createElement('div');
+            box.className = 'pet-stage';
+            const ol = document.createElement('ol');
+            ['Ricevuto', 'In produzione', 'Spedito'].forEach((label, i) => {
+                const li = labeledText('li', i < st.step ? 'is-done' : i === st.step ? 'is-current' : '', label);
+                if (i === st.step) li.setAttribute('aria-current', 'step');
+                ol.append(li);
+            });
+            box.append(ol);
+            if (!order.fulfilled) box.append(labeledText('p', 'pet-order-note', 'Consegna prevista entro il ' + expectedDelivery(order) + '.'));
+            return box;
+        }
         function labeledText(tag, className, value) {
             const element = document.createElement(tag);
             element.className = className;
@@ -6401,7 +6269,7 @@
             return element;
         }
 
-        function customerOrderRow({ label, date, badges, amount, items, breakdown, payments = [], shipments = [] }) {
+        function customerOrderRow({ label, date, badges, amount, items, breakdown, payments = [], stage = null }) {
             const groups = new Map();
             let count = 0;
             for (const item of items) {
@@ -6435,6 +6303,7 @@
 
             const details = document.createElement('div');
             details.className = 'pet-order-lines';
+            if (stage) details.append(stage);
             if (groups.size) details.append(labeledText('p', 'pet-order-note', 'Prezzi di listino, IVA esclusa.'));
             for (const [title, group] of groups) {
                 const section = document.createElement('section');
@@ -6495,22 +6364,6 @@
                     line.append(left, labeledText('strong', p.pagato ? 'pet-paid' : '', money.format(Number(p.importo || 0))));
                     list.append(line);
                 }
-                section.append(list);
-                details.append(section);
-            }
-            if (shipments.length) {
-                const section = document.createElement('section');
-                section.className = 'pet-order-extra';
-                const sent = shipments.reduce((t, sh) => t + (sh.items || []).reduce((u, i) => u + Number(i.quantita || 0), 0), 0);
-                section.append(labeledText('h3', '', 'Spedizioni'), labeledText('p', 'pet-order-note', 'Spedite ' + sent + ' di ' + count + ' urne.'));
-                const list = document.createElement('ul');
-                shipments.forEach((sh, n) => {
-                    const pcs = (sh.items || []).reduce((u, i) => u + Number(i.quantita || 0), 0);
-                    const line = document.createElement('li');
-                    line.append(labeledText('span', '', (n + 1) + 'ª spedizione · ' + (sh.data ? calendarDate.format(new Date(sh.data + 'T00:00:00Z')) : '') + (sh.tracking ? ' · tracciamento ' + sh.tracking : '')),
-                        labeledText('strong', '', pcs + ' pz'));
-                    list.append(line);
-                });
                 section.append(list);
                 details.append(section);
             }
@@ -6616,7 +6469,7 @@
                 }
                 const amount = Number(order.amount) || 0;
                 spent += amount;
-                if (!order.paid) toPay += amount;
+                if (!order.paid) toPay += Math.max(0, amount - (order.payments || []).filter(p => p.pagato).reduce((t, p) => t + Number(p.importo || 0), 0));
                 const reseller = Math.round(listCents * Number(order.reseller_discount_pct || 0) / 100);
                 const extra = Math.round((listCents - reseller) * Number(order.extra_discount_pct || 0) / 100);
                 saved += (reseller + extra) / 100;
@@ -6664,7 +6517,7 @@
             const state = document.createElement('div');
             state.className = 'pet-order-state';
             state.append(labeledText('span', 'pet-badge pet-badge-' + (last.paid ? 'ok' : 'warn'), last.paid ? 'Pagato' : 'Da pagare'),
-                labeledText('span', 'pet-badge pet-badge-' + (last.fulfilled ? 'ok' : 'neutral'), last.fulfilled ? 'Evaso' : 'Da evadere'));
+                (st => labeledText('span', 'pet-badge pet-badge-' + st.tone, st.label))(orderStage(last)));
             const actions = document.createElement('div');
             actions.className = 'pet-home-actions';
             const reorder = labeledText('button', 'btn btn-custom', 'Nuova richiesta d’ordine');
@@ -6683,7 +6536,7 @@
             clientStatus.textContent = 'Caricamento ordini…';
             try {
                 const { data: orders, error } = await api.from('client_order_history')
-                    .select('order_id,order_date,amount,paid,fulfilled,items,reseller_discount_pct,extra_discount_pct,shipping_charged,payments,shipments')
+                    .select('order_id,order_date,amount,paid,fulfilled,items,reseller_discount_pct,extra_discount_pct,shipping_charged,payments,in_production')
                     .order('order_date', { ascending: false }).order('order_id', { ascending: false });
                 if (check !== accessCheck) return;
                 if (error) throw error;
@@ -6699,11 +6552,11 @@
                     date: calendarDate.format(new Date(order.order_date + 'T00:00:00Z')),
                     badges: [
                         order.paid ? { text: 'Pagato', tone: 'ok' } : (order.payments || []).some(p => p.pagato) ? { text: 'Pagato in parte', tone: 'warn' } : { text: 'Da pagare', tone: 'warn' },
-                        order.fulfilled ? { text: 'Evaso', tone: 'ok' } : (order.shipments || []).length ? { text: 'Spedito in parte', tone: 'neutral' } : { text: 'Da evadere', tone: 'neutral' }
+                        (st => ({ text: st.label, tone: st.tone }))(orderStage(order))
                     ],
+                    stage: stageTracker(order),
                     amount: order.amount,
                     payments: order.payments || [],
-                    shipments: order.shipments || [],
                     breakdown: {
                         resellerPct: order.reseller_discount_pct, extraPct: order.extra_discount_pct, shipping: order.shipping_charged
                     },
