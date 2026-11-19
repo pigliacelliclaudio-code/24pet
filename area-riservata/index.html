@@ -942,7 +942,7 @@
                     <label class="adm-field adm-span-3">Filamento
                         <select id="adm-stock-code" class="browser-default" onchange="admStockDialogMode()"></select></label>
                     <label class="adm-field" id="adm-stock-qty-label">Numero di bobine da 1 kg <input id="adm-stock-qty" type="text" inputmode="decimal" autocomplete="off"></label>
-                    <label class="adm-field">Prezzo al kg (€)<input id="adm-stock-price" type="text" inputmode="decimal" placeholder="es. 23,99" autocomplete="off"></label>
+                    <label class="adm-field">Prezzo al kg (€, IVA esclusa)<input id="adm-stock-price" type="text" inputmode="decimal" placeholder="es. 23,99" autocomplete="off"></label>
                     <label class="adm-field adm-span-2" id="adm-stock-note-label">Nota (facoltativa)<input id="adm-stock-note" type="text" maxlength="200" placeholder="es. ordine Bambu del 18/11" autocomplete="off"></label>
                 </div>
                 <p id="adm-stock-hint" class="adm-note"></p>
@@ -967,7 +967,7 @@
                     <label class="adm-field adm-span-3">Scatola
                         <select id="adm-box-id" class="browser-default" onchange="admBoxDialogMode()"></select></label>
                     <label class="adm-field" id="adm-box-qty-label">Quante ne hai comprate <input id="adm-box-qty" type="number" min="0" step="1" autocomplete="off"></label>
-                    <label class="adm-field">Prezzo al pezzo (€)<input id="adm-box-price" type="text" inputmode="decimal" placeholder="es. 0,80" autocomplete="off"></label>
+                    <label class="adm-field">Prezzo al pezzo (€, IVA esclusa)<input id="adm-box-price" type="text" inputmode="decimal" placeholder="es. 0,80" autocomplete="off"></label>
                     <label class="adm-field adm-span-2" id="adm-box-note-label">Nota (facoltativa)<input id="adm-box-note" type="text" maxlength="200" autocomplete="off"></label>
                 </div>
                 <p id="adm-box-error" class="adm-form-error" role="alert"></p>
@@ -2131,6 +2131,14 @@
             renderMagazzino(); renderCostSettings(); renderCatalogo();
             return;
         }
+        const rawStock = document.getElementById('adm-stock-qty').value.trim();
+        const stockUnchanged = mode === 'carico' ? !rawStock : (rawStock === '' || Math.abs(value - (admStock().get(code) || 0)) < 1);
+        if (priceChanged && stockUnchanged) {
+            document.getElementById('adm-stock-dialog').close();
+            M.toast({ html: 'Prezzo aggiornato', classes: 'green rounded' });
+            renderMagazzino(); renderCostSettings(); renderCatalogo();
+            return;
+        }
         if (!Number.isFinite(value) || value < 0 || (mode === 'carico' && (value <= 0 || value > 200))) { error.textContent = mode === 'carico' ? 'Scrivi quante bobine (da 1 a 200).' : 'Scrivi il peso in grammi (0 o più).'; return; }
         const grams = mode === 'carico' ? value * 1000 : value - (admStock().get(code) || 0);
         if (mode === 'rettifica' && Math.abs(grams) < 1) { error.textContent = 'Il peso è già questo: niente da correggere.'; return; }
@@ -2317,6 +2325,14 @@
         if (mode === 'prezzo') {
             document.getElementById('adm-box-dialog').close();
             M.toast({ html: priceChanged ? 'Prezzo aggiornato' : 'Prezzo invariato', classes: 'rounded' });
+            renderMagazzino(); renderCostSettings(); renderCatalogo();
+            return;
+        }
+        const rawBox = document.getElementById('adm-box-qty').value.trim();
+        const boxUnchanged = mode === 'carico' ? !rawBox : (rawBox === '' || value === (admBoxStock().get(id) || 0));
+        if (priceChanged && boxUnchanged) {
+            document.getElementById('adm-box-dialog').close();
+            M.toast({ html: 'Prezzo aggiornato', classes: 'green rounded' });
             renderMagazzino(); renderCostSettings(); renderCatalogo();
             return;
         }
@@ -3027,7 +3043,7 @@
     let petCostSettings = {};
     const COST_FIELDS = [
         ['scarto', 'Scarto di stampa', '% in più di filamento', 'es. 10'],
-        ['kwh', 'Prezzo energia', '€ al kWh, tutto compreso (bolletta: totale € ÷ kWh)', 'es. 0,30'],
+        ['kwh', 'Prezzo energia', '€ al kWh, IVA esclusa (bolletta: imponibile ÷ kWh)', 'es. 0,25'],
         ['usura', 'Usura e manutenzione', '€ per ora di stampa', 'es. 0,20'],
         ['oraLavoro', 'Manodopera', '€ all’ora', 'es. 15']
     ];
