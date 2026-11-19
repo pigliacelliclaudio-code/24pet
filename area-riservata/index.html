@@ -6310,7 +6310,7 @@
                     progress.hidden = false;
                     document.getElementById('pet-ship-fill').style.width = Math.min(100, total / q.soglia * 100) + '%';
                     document.getElementById('pet-ship-text').textContent = q.gratis
-                        ? 'Spedizione inclusa: il tuo ordine raggiunge ' + money.format(q.soglia) + ' di listino.'
+                        ? 'Spedizione inclusa: è compresa per gli ordini da ' + money.format(q.soglia) + ' di listino.'
                         : 'Ti mancano ' + money.format(q.mancano) + ' di listino per avere la spedizione inclusa, da ' + money.format(q.soglia) + '.';
                 } else progress.hidden = true;
                 const tot = cartLine(shippingTerms ? 'Totale indicativo' : 'Totale prodotti', money.format(net + shipCost), 'is-total');
