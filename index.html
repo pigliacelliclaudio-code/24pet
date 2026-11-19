@@ -32,7 +32,7 @@ if (location.hostname === 'dashboard.24pet.it' && location.pathname === '/') {
 ]}
 </script>
 <link rel="preload" href="/assets/fonts/mulish-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/assets/landing.css?v=16">
+<link rel="stylesheet" href="/assets/landing.css?v=17">
 <link rel="stylesheet" href="/assets/urn-details.css?v=3">
 </head>
 <body>
@@ -318,6 +318,7 @@ if (location.hostname === 'dashboard.24pet.it' && location.pathname === '/') {
 <li><strong>Attendi la verifica</strong><span>24Pet verifica la richiesta prima di abilitare l’accesso.</span></li>
 <li><strong>Accedi e ordina</strong><span>Consulta il listino, scegli modelli, taglie e colori e invia l’ordine dall’area riservata.</span></li>
 </ol></div>
+<div class="partner-card" id="partner-card"><div class="partner-flip">
 <form id="partner-form" aria-labelledby="partner-form-title">
 <h3 id="partner-form-title">Richiedi l’accesso professionale</h3>
 <label for="business-name">Nome dell’attività</label><input id="business-name" name="business_name" required minlength="2" maxlength="120" autocomplete="organization">
@@ -329,6 +330,14 @@ if (location.hostname === 'dashboard.24pet.it' && location.pathname === '/') {
 <p id="request-status" role="status"></p>
 <noscript>Per inviare la richiesta, abilita JavaScript nel browser.</noscript>
 </form>
+<div class="partner-done" id="partner-done" aria-hidden="true" inert>
+<span class="partner-done-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>
+<h3 id="partner-done-title" tabindex="-1">Richiesta inviata correttamente</h3>
+<p class="partner-done-lead" id="partner-done-lead">Complimenti per la tua scelta!</p>
+<p id="partner-done-text">Ti scriveremo all’indirizzo indicato appena avremo verificato i dati e attivato il tuo accesso.</p>
+<button class="partner-done-back" id="partner-done-back" type="button">Invia un’altra richiesta</button>
+</div>
+</div></div>
 </div>
 <div class="wrap partner-faq">
 <h3>Domande frequenti</h3>
@@ -351,6 +360,27 @@ if (location.hostname === 'dashboard.24pet.it' && location.pathname === '/') {
 const form = document.querySelector('#partner-form');
 const status = document.querySelector('#request-status');
 const button = document.querySelector('#request-button');
+const card = document.querySelector('#partner-card');
+const done = document.querySelector('#partner-done');
+// Dopo l'invio il riquadro gira e mostra la conferma sul retro.
+function showDone(already, email) {
+    const address = String(email || '').trim().toLowerCase();
+    document.querySelector('#partner-done-title').textContent = already ? 'Richiesta già ricevuta' : 'Richiesta inviata correttamente';
+    document.querySelector('#partner-done-lead').textContent = already ? 'Grazie, ci avevi già scritto.' : 'Complimenti per la tua scelta!';
+    document.querySelector('#partner-done-text').textContent = 'Ti scriveremo a ' + address + ' appena avremo verificato i dati e attivato il tuo accesso.';
+    status.textContent = '';
+    form.reset();
+    card.classList.add('is-done');
+    form.setAttribute('aria-hidden', 'true'); form.inert = true;
+    done.removeAttribute('aria-hidden'); done.inert = false;
+    setTimeout(() => document.querySelector('#partner-done-title').focus({ preventScroll: true }), 450);
+}
+document.querySelector('#partner-done-back').addEventListener('click', () => {
+    card.classList.remove('is-done');
+    done.setAttribute('aria-hidden', 'true'); done.inert = true;
+    form.removeAttribute('aria-hidden'); form.inert = false;
+    setTimeout(() => document.querySelector('#business-name').focus({ preventScroll: true }), 450);
+});
 form.addEventListener('submit', async (event) => {
     event.preventDefault();
     const fields = new FormData(form);
@@ -369,12 +399,11 @@ form.addEventListener('submit', async (event) => {
         });
         if (!response.ok) {
             const detail = String((await response.json().catch(() => null))?.message || '');
-            if (detail.includes('già ricevuta')) { status.textContent = 'Abbiamo già la tua richiesta: ti ricontatteremo all’indirizzo indicato.'; form.reset(); return; }
+            if (detail.includes('già ricevuta')) { showDone(true, fields.get('email')); return; }
             if (detail.includes('Troppe')) { status.textContent = 'In questo momento riceviamo molte richieste: riprova tra qualche minuto.'; return; }
             throw new Error('submission failed');
         }
-        status.textContent = 'Richiesta ricevuta. Ti ricontatteremo all’indirizzo indicato.';
-        form.reset();
+        showDone(false, fields.get('email'));
     } catch {
         status.textContent = 'Invio non riuscito. Controlla i dati e riprova.';
     } finally {
