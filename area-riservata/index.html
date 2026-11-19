@@ -4848,7 +4848,7 @@
             scontoRivenditoreEuro = totaleListinoOrdine * 0.25;
             bloccoScontiHtml += `
                 <div style="display: flex; justify-content: space-between; padding: 2px 0; font-size: 0.85em;">
-                    <span>Sconto (25%)</span>
+                    <span>Sconto Rivenditore (25%)</span>
                     <span style="color: #d32f2f;">- € ${scontoRivenditoreEuro.toFixed(2)}</span>
                 </div>
             `;
@@ -4899,7 +4899,7 @@
                 <div style="background-color: #fafafa; border: 1px solid #eee; border-radius: 6px; padding: 8px 12px; margin-bottom: 12px; display: flex; justify-content: space-between;">
                     <div style="width: 48%;">
                         <div style="font-size: 0.75em; color: #888; text-transform: uppercase; margin-bottom: 2px; font-weight: bold;">Intestatario Ordine</div>
-                        <div style="font-size: 1.1em; font-weight: bold; color: #17202A;">${o.cliente}</div>
+                        <div style="font-size: 1.1em; font-weight: bold; color: #17202A;">${o.cliente} ${o.tipo === 'Rivenditore' ? '<span style="font-size: 0.6em; background: #8c0066; color: white; padding: 2px 6px; border-radius: 4px; vertical-align: middle;">RIVENDITORE</span>' : ''}</div>
                         <div style="font-size: 0.85em; margin-top: 2px; line-height: 1.3;">
                             ${cInfo.ragioneSociale && cInfo.ragioneSociale.toLowerCase() !== String(o.cliente || '').toLowerCase() ? '<strong>' + cInfo.ragioneSociale + '</strong><br>' : ''}
                             ${cInfo.indirizzoSede ? cInfo.indirizzoSede + '<br>' : ''}
@@ -5788,7 +5788,7 @@
                     const extra = Math.round((listCents - reseller) * Number(breakdown.extraPct || 0) / 100);
                     const shipping = Math.round(Number(breakdown.shipping || 0) * 100);
                     const percent = value => Number(value).toLocaleString('it-IT', { maximumFractionDigits: 2 }) + '%';
-                    if (reseller) addLine('Sconto ' + percent(breakdown.resellerPct), '− ' + money.format(reseller / 100));
+                    if (reseller) addLine('Sconto rivenditore ' + percent(breakdown.resellerPct), '− ' + money.format(reseller / 100));
                     if (extra) addLine('Sconto extra ' + percent(breakdown.extraPct), '− ' + money.format(extra / 100));
                     if (shipping) addLine('Spedizione', '+ ' + money.format(shipping / 100));
                     addLine('Importo ordine', money.format(amount), true);
@@ -6300,7 +6300,7 @@
                 const discount = Math.round(total * pct) / 100;
                 const net = total - discount;
                 const rows = [cartLine('Subtotale di listino', money.format(total))];
-                if (discount) rows.push(cartLine('Sconto ' + pct + '%', '− ' + money.format(discount), 'is-discount'));
+                if (discount) rows.push(cartLine('Sconto rivenditore ' + pct + '%', '− ' + money.format(discount), 'is-discount'));
                 let shipCost = 0;
                 if (shippingTerms) {
                     const q = petShippingQuote(pieces, net, shippingTerms);
