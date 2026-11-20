@@ -223,6 +223,12 @@
         .pet-access-card { width: min(100%, 440px); background: #fff; padding: clamp(24px, 6vw, 42px); border: 1px solid #e8e0eb; border-radius: 20px; }
         .pet-access-card h1 { font-size: clamp(25px, 7vw, 32px); font-weight: 800; margin: 22px 0; }
         .pet-access-card label { color: #685e72; font-size: .95rem; }
+        .adm-carton-rules { display: grid; gap: 8px; margin: 4px 0 8px; }
+        .adm-carton-row { display: grid; grid-template-columns: minmax(130px, 1fr) auto minmax(150px, 1.2fr) 80px 40px; gap: 8px 10px; align-items: center; padding: 8px 10px; border: 1px solid #eee6f0; border-radius: 12px; }
+        .adm-carton-row > strong { font-size: .95rem; }
+        .adm-carton-row .adm-ship-qty { width: 80px; }
+        .adm-carton-row .adm-carton-auto { font-size: .78rem; color: #8a7d93; }
+        @media (max-width: 620px) { .adm-carton-row { grid-template-columns: 1fr 80px; } .adm-carton-row > strong { grid-column: 1 / -1; } .adm-carton-row > .adm-carton-in { display: none; } }
         .pet-mfa-text { color: #685e72; line-height: 1.5; margin: -8px 0 16px; }
         .pet-mfa-steps { margin: 0 0 12px; padding-left: 1.3em; color: #3d3346; line-height: 1.5; }
         .pet-mfa-steps li { margin-bottom: 4px; }
@@ -1655,12 +1661,21 @@
                             <label class="adm-field">Spedizione inclusa da (€)<input id="adm-ship-soglia" type="text" inputmode="decimal" class="browser-default adm-cost-input" placeholder="300" autocomplete="off"><small>IVA esclusa; rivenditori dopo lo sconto</small></label>
                         </div>
                         <div class="adm-cost-grid">
-                            <label class="adm-field">Urne per cartone<input id="adm-box-per" type="number" min="1" max="100" step="1" class="browser-default adm-cost-input" onchange="admSaveCartonSettings()"><small>serve anche per suggerire i cartoni negli ordini · si salva da solo</small></label>
+                            <label class="adm-field">Urne per cartone<input id="adm-box-per" type="number" min="1" max="100" step="1" class="browser-default adm-cost-input" onchange="admSaveCartonSettings()"><small>per la tariffa che vedono i clienti e per le urne senza scatola nel Catalogo · si salva da solo</small></label>
                         </div>
                         <p id="adm-ship-example" class="adm-note"></p>
                         <div class="adm-cost-actions">
                             <button type="button" class="adm-action adm-action-primary" onclick="admSaveShipSettings()"><i class="material-icons" aria-hidden="true">save</i><span>Salva</span></button>
                             <span id="adm-ship-status" class="adm-filament-status" role="status"></span>
+                        </div>
+                    </section>
+                    <section class="pet-home-card adm-stock-card" aria-labelledby="adm-carton-title">
+                        <h2 id="adm-carton-title">Quante scatole entrano in un cartone</h2>
+                        <p class="adm-note">Serve a stimare i cartoni di ogni ordine (Magazzino e modulo ordine) e il costo del cartone in ogni urna. I valori con «stima» li ho calcolati dalle misure: correggili se nella pratica ne entrano di più o di meno.</p>
+                        <div id="adm-carton-rules" class="adm-carton-rules"></div>
+                        <div class="adm-cost-actions">
+                            <button type="button" class="adm-action adm-action-primary" onclick="admSaveCartonRules()"><i class="material-icons" aria-hidden="true">save</i><span>Salva</span></button>
+                            <span id="adm-carton-status" class="adm-filament-status" role="status"></span>
                         </div>
                     </section>
                     </div>
@@ -2404,9 +2419,9 @@
             const ul = admEl('ul', '');
             for (const o of est) {
                 const e = plan.plan.get(o.id).boxNeed.estimate;
-                ul.append(admEl('li', '', (o.cliente || 'Ordine') + ': ' + e.qty + ' × ' + admBoxName(e.id)));
+                ul.append(admEl('li', '', (o.cliente || 'Ordine') + ': ' + admShipBoxesText(e.list)));
             }
-            box.append(ul, admEl('p', 'adm-note', 'Non indicati nell’ordine: li conto con ' + admSuggestedPerText() + ' (Impostazioni › Spedizione). Se sono diversi, cambiali con «Modifica» nell’ordine.'));
+            box.append(ul, admEl('p', 'adm-note', 'Non indicati nell’ordine: li stimo da quante scatole entrano in un cartone (Impostazioni › Spedizione). Se sono diversi, cambiali con «Modifica» nell’ordine.'));
             alerts.append(box);
         }
         admShowStockTab(admStockTab);
@@ -2597,6 +2612,7 @@
         cartone.replaceChildren(new Option('— Nessuno —', ''), ...boxes.map(b => new Option(b.nome, b.id)));
         cartone.value = petBoxSettings.cartone || '';
         document.getElementById('adm-box-per').value = parseInt(petBoxSettings.perCartone, 10) || 8;
+        renderCartonRules();
     }
     function renderMagazzinoCalamite(plan) {
         const list = document.getElementById('adm-magnet-list');
@@ -2739,6 +2755,7 @@
     }
     function admShipTerms() { return Object.assign({ primo: 15, extra: 5, soglia: 300 }, petShipSettings, { perCartone: parseInt(petBoxSettings.perCartone, 10) || 8 }); }
     function renderShipSettings() {
+        renderCartonRules();
         const t = admShipTerms();
         for (const k of ['primo', 'extra', 'soglia']) { const el = document.getElementById('adm-ship-' + k); if (el) el.value = String(t[k]).replace('.', ','); }
         const ex = document.getElementById('adm-ship-example');
@@ -2816,14 +2833,107 @@
         // Cartoni non indicati nell'ordine: stima con «Urne per cartone» e il cartone predefinito
         let estimate = null;
         if (pieces && !ship.some(s => (parseInt(s.qta, 10) || 0) > 0)) {
-            if (petBoxSettings.cartone && admBox(petBoxSettings.cartone)) {
-                estimate = { id: petBoxSettings.cartone, qty: admSuggestedCartons(pieces) };
-                boxes.set(estimate.id, (boxes.get(estimate.id) || 0) + estimate.qty);
-            } else missing.add('cartoni di spedizione: scegli il cartone predefinito in Magazzino › Scatole');
+            const list = admEstimateShipBoxes(order.articoli);
+            if (list.length) {
+                estimate = { list, qty: list.reduce((t, x) => t + x.qta, 0) };
+                for (const x of list) boxes.set(x.id, (boxes.get(x.id) || 0) + x.qta);
+            } else if (!petBoxSettings.cartone) missing.add('cartoni di spedizione: scegli il cartone predefinito in Magazzino › Scatole');
         }
         return { boxes, missing, estimate };
     }
-    function admSuggestedPerText() { return Math.max(1, parseInt(petBoxSettings.perCartone, 10) || 8) + ' urne per cartone'; }
+    // Quante scatole entrano in un cartone: regole salvate, poi quelle indicate da Clod, poi una stima dalle misure
+    const ADM_CARTON_DEFAULTS = { 's-15x15x15': ['s-35x35x35', 8], 's-20x20x20': ['s-45x45x45', 8] };
+    function admBoxDims(b) {
+        const m = String(b?.nome || b?.id || '').match(/(\d+(?:[.,]\d+)?)\s*[×xX]\s*(\d+(?:[.,]\d+)?)\s*[×xX]\s*(\d+(?:[.,]\d+)?)/);
+        return m ? [m[1], m[2], m[3]].map(v => parseFloat(v.replace(',', '.'))) : null;
+    }
+    function admFitCount(inner, outer) {
+        const [a, b, c] = inner;
+        return Math.max(...[[a, b, c], [a, c, b], [b, a, c], [b, c, a], [c, a, b], [c, b, a]]
+            .map(p => Math.floor(outer[0] / p[0]) * Math.floor(outer[1] / p[1]) * Math.floor(outer[2] / p[2])));
+    }
+    function admCartonIds() {
+        const ids = new Set([petBoxSettings.cartone, ...Object.values(ADM_CARTON_DEFAULTS).map(r => r[0]), ...Object.values(petBoxSettings.regole || {}).map(r => r?.cartone)]);
+        return new Set([...ids].filter(id => id && admBox(id)));
+    }
+    function admCartonRule(boxId) {
+        const saved = petBoxSettings.regole?.[boxId];
+        if (saved && admBox(saved.cartone) && Number(saved.per) > 0) return { cartone: saved.cartone, per: Number(saved.per), auto: false };
+        const def = ADM_CARTON_DEFAULTS[boxId];
+        if (def && admBox(def[0])) return { cartone: def[0], per: def[1], auto: false };
+        const inner = admBoxDims(admBox(boxId));
+        let best = null;
+        if (inner) for (const id of admCartonIds()) {
+            if (id === boxId) continue;
+            const outer = admBoxDims(admBox(id));
+            if (!outer) continue;
+            const n = admFitCount(inner, outer);
+            if (!n) continue;
+            const perPiece = outer[0] * outer[1] * outer[2] / n;
+            if (!best || perPiece < best.perPiece) best = { cartone: id, per: n, auto: true, perPiece };
+        }
+        return best;
+    }
+    // Cartoni stimati per un elenco di articoli: le urne nella stessa misura di cartone si sommano
+    function admEstimateShipBoxes(articoli) {
+        const cartons = admCartonIds();
+        const fill = new Map();
+        const fallbackPer = Math.max(1, parseInt(petBoxSettings.perCartone, 10) || 8);
+        for (const a of articoli || []) {
+            const q = admQty(a);
+            if (!q) continue;
+            const inner = catalogoPrezzi[a.modello]?.[a.dimensione]?.scatola;
+            if (inner && cartons.has(inner)) continue; // l'urna parte già nel suo cartone
+            const rule = inner ? admCartonRule(inner) : null;
+            const id = rule?.cartone || petBoxSettings.cartone;
+            if (!id || !admBox(id)) continue;
+            fill.set(id, (fill.get(id) || 0) + q / (rule?.per || fallbackPer));
+        }
+        return [...fill].map(([id, f]) => ({ id, qta: Math.ceil(f - 1e-9) })).filter(x => x.qta > 0);
+    }
+    function admShipBoxesText(list) { return list.map(x => x.qta + ' × ' + admBoxName(x.id)).join(' · '); }
+    function renderCartonRules() {
+        const box = document.getElementById('adm-carton-rules');
+        if (!box) return;
+        const cartons = admCartonIds();
+        const inner = admBoxes().filter(b => !cartons.has(b.id));
+        if (!inner.length) { box.replaceChildren(admEl('p', 'adm-muted', 'Crea le misure delle scatole nel Magazzino.')); return; }
+        box.replaceChildren(...inner.map(b => {
+            const rule = admCartonRule(b.id);
+            const row = admEl('div', 'adm-carton-row');
+            row.dataset.box = b.id;
+            const per = document.createElement('input');
+            per.type = 'number'; per.min = '1'; per.max = '200'; per.step = '1'; per.className = 'browser-default adm-ship-qty';
+            per.value = rule?.per || ''; per.placeholder = '—';
+            per.setAttribute('aria-label', 'Quante scatole ' + b.nome + ' per cartone');
+            const sel = document.createElement('select');
+            sel.className = 'browser-default adm-filament-select';
+            sel.setAttribute('aria-label', 'Cartone per le scatole ' + b.nome);
+            sel.append(new Option('— scegli —', ''), ...admBoxes().filter(c => c.id !== b.id).map(c => new Option(c.nome, c.id)));
+            sel.value = rule?.cartone || '';
+            row.append(admEl('strong', '', b.nome), admEl('span', 'adm-muted adm-carton-in', 'nel cartone'), sel, per,
+                admEl('span', 'adm-carton-auto', rule?.auto ? 'stima' : ''));
+            return row;
+        }));
+    }
+    async function admSaveCartonRules() {
+        const status = document.getElementById('adm-carton-status');
+        const regole = {};
+        for (const row of document.querySelectorAll('#adm-carton-rules .adm-carton-row')) {
+            const cartone = row.querySelector('select').value, per = parseInt(row.querySelector('input').value, 10);
+            if (cartone && per > 0) regole[row.dataset.box] = { cartone, per: Math.min(200, per) };
+        }
+        const before = petBoxSettings.regole;
+        petBoxSettings.regole = regole;
+        if (await admSaveBoxSettings()) {
+            status.textContent = 'Salvato ✓';
+            setTimeout(() => { if (status.textContent === 'Salvato ✓') status.textContent = ''; }, 2500);
+            renderCartonRules();
+            renderMagazzino();
+            if (typeof renderCatalogo === 'function') renderCatalogo();
+        } else { petBoxSettings.regole = before; status.textContent = 'Non salvato: riprova.'; }
+    }
+    function admSuggestedPerText() { return 'secondo Impostazioni › Spedizione'; }
     function admSuggestedCartons(pieces) {
         const per = Math.max(1, parseInt(petBoxSettings.perCartone, 10) || 8);
         return pieces ? Math.ceil(pieces / per) : 0;
@@ -3154,15 +3264,12 @@
         const box = document.getElementById('adm-ship-boxes');
         if (!box) return;
         const pieces = admCartPieces();
-        if (!carrelloScatoleManuale && petBoxSettings.cartone) {
-            const n = admSuggestedCartons(pieces);
-            carrelloScatole = n ? [{ id: petBoxSettings.cartone, qta: n }] : [];
-        }
+        const suggestedList = admEstimateShipBoxes(carrelloCorrente);
+        if (!carrelloScatoleManuale) carrelloScatole = suggestedList.map(x => ({ ...x }));
         box.replaceChildren();
         const head = admEl('div', 'adm-ship-head');
         head.append(admEl('strong', '', 'Scatole di spedizione'));
-        const suggested = admSuggestedCartons(pieces);
-        if (pieces) head.append(admEl('span', 'adm-muted', 'Suggerite: ' + suggested + ' (1 ogni ' + (parseInt(petBoxSettings.perCartone, 10) || 8) + ' urne)'));
+        if (pieces && suggestedList.length) head.append(admEl('span', 'adm-muted', 'Suggerite: ' + admShipBoxesText(suggestedList)));
         box.append(head);
         if (!admBoxes().length) { box.append(admEl('p', 'adm-muted', 'Crea le misure delle scatole nella pagina Magazzino.')); return; }
         carrelloScatole.forEach((s, i) => {
@@ -3189,7 +3296,7 @@
         add.append(admIcon('add'), admEl('span', '', 'Aggiungi scatola'));
         add.addEventListener('click', () => { carrelloScatole.push({ id: petBoxSettings.cartone || admBoxes()[0].id, qta: 1 }); carrelloScatoleManuale = true; admRenderShipBoxes(); admRenderCartFilament(); });
         box.append(add);
-        if (carrelloScatoleManuale && petBoxSettings.cartone && pieces) {
+        if (carrelloScatoleManuale && suggestedList.length && pieces) {
             const reset = admEl('button', 'pet-link-button', 'Usa il suggerimento');
             reset.type = 'button';
             reset.addEventListener('click', () => { carrelloScatoleManuale = false; admRenderShipBoxes(); admRenderCartFilament(); });
@@ -3954,8 +4061,10 @@
         return b ? admCostNum(b.cartaCm) * admPaperPerCm() + admCostNum(b.nastroCm) * admTapePerCm() : 0;
     }
     function admPackingPerUrn(v) {
-        const per = Math.max(1, parseInt(petBoxSettings.perCartone, 10) || 8);
-        const cartoneId = petBoxSettings.cartone;
+        if (v?.scatola && admCartonIds().has(v.scatola)) return admBoxPacking(v.scatola); // parte già nel suo cartone
+        const rule = v?.scatola ? admCartonRule(v.scatola) : null;
+        const per = rule?.per || Math.max(1, parseInt(petBoxSettings.perCartone, 10) || 8);
+        const cartoneId = rule?.cartone || petBoxSettings.cartone;
         const cartone = admCostNum(admBox(cartoneId)?.prezzo) + admBoxPacking(cartoneId);
         return (v?.scatola ? admBoxPacking(v.scatola) : 0) + cartone / per;
     }
@@ -4024,8 +4133,8 @@
             li('Filamento colorato', col.priced ? 'in media ' + admMoney.format(col.avg) + ' al kg (' + col.priced + ' su ' + col.total + (col.total === 1 ? ' colore' : ' colori') + ' con prezzo)' : 'prezzi da inserire', col.priced === col.total && col.total > 0),
             li('Filamento bianco', wp ? admMoney.format(wp) + ' al kg' : 'prezzo da inserire', !!wp),
             li('Scatole', boxes.length ? pricedBoxes + ' su ' + boxes.length + ' con prezzo' : 'nessuna scatola creata', boxes.length > 0 && pricedBoxes === boxes.length),
-            (() => { const cb = admBox(petBoxSettings.cartone); const cp = admCostNum(cb?.prezzo); const per = Math.max(1, parseInt(petBoxSettings.perCartone, 10) || 8);
-                return li('Cartone di spedizione', cb ? (cp ? cb.nome + ' a ' + admMoney.format(cp) + ', diviso per ' + per + ' urne' : cb.nome + ': prezzo da inserire') : 'scegli il cartone predefinito nel Magazzino', !!cp); })());
+            (() => { const ids = [...admCartonIds()]; const unpriced = ids.filter(id => !admCostNum(admBox(id)?.prezzo));
+                return li('Cartoni di spedizione', ids.length ? ids.map(id => admBoxName(id)).join(' e ') + (unpriced.length ? ': prezzo da inserire per ' + unpriced.map(id => admBoxName(id)).join(', ') : ', diviso per quante scatole ci entrano (Impostazioni › Spedizione)') : 'scegli il cartone predefinito nel Magazzino', ids.length > 0 && !unpriced.length); })());
     }
     async function admSaveCostSettings() {
         const next = {};
@@ -4990,7 +5099,7 @@
         if (cart && r.need.minutes) line.append(admEl('span', '', 'Stampa ' + admHours(r.need.minutes)));
         for (const [code, g] of r.need.grams) { const item = admEl('span', ''); item.append(admFilamentLabel(code), document.createTextNode(' ' + admGrams(g))); line.append(item); }
         for (const [id, q] of r.boxNeed.boxes) { const item = admEl('span', ''); item.append(admBoxLabel(id), document.createTextNode(' ' + q + ' pz')); line.append(item); }
-        if (r.boxNeed.estimate) line.append(admEl('span', 'adm-muted', 'Cartoni stimati: ' + r.boxNeed.estimate.qty + ' (' + admSuggestedPerText() + ') · se sono diversi indicali con «Modifica»'));
+        if (r.boxNeed.estimate) line.append(admEl('span', 'adm-muted', 'Cartoni stimati: ' + admShipBoxesText(r.boxNeed.estimate.list) + ' · se sono diversi indicali con «Modifica»'));
         for (const [id, q] of r.magnetNeed || []) { const item = admEl('span', ''); item.append(admMagnetLabel(id), document.createTextNode(' ' + q + ' pz')); line.append(item); }
         const shorts = [...r.short.map(x => admGrams(x.grams) + ' di ' + (admFilament(x.code)?.nome || x.code)), ...r.boxShort.map(x => x.qty + ' scatole ' + admBoxName(x.id)), ...(r.magnetShort || []).map(x => x.qty + ' calamite ' + admMagnetName(x.id))];
         if (shorts.length) line.append(admEl('span', 'adm-stock-neg', 'Mancano: ' + shorts.join(', ')));
