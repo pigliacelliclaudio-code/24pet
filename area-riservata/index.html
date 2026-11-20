@@ -339,9 +339,10 @@
         .adm-stock-bar { position: relative; height: 8px; border-radius: 99px; background: #f1ecf3; }
         .adm-stock-bar > span { position: absolute; inset: 0 auto 0 0; border-radius: 99px; background: var(--accent); }
         .adm-stock-row.is-ok .adm-stock-bar > span { background: #2e8b57; }
-        .adm-stock-row.is-low .adm-stock-bar > span { background: #e0a100; }
+        .adm-stock-row.is-low .adm-stock-bar > span { background: #c62828; }
+        .adm-stock-row.is-low { border-color: #f3c3ca; background: #fff6f7; }
         .adm-stock-row.is-short .adm-stock-bar > span { background: #c62828; }
-        .adm-stock-alert.adm-stock-restock { border-color: #f2dcae; background: #fffaf0; }
+        .adm-stock-alert.adm-stock-restock { border-color: #f3c3ca; background: #fff6f7; }
         .adm-stock-restock .adm-note { margin: 0 0 8px; }
         .adm-stock-bar > i { position: absolute; top: -4px; width: 2px; height: 16px; margin-left: -1px; background: var(--ink); }
         .adm-stock-nums { display: grid; font-size: .86rem; line-height: 1.3; font-variant-numeric: tabular-nums; }
@@ -1594,7 +1595,7 @@
                             <h2 id="adm-magnet-title">Calamite</h2>
                             <button type="button" class="adm-action" onclick="admNewMagnet()"><i class="material-icons" aria-hidden="true">add</i><span>Nuovo tipo</span></button>
                         </div>
-                        <p class="adm-note">Quante calamite di ogni tipo vanno in ogni urna si sceglie nel Catalogo («Modifica»). Quando un ordine è evaso, le calamite usate si tolgono da sole.</p>
+                        <p class="adm-note">Quante calamite di ogni tipo vanno in ogni urna si sceglie nel Catalogo («Modifica»). Ogni volta che spunti un’urna come stampata nella lista di stampa, le sue calamite si tolgono da sole.</p>
                         <div id="adm-magnet-list" class="adm-stock-list"></div>
                     </section>
                     <section class="pet-home-card adm-stock-card" aria-labelledby="adm-ship-title">
@@ -1618,7 +1619,7 @@
                         </section>
                         <section class="pet-home-card" aria-labelledby="adm-stock-white-title">
                             <h2 id="adm-stock-white-title">Bianco delle urne</h2>
-                            <p class="adm-note">Il filamento usato per la parte bianca di tutte le urne. Si scala insieme al colore quando un ordine è evaso.</p>
+                            <p class="adm-note">Il filamento usato per la parte bianca di tutte le urne. Si scala insieme al colore ogni volta che spunti un’urna come stampata.</p>
                             <select id="adm-stock-white" class="browser-default adm-filament-select" aria-label="Filamento del bianco"></select>
                         </section>
                     </div>
@@ -2051,7 +2052,7 @@
         }
     }
 
-    // === MAGAZZINO FILAMENTI (bobine da 1 kg; scarico automatico sul server quando un ordine è evaso) ===
+    // === MAGAZZINO FILAMENTI (bobine da 1 kg; scarico automatico sul server per ogni urna spuntata come stampata) ===
     let petFilamentMoves = [];
     let petStockSettings = { bianco: '11100' };
     let petStockLoaded = false;
@@ -2088,6 +2089,20 @@
         for (const m of petFilamentMoves) stock.set(m.code, (stock.get(m.code) || 0) + Number(m.grams));
         return stock;
     }
+    // Urne ancora da stampare: quelle spuntate nella lista di stampa hanno già scalato filamento e calamite
+    function admRemainingOrder(order) {
+        if (!order.stampate || order.evaso) return order;
+        const used = new Map();
+        const articoli = (order.articoli || []).map(a => {
+            const code = admItemCode(a).toUpperCase();
+            const q = admQty(a);
+            const before = used.get(code) || 0;
+            used.set(code, before + q);
+            const printed = Math.max(0, Math.min(q, (Number(order.stampate[code]) || 0) - before));
+            return Object.assign({}, a, { quantita: q - printed });
+        });
+        return Object.assign({}, order, { articoli });
+    }
     // Gli ordini aperti impegnano il materiale in ordine di data: il più vecchio ha la precedenza
     function admFilamentPlan(extraOrder, skipId) {
         const stock = admStock();
@@ -2103,7 +2118,8 @@
         let minutes = 0;
         const open = orders.filter(o => !o.evaso && o.id !== skipId)
             .sort((a, b) => (a.data || '').localeCompare(b.data || '') || (Number(a.id) - Number(b.id)));
-        const evaluate = order => {
+        const evaluate = full => {
+            const order = admRemainingOrder(full);
             const need = admOrderNeed(order);
             const short = [];
             for (const [code, g] of need.grams) {
@@ -2112,7 +2128,7 @@
                 left.set(code, before - g);
                 committed.set(code, (committed.get(code) || 0) + g);
             }
-            const boxNeed = admOrderBoxNeed(order);
+            const boxNeed = admOrderBoxNeed(full);
             const boxShort = [];
             for (const [id, q] of boxNeed.boxes) {
                 const before = boxLeft.get(id) || 0;
@@ -2250,7 +2266,7 @@
         if (restock.length) {
             const box = admEl('section', 'adm-stock-alert adm-stock-restock');
             box.append(admEl('h2', '', 'Scorte basse: da ricomprare'));
-            box.append(admEl('p', 'adm-note', 'Bobine: gialle quando ne resta una sola (1 kg o meno). Scatole e calamite: gialle al 20% o meno di quante ne avevi dopo l’ultimo acquisto.'));
+            box.append(admEl('p', 'adm-note', 'Bobine: in rosso quando ne resta una sola (1 kg o meno). Scatole e calamite: in rosso al 20% o meno di quante ne avevi dopo l’ultimo acquisto.'));
             const ul = admEl('ul', '');
             for (const r of restock) {
                 const li = admEl('li', '');
@@ -2338,7 +2354,7 @@
         // Movimenti
         const movesBox = document.getElementById('adm-stock-moves');
         const fmt = new Intl.DateTimeFormat('it-IT', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Rome' });
-        const kindLabel = { carico: 'Carico', rettifica: 'Correzione', scarico: 'Ordine evaso' };
+        const kindLabel = { carico: 'Carico', rettifica: 'Correzione', scarico: 'Usato negli ordini' };
         const recent = [...petFilamentMoves.map(m => ({ ...m, kindOf: 'f' })), ...petBoxMoves.map(m => ({ ...m, kindOf: 'b' })), ...petMagnetMoves.map(m => ({ ...m, kindOf: 'm' }))]
             .sort((a, b) => new Date(b.created_at) - new Date(a.created_at) || b.id - a.id).slice(0, 60);
         movesBox.replaceChildren(...(recent.length ? recent.map(m => {
@@ -2747,7 +2763,7 @@
         await admAddBoxMove(id, qty, mode, note || (mode === 'carico' ? value + ' scatole acquistate' : 'Conteggio verificato: ' + value));
     }
 
-    // === MAGAZZINO CALAMITE (quante per urna dal catalogo; scarico automatico quando l'ordine è evaso) ===
+    // === MAGAZZINO CALAMITE (quante per urna dal catalogo; scarico automatico per ogni urna spuntata come stampata) ===
     let petMagnetMoves = [];
     let petMagnetSettings = { lista: [] };
     const admPieceMoney = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2, maximumFractionDigits: 4 });
@@ -2889,8 +2905,8 @@
         await admAddMagnetMove(id, qty, mode, note || (mode === 'carico' ? value + ' calamite acquistate' + (price ? ' a ' + admMoney.format(price) : '') : 'Conteggio verificato: ' + value));
     }
 
-    // === SCORTE BASSE (in giallo, da ricomprare) ===
-    // Bobine: gialle da 1 kg in giù. Scatole e calamite: gialle al 20% o meno di quante ne avevi dopo l'ultimo acquisto.
+    // === SCORTE BASSE (in rosso, da ricomprare) ===
+    // Bobine: rosse da 1 kg in giù. Scatole e calamite: rosse al 20% o meno di quante ne avevi dopo l'ultimo acquisto.
     const ADM_LOW_SHARE = 0.2;
     function admRestockRef(moves, key, id) {
         let level = 0, ref = 0, max = 0, bought = false;
