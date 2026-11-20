@@ -1068,7 +1068,7 @@
                     <form id="pet-fiscal-form" hidden novalidate>
                         <div id="pet-welcome" class="pet-welcome" role="status" hidden>
                             <strong>Benvenuto nell’area clienti 24Pet!</strong>
-                            <span>La password è pronta. Ora completa la tua scheda: ragione sociale, partita IVA, codice SDI, persona di riferimento e cellulare servono per inviare gli ordini. Il logo è facoltativo ma lo stampiamo sulle etichette.</span>
+                            <span>La password è pronta. Ora controlla la tua scheda: i dati che abbiamo già sono inseriti, completa solo quelli che mancano. Per inviare gli ordini servono ragione sociale, partita IVA, codice SDI, persona di riferimento e cellulare; il logo è facoltativo ma lo stampiamo sulle etichette.</span>
                         </div>
                         <p class="pet-profile-intro">Tieni aggiornati i tuoi dati: li usiamo per fatture, spedizioni ed etichette. I campi con * sono obbligatori per ordinare.</p>
                         <fieldset class="pet-profile-block">
@@ -3730,7 +3730,8 @@
     let petCostSettings = {};
     const COST_FIELDS = [
         ['scarto', 'Scarto di stampa', '% in più di filamento', 'es. 10'],
-        ['oreGiorno', 'Ore di stampa al giorno', 'per ogni stampante · serve alla consegna prevista (vuoto = 16)', 'es. 16'],
+        ['oreGiorno', 'Ore di stampa al giorno', 'per ogni stampante · serve alla consegna prevista (vuoto = 24)', 'es. 24'],
+        ['tempoMorto', 'Tempi morti tra una stampa e l’altra', '% in più sul tempo di stampa di ogni urna: stampe finite di notte o quando non ci sei (vuoto = 30)', 'es. 30'],
         ['giorniSpedizione', 'Giorni del corriere', 'da aggiungere alla consegna prevista (vuoto = 2)', 'es. 2'],
         ['kwh', 'Prezzo energia', '€ al kWh, IVA esclusa (bolletta: imponibile ÷ kWh)', 'es. 0,25'],
         ['usura', 'Usura e manutenzione', '€ per ora di stampa', 'es. 0,20'],
@@ -5651,8 +5652,8 @@
         return dot;
     }
     // === CONSEGNA PREVISTA: due code di stampa in ordine di arrivo — 1 stampante dedicata agli ordini piccoli (<20 urne),
-    // le altre sempre sugli ordini grandi — poi +20% e i giorni del corriere ===
-    const ADM_SMALL_ORDER = 20, ADM_ETA_MARGIN = 1.2;
+    // le altre sempre sugli ordini grandi — tempo di stampa + tempi morti (30%) e i giorni del corriere ===
+    const ADM_SMALL_ORDER = 20;
     function admPrintMinutesPerUrn() {
         const known = [];
         for (const sizes of Object.values(catalogoPrezzi || {})) for (const v of Object.values(sizes || {})) if (Number(v.tempoStampa) > 0) known.push(Number(v.tempoStampa));
@@ -5672,7 +5673,9 @@
     function admDeliveryEstimate(target) {
         const c = petCostSettings || {};
         const total = Math.max(1, (c.stampanti || []).length || 2);
-        const hours = admCostNum(c.oreGiorno) || 16;
+        const hours = admCostNum(c.oreGiorno) || 24;
+        // Tempi morti: una stampa che finisce alle 3 di notte riparte alle 8, ecc.
+        const idle = c.tempoMorto === undefined || c.tempoMorto === null || c.tempoMorto === '' ? 30 : admCostNum(c.tempoMorto);
         const shipDays = c.giorniSpedizione === undefined || c.giorniSpedizione === null || c.giorniSpedizione === '' ? 2 : admCostNum(c.giorniSpedizione);
         const pcs = o => (o.articoli || []).reduce((t, a) => t + admQty(a), 0);
         const key = o => String(o.data || '') + '|' + String(o.id).padStart(16, '0');
@@ -5691,14 +5694,14 @@
             minutes += r.minutes; missing += r.missing; usable = usable && r.usable;
         }
         if (!usable) return null;
-        const printDays = minutes / (printers * hours * 60);
-        const days = Math.max(1, Math.ceil(printDays * ADM_ETA_MARGIN) + shipDays);
+        const printDays = minutes * (1 + idle / 100) / (printers * hours * 60);
+        const days = Math.max(1, Math.ceil(printDays) + shipDays);
         const d = new Date(); d.setDate(d.getDate() + days);
         const iso = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
-        return { date: iso, days, printDays, printers, hours, shipDays, missing, small, split };
+        return { date: iso, days, printDays, printers, hours, idle, shipDays, missing, small, split };
     }
     function admEtaText(e) {
-        return e ? 'stima: ' + (e.printDays < 1 ? 'meno di 1 giorno' : Math.ceil(e.printDays) + (Math.ceil(e.printDays) === 1 ? ' giorno' : ' giorni')) + ' di stampa con ' + (e.split && e.small ? 'la stampante dedicata agli ordini piccoli' : e.printers + (e.printers === 1 ? ' stampante' : ' stampanti') + (e.split ? ' per gli ordini grandi' : '')) + ', +20%, + ' + e.shipDays + ' di corriere' + (e.missing ? ' · ' + e.missing + ' urne senza tempo di stampa (uso la media)' : '') : 'mancano i tempi di stampa nel Catalogo';
+        return e ? 'stima: ' + (e.printDays < 1 ? 'meno di 1 giorno' : Math.ceil(e.printDays) + (Math.ceil(e.printDays) === 1 ? ' giorno' : ' giorni')) + ' di stampa con ' + (e.split && e.small ? 'la stampante dedicata agli ordini piccoli' : e.printers + (e.printers === 1 ? ' stampante' : ' stampanti') + (e.split ? ' per gli ordini grandi' : '')) + ' (tempi morti +' + e.idle + '% compresi), + ' + e.shipDays + ' di corriere' + (e.missing ? ' · ' + e.missing + ' urne senza tempo di stampa (uso la media)' : '') : 'mancano i tempi di stampa nel Catalogo';
     }
     function admRecalcDelivery(id) {
         const o = orders.find(x => x.id === id);
