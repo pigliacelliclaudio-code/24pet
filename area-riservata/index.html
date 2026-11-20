@@ -143,6 +143,9 @@
         .pet-inbox-dialog h2 { margin: 0; color: var(--plum); font-size: clamp(1.25rem, 3vw, 1.65rem); font-weight: 800; line-height: 1.2; }
         .pet-inbox-close { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 8px; background: transparent; color: var(--plum); cursor: pointer; }
         .pet-inbox-close:hover { background: #f1e5f4; }
+        /* Materialize colora di verde i pulsanti con il focus: qui resta il colore del marchio */
+        .pet-inbox-close:focus { background: transparent; }
+        .pet-inbox-close:focus-visible { outline: 2px solid var(--plum); outline-offset: 2px; background: #f1e5f4; }
         .pet-inbox-content { min-height: 0; padding: 16px clamp(16px, 4vw, 24px) 24px; overflow: auto; overflow-wrap: anywhere; }
         .pet-inbox-content .btn { min-height: 40px; text-transform: none; }
         .pet-inbox-content [role="status"] { margin: 12px 0 0; color: var(--muted); }
@@ -615,6 +618,13 @@
         .pet-partner-row span { flex: 1 1 260px; }
         .pet-partner-row .pet-link-button { white-space: nowrap; }
         .pet-partner-row .pet-reject-button { color: #b00020; }
+        .pet-request-state { color: #685e72; font-size: .9rem; }
+        .pet-request-state.is-nuova { color: #8a5a00; font-weight: 700; }
+        .pet-request-state.is-accettata { color: #1b6434; font-weight: 700; }
+        .pet-request-state.is-rifiutata { color: #b00020; font-weight: 700; }
+        .pet-request-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin-top: 12px; }
+        .pet-request-actions .pet-reject-button { color: #b00020; }
+        .pet-client-order.is-handled { opacity: .75; }
         .adm-client-contact { display: grid; min-width: 0; font-size: .88rem; }
         .adm-client-contact a { color: var(--accent); overflow-wrap: anywhere; }
         .adm-client-numbers { display: grid; justify-items: start; gap: 4px; font-size: .88rem; font-variant-numeric: tabular-nums; }
@@ -2724,7 +2734,7 @@
             let unlockTimer = null;
             const render = () => {
                 heading.textContent = current === 1 ? title : 'Sei sicuro?';
-                text.textContent = current === 1 ? (detail || '') : 'È la seconda conferma: dopo l’eliminazione non si può tornare indietro.';
+                text.textContent = current === 1 ? (detail || '') : (labels?.[2] || 'È la seconda conferma: dopo l’eliminazione non si può tornare indietro.');
                 step.textContent = 'Conferma ' + current + ' di 2';
                 ok.textContent = current === 1 ? (labels?.[0] || 'Elimina') : (labels?.[1] || 'Sì, elimina definitivamente');
                 dialog.classList.toggle('is-final', current === 2);
@@ -4425,6 +4435,7 @@
 
     function annullaModificaOrdine() {
         idOrdineInModifica = null;
+        admOrderFromRequest = null;
         carrelloCorrente = [];
         carrelloScatole = [];
         carrelloScatoleManuale = false;
@@ -4453,6 +4464,33 @@
         M.updateTextFields();
         aggiornaUICarrello();
         impostaDataRapida(0);
+    }
+
+    // Richiesta d'ordine del cliente → Nuovo ordine già compilato (cliente e articoli). Salvando l'ordine
+    // la richiesta diventa «accettata» e il cliente vede l'ordine nello storico.
+    let admOrderFromRequest = null;
+    function admCreateOrderFromRequest(request) {
+        annullaModificaOrdine();
+        showPage('nuovo-ordine', document.querySelector('.app-menu a[href="#nuovo-ordine"]'));
+        const client = clients.find(c => c.codice === request.client_code);
+        if (!client) { M.toast({ html: 'Il cliente ' + admEsc(request.client_code) + ' non è in rubrica: aggiungilo prima di creare l’ordine.', classes: 'rounded', displayLength: 8000 }); return; }
+        targetInputForClient = 'clienteSearchDisplay';
+        const pick = document.createElement('div');
+        pick.setAttribute('data-codice', client.codice);
+        pick.setAttribute('data-nome', client.nome || '');
+        pick.setAttribute('data-tipo', client.tipo || 'Azienda');
+        selezionaClienteDaLista(pick);
+        const skipped = [];
+        for (const item of request.items || []) {
+            const entry = catalogoPrezzi[item.model]?.[item.size];
+            const color = listaColori.find(c => c.nome === item.color);
+            const quantity = parseInt(item.quantity, 10) || 0;
+            if (!entry || !color || quantity <= 0) { skipped.push([item.model, item.size, item.color].filter(Boolean).join(' · ')); continue; }
+            carrelloCorrente.push({ modello: item.model, dimensione: item.size, colore: color.nome, sku: entry.sku + '-' + color.code, quantita: quantity, costoUnitario: admUnitCost(entry), prezzoUnitario: entry.prezzo });
+        }
+        aggiornaUICarrello();
+        admOrderFromRequest = request.id;
+        M.toast({ html: skipped.length ? 'Controlla l’ordine: non ho trovato nel catalogo ' + admEsc(skipped.join(', ')) : 'Ordine compilato dalla richiesta: controlla e salva.', classes: 'rounded', displayLength: skipped.length ? 10000 : 5000 });
     }
 
     function salvaOrdineCompleto(e) {
@@ -4537,7 +4575,13 @@
             if (!newOrderData.evaso) { const e = admDeliveryEstimate(newOrderData); if (e) newOrderData.consegnaPrevista = e.date; }
             orders.push(newOrderData);
             M.toast({html: 'Ordine Multiplo salvato con successo!', classes: 'purple rounded'});
+            if (admOrderFromRequest && typeof window.petMarkRequest === 'function') {
+                const requestId = admOrderFromRequest;
+                window.petMarkRequest(requestId, 'accettata', String(newOrderData.id))
+                    .catch(() => M.toast({ html: 'Ordine salvato, ma la richiesta non risulta chiusa: riaprila e riprova.', classes: 'rounded' }));
+            }
         }
+        admOrderFromRequest = null;
 
         petSave('orders');
 
@@ -7570,14 +7614,18 @@
         function renderRequests(target, requests, adminView) {
             target.replaceChildren();
             if (!adminView) {
-                pendingRequestsCount = requests.length;
+                // Le richieste accettate sono diventate ordini e compaiono nello storico: qui restano solo
+                // quelle in attesa e quelle non accettate (per 30 giorni).
+                const month = Date.now() - 30 * 86400000;
+                const visible = requests.filter(r => (r.status || 'nuova') === 'nuova' || (r.status === 'rifiutata' && new Date(r.submitted_at).getTime() > month));
+                pendingRequestsCount = visible.filter(r => (r.status || 'nuova') === 'nuova').length;
                 renderClientHome();
-                if (requests.length) target.append(labeledText('h2', '', 'Richieste inviate'));
-                for (const request of requests) {
+                if (visible.length) target.append(labeledText('h2', '', 'Richieste inviate'));
+                for (const request of visible) {
                     target.append(customerOrderRow({
                         label: 'Richiesta d’ordine',
                         date: requestDate.format(new Date(request.submitted_at)),
-                        badges: [{ text: 'In attesa di conferma', tone: 'info' }],
+                        badges: [request.status === 'rifiutata' ? { text: 'Non accettata: scrivici a info@24pet.it', tone: 'warn' } : { text: 'In attesa di conferma', tone: 'info' }],
                         items: request.items
                     }));
                 }
@@ -7603,7 +7651,12 @@
                     heading.append(labeledText('span', 'pet-new-label', 'Nuova'));
                 }
                 const status = document.createElement('p');
-                status.textContent = request.id + ' · Termini ' + request.terms_version;
+                const state = request.status || 'nuova';
+                status.className = 'pet-request-state is-' + state;
+                const linkedOrder = state === 'accettata' && typeof orders !== 'undefined' ? orders.find(o => String(o.id) === String(request.order_id)) : null;
+                status.textContent = state === 'accettata' ? 'Ordine creato' + (linkedOrder ? ' #' + admOrderNumber(linkedOrder) : '') + (request.handled_at ? ' il ' + requestDate.format(new Date(request.handled_at)) : '')
+                    : state === 'rifiutata' ? 'Rifiutata' + (request.handled_at ? ' il ' + requestDate.format(new Date(request.handled_at)) : '')
+                    : 'Da gestire · termini di vendita accettati (' + request.terms_version + ')';
                 const list = document.createElement('ul');
                 list.className = 'browser-default';
                 for (const item of request.items) {
@@ -7623,13 +7676,34 @@
                 }
                 card.append(status, list);
                 if (request.billing_details) card.append(adminBillingDetails(request.billing_details));
+                if (state === 'nuova') {
+                    const actions = document.createElement('div');
+                    actions.className = 'pet-request-actions';
+                    const create = labeledText('button', 'btn btn-custom', 'Crea ordine');
+                    create.type = 'button';
+                    create.addEventListener('click', () => {
+                        document.getElementById('pet-admin-order-dialog').close();
+                        admCreateOrderFromRequest(request);
+                    });
+                    const reject = labeledText('button', 'pet-link-button pet-reject-button', 'Rifiuta');
+                    reject.type = 'button';
+                    reject.addEventListener('click', async () => {
+                        const ok = await petConfirmDelete('Rifiutare la richiesta d’ordine di ' + buyer + '?',
+                            'Il cliente la vedrà come «Non accettata» nella sua area. Non mandiamo email: se vuoi spiegargli il motivo, scrivigli tu.', ['Rifiuta', 'Sì, rifiuta la richiesta', 'Seconda conferma: la richiesta passa tra quelle rifiutate e il cliente lo vede nella sua area.']);
+                        if (!ok) return;
+                        try { await window.petMarkRequest(request.id, 'rifiutata', null); M.toast({ html: 'Richiesta rifiutata', classes: 'rounded' }); }
+                        catch { M.toast({ html: 'Rifiuto non riuscito. Riprova.', classes: 'rounded' }); }
+                    });
+                    actions.append(create, reject);
+                    card.append(actions);
+                } else card.classList.add('is-handled');
                 target.append(card);
             }
         }
 
         async function loadRequests(target, adminView, check = accessCheck) {
             try {
-                const columns = 'id,client_code,submitted_at,terms_version,items' + (adminView ? ',billing_details' : '');
+                const columns = 'id,client_code,submitted_at,terms_version,items,status,order_id' + (adminView ? ',billing_details,handled_at' : '');
                 const { data, error } = await api.from('client_order_requests')
                     .select(columns)
                     .order('submitted_at', { ascending: false }).limit(100);
@@ -7692,6 +7766,11 @@
             const { data, error } = await api.rpc('admin_client_accounts');
             if (error) throw error;
             return data || [];
+        };
+        window.petMarkRequest = async (id, status, orderId) => {
+            const { error } = await api.from('client_order_requests').update({ status, order_id: orderId }).eq('id', id);
+            if (error) throw error;
+            loadRequests(adminRequestRows, true);
         };
         window.petCloud.fetchClient = async code => {
             const { data, error } = await api.from('admin_clients').select('code,data').eq('code', code).maybeSingle();
