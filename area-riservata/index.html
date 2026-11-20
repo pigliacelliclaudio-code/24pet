@@ -653,6 +653,8 @@
         .adm-invite .btn { justify-self: start; }
         #adm-client-invite .btn { height: auto; min-height: 36px; line-height: 1.3; padding: 8px 16px; white-space: normal; text-align: center; max-width: 100%; overflow-wrap: anywhere; }
         .adm-invite-status { margin: 0; font-size: .9rem; }
+        .adm-client-seen { display: block; color: var(--muted); font-size: .8rem; }
+        .adm-client-seen.is-old { color: #8a5a00; }
         .adm-invite-status.is-ok { color: #1b6434; font-weight: 600; }
         .adm-invite-status.is-error { color: #b00020; font-weight: 600; }
         .pet-partner-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
@@ -4233,6 +4235,13 @@
     let admClientAccounts = null;
     // Stato dell'area clienti: «attiva» se il cliente ha creato la password (o usa un accesso di prima degli inviti);
     // altrimenti si può (ri)mandare l'invito, che arriva come per le aziende nuove.
+    // «oggi», «ieri», «12 giorni fa», «3 mesi fa»: per capire da quanto un cliente non apre la sua area
+    function admSeenText(account) {
+        const when = account?.last_seen_at || account?.last_sign_in_at;
+        if (!when) return null;
+        const days = Math.max(0, Math.floor((Date.now() - new Date(when).getTime()) / 86400000));
+        return { days, text: days === 0 ? 'oggi' : days === 1 ? 'ieri' : days < 60 ? days + ' giorni fa' : Math.floor(days / 30) + ' mesi fa', date: admDate.format(new Date(when)) };
+    }
     function admAccessState(account) {
         const day = d => d ? admDate.format(new Date(d)) : '';
         if (!account) return { key: 'none', label: 'Senza area clienti', canInvite: true };
@@ -4627,6 +4636,12 @@
         numbers.append(admEl('span', '', stats.count + (stats.count === 1 ? ' ordine' : ' ordini') + ' · ' + admMoney.format(stats.revenue)));
         if (stats.unpaid > 0.004) numbers.append(admBadge(admMoney.format(stats.unpaid) + ' da saldare', 'warn'));
         else if (stats.count) numbers.append(admBadge('Tutto saldato', 'ok'));
+        if (account) {
+            const seen = admSeenText(account);
+            const line = admEl('span', 'adm-client-seen' + (seen && seen.days > 60 ? ' is-old' : ''), seen ? 'Ultimo accesso: ' + seen.text : 'Non è mai entrato');
+            if (seen) line.title = 'Ultima volta che ha aperto l’area clienti: ' + seen.date;
+            numbers.append(line);
+        }
 
         const actions = admEl('div', 'adm-client-row-actions');
         const iconButton = (icon, label, handler, extra) => {
@@ -6949,7 +6964,7 @@
     function admRenderPasswordMail(box, client, account) {
         box.hidden = false;
         const email = account.login_email;
-        const when = account.last_sign_in_at ? new Intl.DateTimeFormat('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'Europe/Rome' }).format(new Date(account.last_sign_in_at)) : null;
+        const when = admSeenText(account)?.date || null;
         const info = admEl('p', 'adm-invite-status', 'Accesso attivo con ' + email + ' · ' + (when ? 'ultimo accesso il ' + when : 'non è ancora entrato') + '.');
         const idle = 'Email per la password';
         const button = admEl('button', 'btn btn-custom', idle);
@@ -7003,12 +7018,11 @@
             return;
         }
         const account = cloud.account;
-        const lastLogin = account?.last_sign_in_at ? new Date(account.last_sign_in_at) : null;
         admRenderInvite(client, account);
         admFacts(access, account ? [
             ['Stato', admAccessState(account).label],
             ['Email di accesso', account.login_email, account.login_email ? 'mailto:' : ''],
-            ['Ultimo accesso', lastLogin ? admDate.format(lastLogin) + ' · ' + (admDays(lastLogin.toISOString().slice(0, 10)) === 0 ? 'oggi' : admDays(lastLogin.toISOString().slice(0, 10)) + ' giorni fa') : (account.has_account ? 'Mai entrato' : 'Non ancora entrato')],
+            ['Ultimo accesso', admSeenText(account) ? admSeenText(account).date + ' · ' + admSeenText(account).text : 'Non è mai entrato'],
             ['Profilo fiscale', cloud.billing ? 'Completo' : 'Da compilare: non può ancora inviare ordini']
         ] : [['Stato', 'Nessun accesso all’area clienti']]);
 
@@ -8537,6 +8551,7 @@
                 document.getElementById('pet-welcome').hidden = !welcomeClient;
                 showCustomerPage(welcomeClient ? 'profile' : 'home');
                 welcomeClient = false;
+                api.rpc('client_mark_seen').then(() => {}, () => {});
                 loadCustomerProfile(check);
                 loadClientHistory(check);
             }
