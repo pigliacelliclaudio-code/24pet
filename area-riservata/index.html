@@ -3741,6 +3741,7 @@
     const COST_FIELDS = [
         ['scarto', 'Scarto di stampa', '% in più di filamento', 'es. 10'],
         ['oreGiorno', 'Ore di stampa al giorno', 'per ogni stampante · serve alla consegna prevista (vuoto = 24)', 'es. 24'],
+        ['giorniLavoro', 'Giorni di lavoro a settimana', '6 = domenica esclusa, 5 = sabato e domenica esclusi, 7 = tutti · per stampa e corriere (vuoto = 6)', 'es. 6'],
         ['sogliaPiccoli', 'Ordini piccoli che passano avanti', 'fino a quante urne (compreso) un ordine si infila prima degli altri · 0 = nessuno passa avanti (vuoto = 5)', 'es. 5'],
         ['tempoMorto', 'Tempi morti tra una stampa e l’altra', '% in più sul tempo di stampa di ogni urna: stampe finite di notte o quando non ci sei (vuoto = 50)', 'es. 50'],
         ['giorniSpedizione', 'Giorni del corriere', 'da aggiungere alla consegna prevista (vuoto = 2)', 'es. 2'],
@@ -5747,12 +5748,16 @@
         if (!usable) return null;
         const printDays = minutes * (1 + idle / 100) / (printers * hours * 60);
         const days = Math.max(1, Math.ceil(printDays) + shipDays);
-        const d = new Date(); d.setDate(d.getDate() + days);
+        // Si contano solo i giorni di lavoro: con 6 si salta la domenica, con 5 anche il sabato
+        const perWeek = c.giorniLavoro === undefined || c.giorniLavoro === null || c.giorniLavoro === '' ? 6 : Math.min(7, Math.max(1, Math.round(admCostNum(c.giorniLavoro))));
+        const off = perWeek >= 7 ? [] : perWeek === 6 ? [0] : [0, 6];
+        const d = new Date();
+        for (let left = days; left > 0;) { d.setDate(d.getDate() + 1); if (!off.includes(d.getDay())) left--; }
         const iso = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
-        return { date: iso, days, printDays, printers, hours, idle, shipDays, missing, small, split };
+        return { date: iso, days, printDays, printers, hours, idle, shipDays, perWeek, missing, small, split };
     }
     function admEtaText(e) {
-        return e ? 'stima: ' + (e.printDays < 1 ? 'meno di 1 giorno' : Math.ceil(e.printDays) + (Math.ceil(e.printDays) === 1 ? ' giorno' : ' giorni')) + ' di stampa con ' + e.printers + (e.printers === 1 ? ' stampante' : ' stampanti') + (e.small ? ' (ordine piccolo: passa avanti)' : '') + ' (tempi morti +' + e.idle + '% compresi), + ' + e.shipDays + ' di corriere' + (e.missing ? ' · ' + e.missing + ' urne senza tempo di stampa (uso la media)' : '') : 'mancano i tempi di stampa nel Catalogo';
+        return e ? 'stima: ' + (e.printDays < 1 ? 'meno di 1 giorno' : Math.ceil(e.printDays) + (Math.ceil(e.printDays) === 1 ? ' giorno' : ' giorni')) + ' di stampa con ' + e.printers + (e.printers === 1 ? ' stampante' : ' stampanti') + (e.small ? ' (ordine piccolo: passa avanti)' : '') + ' (tempi morti +' + e.idle + '% compresi), + ' + e.shipDays + ' di corriere' + (e.perWeek === 6 ? ', domeniche escluse' : e.perWeek < 6 ? ', sabati e domeniche esclusi' : '') + (e.missing ? ' · ' + e.missing + ' urne senza tempo di stampa (uso la media)' : '') : 'mancano i tempi di stampa nel Catalogo';
     }
     // Ricalcola la consegna di tutti gli ordini da evadere seguendo la coda vera. Primo tocco: mostra le date
     // che cambiano (le vede anche il cliente); secondo tocco: le salva.
