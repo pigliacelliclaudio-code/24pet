@@ -1,5 +1,5 @@
-// Invites a client to the reserved area. Only administrators can call it (checked on user_roles,
-// never trusted from the request). It records the access for the client code, sends Supabase's
+// Invites a client to the reserved area. Only administrators verified with the authenticator code
+// can call it (checked with admin_mfa_ok, never trusted from the request). It records the access for the client code, sends Supabase's
 // invitation email (Italian template, via the project SMTP) and links the new account to the client
 // with the "client" role, so the client lands on their orders after choosing a password.
 import { createClient } from "npm:@supabase/supabase-js@2";
