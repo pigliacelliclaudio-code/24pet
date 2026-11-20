@@ -3740,7 +3740,7 @@
     const COST_FIELDS = [
         ['scarto', 'Scarto di stampa', '% in più di filamento', 'es. 10'],
         ['oreGiorno', 'Ore di stampa al giorno', 'per ogni stampante · serve alla consegna prevista (vuoto = 24)', 'es. 24'],
-        ['lineaVeloce', 'Stampanti dedicate agli ordini piccoli', 'linea veloce per gli ordini sotto le 20 urne · 0 = tutte le stampanti lavorano in coda (vuoto = 0)', 'es. 0'],
+        ['sogliaPiccoli', 'Ordini piccoli che passano avanti', 'sotto queste urne l’ordine si infila prima degli altri (vuoto = 5 con 2 stampanti, 10 da 3 stampanti in su)', 'es. 5'],
         ['tempoMorto', 'Tempi morti tra una stampa e l’altra', '% in più sul tempo di stampa di ogni urna: stampe finite di notte o quando non ci sei (vuoto = 50)', 'es. 50'],
         ['giorniSpedizione', 'Giorni del corriere', 'da aggiungere alla consegna prevista (vuoto = 2)', 'es. 2'],
         ['kwh', 'Prezzo energia', '€ al kWh, IVA esclusa (bolletta: imponibile ÷ kWh)', 'es. 0,25'],
@@ -5128,7 +5128,12 @@
         state.append(o.pagato ? admBadge('Pagato', 'ok') : partialPay ? admBadge('Pagato in parte', 'warn') : admBadge('Da pagare', 'warn'),
             o.evaso ? admBadge('Evaso', 'ok') : admBadge('Da evadere', 'neutral'));
         if (partialPay) { const r = admEl('span', 'adm-order-ring'); r.append(admRing(payI.paid, payI.total, 22, 'Pagato'), document.createTextNode('pagato ' + Math.round(payI.paid / (payI.total || 1) * 100) + '%')); r.title = 'Pagati ' + admMoney.format(payI.paid) + ' di ' + admMoney.format(payI.total); state.append(r); }
-        if (!o.evaso && o.prioritario) state.append(admBadge('★ Priorità ' + admPriorityRank(o), 'info'));
+        if (!o.evaso) {
+            const pos = admQueuePosition(o);
+            const q = admBadge('In coda: ' + pos + '°' + (admOrderPieces(o) < admSmallThreshold() ? ' · piccolo, passa avanti' : ''), 'info');
+            q.title = 'Posizione nella coda di stampa: ordini in ordine di arrivo, quelli sotto ' + admSmallThreshold() + ' urne passano avanti';
+            state.append(q);
+        }
         if (!o.evaso && o.consegnaPrevista) {
             // La stessa data che vede il cliente: arancione a 3 giorni, rossa se è passata
             const left = Math.round((new Date(o.consegnaPrevista + 'T00:00:00Z') - new Date(admTodayIso() + 'T00:00:00Z')) / 86400000);
@@ -5168,7 +5173,6 @@
             action(o.evaso ? 'undo' : 'local_shipping', o.evaso ? 'Segna da evadere' : 'Segna evaso', () => admToggleOrder(o.id, 'evaso')),
             action('receipt', 'Conferma d’ordine', () => stampaRiepilogoCliente(o.id)),
             action('checklist', 'Lista di stampa', () => admOpenPrintList(o.id), 'adm-action-primary'),
-            ...(o.evaso ? [] : [action(o.prioritario ? 'star' : 'star_border', o.prioritario ? 'Togli priorità' : 'Metti in priorità', () => admTogglePriority(o.id))]),
             action('print', 'Scheda produzione', () => stampaSchedaProduzioneSingola(o.id)),
             action('label', 'Etichette', () => stampaEtichetteOrdine(o.id)),
             action('fact_check', 'Controlla spedizione', () => admOpenScanner(o.id)),
@@ -5684,23 +5688,28 @@
         dot.style.backgroundColor = mappaColoriHex[colore] || '#ccc';
         return dot;
     }
-    // === CONSEGNA PREVISTA: una coda di stampa (prima gli ordini prioritari, poi per data) su tutte le stampanti,
-    // o una linea veloce per gli ordini piccoli se impostata — tempo di stampa + tempi morti (50%) e i giorni del corriere ===
-    const ADM_SMALL_ORDER = 20;
+    // === CONSEGNA PREVISTA: una coda di stampa su tutte le stampanti, in ordine di arrivo con gli ordini piccoli
+    // che passano avanti — tempo di stampa + tempi morti (50%) e i giorni del corriere ===
+
     function admPrintMinutesPerUrn() {
         const known = [];
         for (const sizes of Object.values(catalogoPrezzi || {})) for (const v of Object.values(sizes || {})) if (Number(v.tempoStampa) > 0) known.push(Number(v.tempoStampa));
         return known.length ? known.reduce((a, b) => a + b, 0) / known.length : 0;
     }
-    // Coda di stampa: prima gli ordini prioritari nell'ordine in cui hai dato la priorità (Priorità 1, 2…),
-    // poi tutti gli altri per data e numero d'ordine
-    function admQueueKey(o) {
-        return o.prioritario ? '0|' + String(Number(o.prioritario) || 0).padStart(16, '0') + '|' + String(o.id).padStart(16, '0')
-            : '1|' + String(o.data || '') + '|' + String(o.id).padStart(16, '0');
+    // Coda di stampa: in ordine di arrivo; gli ordini piccoli si infilano prima degli altri
+    // (sotto 5 urne con 2 stampanti, sotto 10 da 3 stampanti in su, oppure la soglia impostata nei costi)
+    function admSmallThreshold() {
+        const c = petCostSettings || {};
+        if (c.sogliaPiccoli !== undefined && c.sogliaPiccoli !== null && c.sogliaPiccoli !== '') return admCostNum(c.sogliaPiccoli);
+        return (c.stampanti || []).length >= 3 ? 10 : 5;
     }
-    function admPriorityRank(o) {
-        if (!o.prioritario || o.evaso) return 0;
-        return orders.filter(x => x.prioritario && !x.evaso).sort((a, b) => admQueueKey(a).localeCompare(admQueueKey(b))).indexOf(o) + 1;
+    function admOrderPieces(o) { return (o.articoli || []).reduce((t, a) => t + admQty(a), 0); }
+    function admQueueKey(o) {
+        return (admOrderPieces(o) < admSmallThreshold() ? '0|' : '1|') + String(o.data || '') + '|' + String(o.id).padStart(16, '0');
+    }
+    function admQueuePosition(o) {
+        if (o.evaso) return 0;
+        return orders.filter(x => !x.evaso).sort((a, b) => admQueueKey(a).localeCompare(admQueueKey(b))).indexOf(o) + 1;
     }
     function admOrderRemainingMinutes(o) {
         const avg = admPrintMinutesPerUrn();
@@ -5723,17 +5732,14 @@
         const pcs = o => (o.articoli || []).reduce((t, a) => t + admQty(a), 0);
         const key = admQueueKey;
         const open = orders.filter(o => !o.evaso && o.id !== target.id).concat([target]);
-        const small = pcs(target) < ADM_SMALL_ORDER;
-        // Linea veloce facoltativa: N stampanti solo per gli ordini piccoli, le altre per i grandi.
-        // Con 0 (predefinito) tutte le stampanti lavorano la stessa coda, in ordine di priorità e di data.
-        const fast = Math.min(Math.max(0, Math.round(admCostNum(c.lineaVeloce))), total - 1);
-        const split = fast > 0;
-        const printers = split ? (small ? fast : total - fast) : total;
+        const small = pcs(target) < admSmallThreshold();
+        // Tutte le stampanti lavorano la stessa coda (arrivo, con gli ordini piccoli che passano avanti)
+        const split = false;
+        const printers = total;
         let minutes = 0, missing = 0, usable = true;
         for (const o of open) {
             const before = key(o) <= key(target);
-            const sameLane = !split || (pcs(o) < ADM_SMALL_ORDER) === small;
-            const counts = split ? (sameLane && before) : before;
+            const counts = before;
             if (!counts) continue;
             const r = admOrderRemainingMinutes(o);
             minutes += r.minutes; missing += r.missing; usable = usable && r.usable;
@@ -5746,7 +5752,7 @@
         return { date: iso, days, printDays, printers, hours, idle, shipDays, missing, small, split };
     }
     function admEtaText(e) {
-        return e ? 'stima: ' + (e.printDays < 1 ? 'meno di 1 giorno' : Math.ceil(e.printDays) + (Math.ceil(e.printDays) === 1 ? ' giorno' : ' giorni')) + ' di stampa con ' + (e.split && e.small ? (e.printers === 1 ? 'la stampante' : 'le ' + e.printers + ' stampanti') + ' della linea veloce' : e.printers + (e.printers === 1 ? ' stampante' : ' stampanti') + (e.split ? ' per gli ordini grandi' : '')) + ' (tempi morti +' + e.idle + '% compresi), + ' + e.shipDays + ' di corriere' + (e.missing ? ' · ' + e.missing + ' urne senza tempo di stampa (uso la media)' : '') : 'mancano i tempi di stampa nel Catalogo';
+        return e ? 'stima: ' + (e.printDays < 1 ? 'meno di 1 giorno' : Math.ceil(e.printDays) + (Math.ceil(e.printDays) === 1 ? ' giorno' : ' giorni')) + ' di stampa con ' + e.printers + (e.printers === 1 ? ' stampante' : ' stampanti') + (e.small ? ' (ordine piccolo: passa avanti)' : '') + ' (tempi morti +' + e.idle + '% compresi), + ' + e.shipDays + ' di corriere' + (e.missing ? ' · ' + e.missing + ' urne senza tempo di stampa (uso la media)' : '') : 'mancano i tempi di stampa nel Catalogo';
     }
     // Ricalcola la consegna di tutti gli ordini da evadere seguendo la coda vera. Primo tocco: mostra le date
     // che cambiano (le vede anche il cliente); secondo tocco: le salva.
@@ -5784,14 +5790,6 @@
         petSave('orders');
         loadOrders();
         status.textContent = 'Aggiornate ' + changes.length + (changes.length === 1 ? ' data' : ' date') + ' di consegna ✓';
-    }
-    function admTogglePriority(id) {
-        const o = orders.find(x => x.id === id);
-        if (!o) return;
-        if (o.prioritario) delete o.prioritario; else o.prioritario = Date.now();
-        petSave('orders');
-        loadOrders();
-        M.toast({ html: o.prioritario ? (o.cliente || 'Ordine') + ' è la Priorità ' + admPriorityRank(o) + ' nella coda di stampa. Poi premi «Ricalcola le consegne».' : 'Priorità tolta: l’ordine torna in coda per data', classes: 'rounded', displayLength: 6000 });
     }
     function admRecalcDelivery(id) {
         const o = orders.find(x => x.id === id);
