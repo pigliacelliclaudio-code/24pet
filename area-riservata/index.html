@@ -338,6 +338,11 @@
         .adm-stock-users { color: var(--muted); font-size: .78rem; padding-left: 24px; }
         .adm-stock-bar { position: relative; height: 8px; border-radius: 99px; background: #f1ecf3; }
         .adm-stock-bar > span { position: absolute; inset: 0 auto 0 0; border-radius: 99px; background: var(--accent); }
+        .adm-stock-row.is-ok .adm-stock-bar > span { background: #2e8b57; }
+        .adm-stock-row.is-low .adm-stock-bar > span { background: #e0a100; }
+        .adm-stock-row.is-short .adm-stock-bar > span { background: #c62828; }
+        .adm-stock-alert.adm-stock-restock { border-color: #f2dcae; background: #fffaf0; }
+        .adm-stock-restock .adm-note { margin: 0 0 8px; }
         .adm-stock-bar > i { position: absolute; top: -4px; width: 2px; height: 16px; margin-left: -1px; background: var(--ink); }
         .adm-stock-nums { display: grid; font-size: .86rem; line-height: 1.3; font-variant-numeric: tabular-nums; }
         .adm-stock-nums strong { color: var(--plum); font-size: 1rem; }
@@ -1226,6 +1231,32 @@
             </footer>
         </form>
     </dialog>
+    <dialog class="pet-inbox-dialog adm-client-dialog adm-stock-dialog" id="adm-magnet-dialog" aria-labelledby="adm-magnet-dialog-title">
+        <header>
+            <h2 id="adm-magnet-dialog-title">Calamite</h2>
+            <button class="pet-inbox-close" type="button" aria-label="Chiudi" onclick="document.getElementById('adm-magnet-dialog').close()"><i class="material-icons" aria-hidden="true">close</i></button>
+        </header>
+        <form class="adm-form" novalidate onsubmit="admSaveMagnetDialog(event)">
+            <div class="adm-form-body">
+                <div class="adm-form-grid">
+                    <label class="adm-field adm-span-3">Cosa vuoi fare
+                        <select id="adm-magnet-mode" class="browser-default" onchange="admMagnetDialogMode()"><option value="carico">Carico calamite acquistate</option><option value="rettifica">Correggi il conteggio (le ho contate)</option><option value="prezzo">Cambia prezzo</option></select></label>
+                    <label class="adm-field adm-span-3">Calamita
+                        <select id="adm-magnet-id" class="browser-default" onchange="admMagnetDialogMode()"></select></label>
+                    <label class="adm-field" id="adm-magnet-qty-label">Quante ne hai comprate <input id="adm-magnet-qty" type="number" min="0" step="1" autocomplete="off"></label>
+                    <label class="adm-field" id="adm-magnet-price-label">Quanto le hai pagate in tutto (€, spedizione compresa) <input id="adm-magnet-price" type="text" inputmode="decimal" placeholder="es. 11,00" autocomplete="off"></label>
+                    <label class="adm-field" id="adm-magnet-pieces-label">Pezzi nel prezzo <input id="adm-magnet-pieces" type="number" min="1" step="1" placeholder="vuoto = 1" autocomplete="off"></label>
+                    <label class="adm-field adm-span-2" id="adm-magnet-note-label">Nota (facoltativa)<input id="adm-magnet-note" type="text" maxlength="200" autocomplete="off"></label>
+                </div>
+                <p id="adm-magnet-hint" class="adm-note"></p>
+                <p id="adm-magnet-error" class="adm-form-error" role="alert"></p>
+            </div>
+            <footer class="adm-form-footer">
+                <button type="button" class="adm-action" onclick="document.getElementById('adm-magnet-dialog').close()">Annulla</button>
+                <button type="submit" class="adm-action adm-action-primary"><i class="material-icons" aria-hidden="true">save</i><span>Salva</span></button>
+            </footer>
+        </form>
+    </dialog>
     <dialog class="pet-inbox-dialog adm-scan-dialog" id="adm-scan-dialog" aria-labelledby="adm-scan-title">
         <header>
             <h2 id="adm-scan-title">Scansiona</h2>
@@ -1495,16 +1526,13 @@
                     <div id="catalogo-container" class="adm-catalog"></div>
                     <section class="pet-home-card adm-filament-card adm-cost-card" aria-labelledby="adm-cost-title">
                         <h2 id="adm-cost-title">Calcolo dei costi</h2>
-                        <p class="adm-note">Con questi valori e con tempi, grammi, lavoro, calamite ed extra di ogni misura (in «Modifica») la dashboard calcola il costo di ogni urna. Ogni nuovo ordine salva il costo calcolato in quel momento: gli ordini già fatti non cambiano.</p>
+                        <p class="adm-note">Con questi valori e con tempi, grammi, lavoro, calamite ed extra di ogni misura (in «Modifica»; tipi e prezzi delle calamite nel Magazzino) la dashboard calcola il costo di ogni urna. Ogni nuovo ordine salva il costo calcolato in quel momento: gli ordini già fatti non cambiano.</p>
                         <div id="adm-cost-fields" class="adm-cost-grid"></div>
                         <h3 class="adm-cost-sub">Carta di riempimento e nastro</h3>
                         <p class="adm-note" id="adm-cost-paper-note"></p>
                         <div id="adm-cost-paper" class="adm-cost-grid"></div>
                         <h3 class="adm-cost-sub">Stampanti</h3>
                         <div id="adm-cost-printers" class="adm-cost-printers"></div>
-                        <h3 class="adm-cost-sub">Calamite</h3>
-                        <p class="adm-note">Crea qui i tipi di calamite che usi, con il prezzo. In «Modifica» di ogni misura scegli il tipo e quante ne vanno (fino a due tipi per urna): il costo lo calcola la dashboard.</p>
-                        <div id="adm-cost-magnets" class="adm-cost-printers"></div>
                         <h3 class="adm-cost-sub">Prezzi dal Magazzino</h3>
                         <ul id="adm-cost-stockinfo" class="adm-cost-stockinfo"></ul>
                         <p class="adm-note">I prezzi delle bobine e delle scatole si inseriscono nel <a href="#" onclick="admOpen('magazzino-colori'); renderMagazzino(); return false;">Magazzino</a>, con il pulsante <i class="material-icons adm-inline-icon" aria-hidden="true">euro</i> di ogni riga.</p>
@@ -1534,6 +1562,7 @@
                         <div class="adm-catalog-tools">
                             <button type="button" class="btn btn-custom" onclick="admOpenStockDialog(null, 'carico')"><i class="material-icons left" aria-hidden="true">add_shopping_cart</i>Carica bobine</button>
                             <button type="button" class="btn btn-custom" onclick="admOpenBoxDialog(null, 'carico')"><i class="material-icons left" aria-hidden="true">inventory_2</i>Carica scatole</button>
+                            <button type="button" class="btn btn-custom" onclick="admOpenMagnetDialog(null, 'carico')"><i class="material-icons left" aria-hidden="true">join_inner</i>Carica calamite</button>
                         </div>
                     </div>
                     <div id="adm-stock-kpis" class="pet-kpis adm-kpis"></div>
@@ -1557,6 +1586,14 @@
                             <label class="adm-field">Cartone di spedizione predefinito<select id="adm-box-cartone" class="browser-default adm-filament-select" onchange="admSaveCartonSettings()"></select></label>
                             <label class="adm-field">Urne per cartone<input id="adm-box-per" type="number" min="1" max="100" step="1" class="browser-default adm-ship-qty" onchange="admSaveCartonSettings()"></label>
                         </div>
+                    </section>
+                    <section class="pet-home-card adm-stock-card" aria-labelledby="adm-magnet-title">
+                        <div class="adm-filament-head adm-box-head">
+                            <h2 id="adm-magnet-title">Calamite</h2>
+                            <button type="button" class="adm-action" onclick="admNewMagnet()"><i class="material-icons" aria-hidden="true">add</i><span>Nuovo tipo</span></button>
+                        </div>
+                        <p class="adm-note">Quante calamite di ogni tipo vanno in ogni urna si sceglie nel Catalogo («Modifica»). Quando un ordine è evaso, le calamite usate si tolgono da sole.</p>
+                        <div id="adm-magnet-list" class="adm-stock-list"></div>
                     </section>
                     <section class="pet-home-card adm-stock-card" aria-labelledby="adm-ship-title">
                         <h2 id="adm-ship-title">Spese di spedizione per i clienti</h2>
@@ -2057,6 +2094,9 @@
         const boxStock = admBoxStock();
         const boxLeft = new Map(boxStock);
         const boxCommitted = new Map();
+        const magnetStock = admMagnetStock();
+        const magnetLeft = new Map(magnetStock);
+        const magnetCommitted = new Map();
         const plan = new Map();
         let minutes = 0;
         const open = orders.filter(o => !o.evaso && o.id !== skipId)
@@ -2078,8 +2118,16 @@
                 boxLeft.set(id, before - q);
                 boxCommitted.set(id, (boxCommitted.get(id) || 0) + q);
             }
+            const magnetShort = [];
+            const magnetNeed = admOrderMagnetNeed(order);
+            for (const [id, q] of magnetNeed) {
+                const before = magnetLeft.get(id) || 0;
+                if (before < q) magnetShort.push({ id, qty: q - Math.max(before, 0) });
+                magnetLeft.set(id, before - q);
+                magnetCommitted.set(id, (magnetCommitted.get(id) || 0) + q);
+            }
             const missing = new Set([...need.missing, ...boxNeed.missing]);
-            return { need, short, boxNeed, boxShort, missing, anyShort: short.length + boxShort.length > 0 };
+            return { need, short, boxNeed, boxShort, magnetNeed, magnetShort, missing, anyShort: short.length + boxShort.length + magnetShort.length > 0 };
         };
         for (const o of open) { const r = evaluate(o); plan.set(o.id, r); minutes += r.need.minutes; }
         const extra = extraOrder ? evaluate(extraOrder) : null;
@@ -2087,19 +2135,23 @@
         for (const [code, g] of committed) { const st = stock.get(code) || 0; if (g > st + 0.5) shortages.set(code, g - Math.max(st, 0)); }
         const boxShortages = new Map();
         for (const [id, q] of boxCommitted) { const st = boxStock.get(id) || 0; if (q > st) boxShortages.set(id, q - Math.max(st, 0)); }
-        return { stock, committed, plan, shortages, minutes, extra, boxStock, boxCommitted, boxShortages };
+        const magnetShortages = new Map();
+        for (const [id, q] of magnetCommitted) { const st = magnetStock.get(id) || 0; if (q > st) magnetShortages.set(id, q - Math.max(st, 0)); }
+        return { stock, committed, plan, shortages, minutes, extra, boxStock, boxCommitted, boxShortages, magnetStock, magnetCommitted, magnetShortages };
     }
 
     async function petLoadFilaments() {
         if (petStore.mode !== 'cloud' || typeof window.petCloud?.filamentMoves !== 'function') return;
         try {
-            const [moves, settings, boxMoves, boxSettings, costSettings, shipSettings] = await Promise.all([window.petCloud.filamentMoves(), window.petCloud.getSetting('magazzino'), window.petCloud.boxMoves(), window.petCloud.getSetting('scatole'), window.petCloud.getSetting('costi'), window.petCloud.getSetting('spedizione')]);
+            const [moves, settings, boxMoves, boxSettings, costSettings, shipSettings, magnetMoves, magnetSettings] = await Promise.all([window.petCloud.filamentMoves(), window.petCloud.getSetting('magazzino'), window.petCloud.boxMoves(), window.petCloud.getSetting('scatole'), window.petCloud.getSetting('costi'), window.petCloud.getSetting('spedizione'), window.petCloud.magnetMoves(), window.petCloud.getSetting('calamite')]);
             petFilamentMoves = moves || [];
             petStockSettings = Object.assign({ bianco: '11100' }, settings || {});
             petBoxMoves = boxMoves || [];
             petBoxSettings = Object.assign({ lista: [], cartone: '', perCartone: 8 }, boxSettings || {});
             petCostSettings = costSettings || {};
             petShipSettings = shipSettings || {};
+            petMagnetMoves = magnetMoves || [];
+            petMagnetSettings = Object.assign({ lista: [] }, magnetSettings || {});
             petStockLoaded = true;
         } catch { return; }
         renderMagazzino();
@@ -2141,13 +2193,15 @@
         const committed = [...plan.committed.values()].reduce((s, g) => s + g, 0);
         const toBuy = [...plan.shortages.values()].reduce((s, g) => s + Math.ceil(g / 1000), 0);
         const boxesToBuy = [...plan.boxShortages.values()].reduce((s, q) => s + q, 0);
+        const magnetsToBuy = [...plan.magnetShortages.values()].reduce((s, q) => s + q, 0);
+        const anyShort = plan.shortages.size || plan.boxShortages.size || plan.magnetShortages.size;
         const missingData = new Set();
         for (const r of plan.plan.values()) r.missing.forEach(m => missingData.add(m));
         const kpis = document.getElementById('adm-stock-kpis');
         kpis.replaceChildren(
             admKpi('inventory_2', 'In magazzino', admGrams(total), '≈ ' + admKg.format(total / 1000).replace(/,00$/, '') + ' bobine da 1 kg'),
             admKpi('pending_actions', 'Impegnato dagli ordini aperti', admGrams(committed), orders.filter(o => !o.evaso).length + ' ordini da evadere'),
-            admKpi('shopping_cart', 'Da comprare', (toBuy || boxesToBuy) ? [toBuy ? toBuy + (toBuy === 1 ? ' bobina' : ' bobine') : '', boxesToBuy ? boxesToBuy + ' scatole' : ''].filter(Boolean).join(' · ') : 'Niente', (plan.shortages.size || plan.boxShortages.size) ? 'per gli ordini aperti' : 'Materiale sufficiente per gli ordini aperti', (plan.shortages.size || plan.boxShortages.size) ? 'warn' : ''),
+            admKpi('shopping_cart', 'Da comprare', (toBuy || boxesToBuy || magnetsToBuy) ? [toBuy ? toBuy + (toBuy === 1 ? ' bobina' : ' bobine') : '', boxesToBuy ? boxesToBuy + ' scatole' : '', magnetsToBuy ? magnetsToBuy + ' calamite' : ''].filter(Boolean).join(' · ') : 'Niente', anyShort ? 'per gli ordini aperti' : 'Materiale sufficiente per gli ordini aperti', anyShort ? 'warn' : ''),
             admKpi('schedule', 'Stampa da fare', admHours(plan.minutes), 'somma dei tempi delle urne da evadere')
         );
 
@@ -2178,6 +2232,32 @@
             box.append(ul);
             alerts.append(box);
         }
+        if (plan.magnetShortages.size) {
+            const box = admEl('section', 'adm-stock-alert');
+            box.append(admEl('h2', '', 'Calamite da comprare per gli ordini aperti'));
+            const ul = admEl('ul', '');
+            for (const [id, q] of [...plan.magnetShortages.entries()].sort((a, b) => b[1] - a[1])) {
+                const li = admEl('li', '');
+                li.append(admMagnetLabel(id), admEl('span', '', 'mancano ' + q + (q === 1 ? ' calamita' : ' calamite')));
+                ul.append(li);
+            }
+            box.append(ul);
+            alerts.append(box);
+        }
+        const restock = admRestockList();
+        if (restock.length) {
+            const box = admEl('section', 'adm-stock-alert adm-stock-restock');
+            box.append(admEl('h2', '', 'Scorte basse: da ricomprare'));
+            box.append(admEl('p', 'adm-note', 'Bobine: gialle quando ne resta una sola (1 kg o meno). Scatole e calamite: gialle al 20% o meno di quante ne avevi dopo l’ultimo acquisto.'));
+            const ul = admEl('ul', '');
+            for (const r of restock) {
+                const li = admEl('li', '');
+                li.append(r.kind === 'f' ? admFilamentLabel(r.id) : r.kind === 'b' ? admBoxLabel(r.id) : admMagnetLabel(r.id), admEl('span', '', r.text));
+                ul.append(li);
+            }
+            box.append(ul);
+            alerts.append(box);
+        }
         if (missingData.size) {
             const box = admEl('section', 'adm-stock-alert adm-stock-info');
             box.append(admEl('h2', '', 'Dati mancanti: il calcolo non è completo'));
@@ -2188,11 +2268,11 @@
         }
 
         // Righe
-        const row = (code, users) => {
+        const row = (code, users, tracked) => {
             const stock = plan.stock.get(code) || 0;
             const need = plan.committed.get(code) || 0;
             const after = stock - need;
-            const li = admEl('div', 'adm-stock-row' + (after < -0.5 ? ' is-short' : after < 250 && need ? ' is-low' : ''));
+            const li = admEl('div', 'adm-stock-row' + (after < -0.5 ? ' is-short' : tracked && stock <= 1000 ? ' is-low' : ' is-ok'));
             const who = admEl('div', 'adm-stock-who');
             who.append(admFilamentLabel(code));
             if (users && users.length) who.append(admEl('span', 'adm-stock-users', 'Per: ' + users.join(', ')));
@@ -2227,7 +2307,7 @@
             const sa = (plan.stock.get(a) || 0) - (plan.committed.get(a) || 0), sb = (plan.stock.get(b) || 0) - (plan.committed.get(b) || 0);
             return sa - sb;
         });
-        list.replaceChildren(...usedCodes.map(code => row(code, used.get(code))));
+        list.replaceChildren(...usedCodes.map(code => row(code, used.get(code), true)));
         const others = document.getElementById('adm-stock-others');
         const otherCodes = BAMBU_FILAMENTI.map(f => f.codice).filter(c => !used.has(c));
         others.replaceChildren(...otherCodes.map(code => row(code, [])));
@@ -2251,28 +2331,29 @@
         white.value = admWhiteCode();
 
         renderMagazzinoScatole(plan);
+        renderMagazzinoCalamite(plan);
 
         // Movimenti
         const movesBox = document.getElementById('adm-stock-moves');
         const fmt = new Intl.DateTimeFormat('it-IT', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Rome' });
         const kindLabel = { carico: 'Carico', rettifica: 'Correzione', scarico: 'Ordine evaso' };
-        const recent = [...petFilamentMoves.map(m => ({ ...m, kindOf: 'f' })), ...petBoxMoves.map(m => ({ ...m, kindOf: 'b' }))]
+        const recent = [...petFilamentMoves.map(m => ({ ...m, kindOf: 'f' })), ...petBoxMoves.map(m => ({ ...m, kindOf: 'b' })), ...petMagnetMoves.map(m => ({ ...m, kindOf: 'm' }))]
             .sort((a, b) => new Date(b.created_at) - new Date(a.created_at) || b.id - a.id).slice(0, 60);
         movesBox.replaceChildren(...(recent.length ? recent.map(m => {
             const li = admEl('li', 'adm-stock-move');
-            const isBox = m.kindOf === 'b';
-            const amount = isBox ? Number(m.qty) : Number(m.grams);
-            const amountText = isBox ? Math.abs(amount) + ' pz' : admGrams(Math.abs(amount));
-            li.append(admEl('span', 'adm-muted', fmt.format(new Date(m.created_at))), isBox ? admBoxLabel(m.box_id) : admFilamentLabel(m.code),
+            const isBox = m.kindOf === 'b', isMagnet = m.kindOf === 'm';
+            const amount = isBox || isMagnet ? Number(m.qty) : Number(m.grams);
+            const amountText = isBox || isMagnet ? Math.abs(amount) + ' pz' : admGrams(Math.abs(amount));
+            li.append(admEl('span', 'adm-muted', fmt.format(new Date(m.created_at))), isMagnet ? admMagnetLabel(m.magnet_id) : isBox ? admBoxLabel(m.box_id) : admFilamentLabel(m.code),
                 admEl('span', '', kindLabel[m.kind] + (m.note ? ' · ' + m.note : '')),
                 admEl('strong', amount < 0 ? 'adm-stock-neg' : 'adm-stock-pos', (amount > 0 ? '+' : '−') + amountText));
             if (m.kind !== 'scarico') {
                 const del = admEl('button', 'adm-icon-action adm-action-danger');
                 del.type = 'button'; del.title = 'Elimina movimento'; del.setAttribute('aria-label', 'Elimina movimento');
                 del.append(admIcon('delete'));
-                del.addEventListener('click', () => petConfirmDelete('Eliminare questo movimento?', (kindLabel[m.kind]) + ' di ' + amountText + ' · ' + (isBox ? admBoxName(m.box_id) : (admFilament(m.code)?.nome || m.code)) + '. Le scorte vengono ricalcolate.').then(async ok => {
+                del.addEventListener('click', () => petConfirmDelete('Eliminare questo movimento?', (kindLabel[m.kind]) + ' di ' + amountText + ' · ' + (isMagnet ? admMagnetName(m.magnet_id) : isBox ? admBoxName(m.box_id) : (admFilament(m.code)?.nome || m.code)) + '. Le scorte vengono ricalcolate.').then(async ok => {
                     if (!ok) return;
-                    try { if (isBox) await window.petCloud.deleteBoxMove(m.id); else await window.petCloud.deleteMove(m.id); await petLoadFilaments(); } catch { M.toast({ html: 'Non eliminato: riprova', classes: 'rounded' }); }
+                    try { if (isMagnet) await window.petCloud.deleteMagnetMove(m.id); else if (isBox) await window.petCloud.deleteBoxMove(m.id); else await window.petCloud.deleteMove(m.id); await petLoadFilaments(); } catch { M.toast({ html: 'Non eliminato: riprova', classes: 'rounded' }); }
                 }));
                 li.append(del);
             } else li.append(admEl('span', ''));
@@ -2288,20 +2369,22 @@
             const stock = plan.boxStock.get(b.id) || 0;
             const need = plan.boxCommitted.get(b.id) || 0;
             const after = stock - need;
-            const row = admEl('div', 'adm-stock-row' + (after < 0 ? ' is-short' : need && after < 5 ? ' is-low' : ''));
-            const who = admEl('div', 'adm-stock-who');
-            who.append(admBoxLabel(b.id));
             const users = [];
             for (const [model, sizes] of Object.entries(catalogoPrezzi)) for (const [size, v] of Object.entries(sizes)) if (v.scatola === b.id) users.push(model + ' ' + size);
+            const ref = admRestockRef(petBoxMoves, 'box_id', b.id);
+            const low = admRestockState(stock, ref, users.length > 0 || petBoxSettings.cartone === b.id) === 'low';
+            const row = admEl('div', 'adm-stock-row' + (after < 0 ? ' is-short' : low ? ' is-low' : ' is-ok'));
+            const who = admEl('div', 'adm-stock-who');
+            who.append(admBoxLabel(b.id));
             const roles = [users.length ? 'Per: ' + users.join(', ') : '', petBoxSettings.cartone === b.id ? 'cartone di spedizione predefinito' : ''].filter(Boolean);
             if (roles.length) who.append(admEl('span', 'adm-stock-users', roles.join(' · ')));
             const bar = admEl('div', 'adm-stock-bar');
-            const top = Math.max(20, stock, need);
+            const top = Math.max(20, ref, stock, need);
             const fill = admEl('span', ''); fill.style.width = Math.max(0, Math.min(100, stock / top * 100)) + '%';
             bar.append(fill);
             if (need) { const mark = admEl('i', ''); mark.style.left = Math.min(100, need / top * 100) + '%'; bar.append(mark); }
             const nums = admEl('div', 'adm-stock-nums');
-            nums.append(admEl('strong', '', stock + ' pz'), admEl('span', '', need ? 'impegnate ' + need : 'nessun ordine aperto'),
+            nums.append(admEl('strong', '', stock + ' pz' + (ref ? ' su ' + ref : '')), admEl('span', '', need ? 'impegnate ' + need : 'nessun ordine aperto'),
                 admEl('span', after < 0 ? 'adm-stock-neg' : 'adm-stock-pos', need ? (after < 0 ? 'mancano ' + (-after) : 'restano ' + after) : ''),
                 admEl('span', 'adm-stock-price' + (Number(b.prezzo) > 0 ? '' : ' is-missing'), admPriceText(Number(b.prezzo) > 0 ? Number(b.prezzo) : 0, ' al pezzo')),
                 (Number(b.cartaCm) || Number(b.nastroCm)) ? admEl('span', 'adm-stock-price', [Number(b.cartaCm) ? 'carta ' + b.cartaCm + ' cm' : '', Number(b.nastroCm) ? 'nastro ' + b.nastroCm + ' cm' : ''].filter(Boolean).join(' · ')) : '');
@@ -2323,6 +2406,46 @@
         cartone.replaceChildren(new Option('— Nessuno —', ''), ...boxes.map(b => new Option(b.nome, b.id)));
         cartone.value = petBoxSettings.cartone || '';
         document.getElementById('adm-box-per').value = parseInt(petBoxSettings.perCartone, 10) || 8;
+    }
+    function renderMagazzinoCalamite(plan) {
+        const list = document.getElementById('adm-magnet-list');
+        if (!list) return;
+        const magnets = admMagnets();
+        list.replaceChildren(...(magnets.length ? magnets.map(m => {
+            const stock = plan.magnetStock.get(m.id) || 0;
+            const need = plan.magnetCommitted.get(m.id) || 0;
+            const after = stock - need;
+            const users = admMagnetUsers(m.id);
+            const ref = admRestockRef(petMagnetMoves, 'magnet_id', m.id);
+            const low = admRestockState(stock, ref, users.length > 0) === 'low';
+            const row = admEl('div', 'adm-stock-row' + (after < 0 ? ' is-short' : low ? ' is-low' : ' is-ok'));
+            const who = admEl('div', 'adm-stock-who');
+            who.append(admMagnetLabel(m.id));
+            if (users.length) who.append(admEl('span', 'adm-stock-users', 'Per: ' + users.join(', ')));
+            const bar = admEl('div', 'adm-stock-bar');
+            const top = Math.max(20, ref, stock, need);
+            const fill = admEl('span', ''); fill.style.width = Math.max(0, Math.min(100, stock / top * 100)) + '%';
+            bar.append(fill);
+            if (need) { const mark = admEl('i', ''); mark.style.left = Math.min(100, need / top * 100) + '%'; bar.append(mark); }
+            const piece = admMagnetPiece(m);
+            const nums = admEl('div', 'adm-stock-nums');
+            nums.append(admEl('strong', '', stock + ' pz' + (ref ? ' su ' + ref : '')), admEl('span', '', need ? 'impegnate ' + need : 'nessun ordine aperto'),
+                admEl('span', after < 0 ? 'adm-stock-neg' : 'adm-stock-pos', need ? (after < 0 ? 'mancano ' + (-after) : 'restano ' + after) : ''),
+                admEl('span', 'adm-stock-price' + (piece ? '' : ' is-missing'), piece ? admPieceMoney.format(piece) + ' a calamita' + (Number(m.pezzi) > 1 ? ' (' + admMoney.format(Number(m.prezzo)) + ' per ' + m.pezzi + ')' : '') : 'prezzo da inserire'));
+            const actions = admEl('div', 'adm-stock-actions');
+            const plus = admEl('button', 'adm-action'); plus.type = 'button'; plus.append(admIcon('add'), admEl('span', '', 'Carica'));
+            plus.setAttribute('aria-label', 'Carica calamite ' + m.nome);
+            plus.addEventListener('click', () => admOpenMagnetDialog(m.id, 'carico'));
+            const fix = admEl('button', 'adm-icon-action'); fix.type = 'button'; fix.title = 'Correggi il conteggio'; fix.setAttribute('aria-label', 'Correggi il conteggio di ' + m.nome);
+            fix.append(admIcon('edit_note')); fix.addEventListener('click', () => admOpenMagnetDialog(m.id, 'rettifica'));
+            const price = admEl('button', 'adm-icon-action'); price.type = 'button'; price.title = 'Prezzo'; price.setAttribute('aria-label', 'Prezzo della calamita ' + m.nome);
+            price.append(admIcon('euro')); price.addEventListener('click', () => admOpenMagnetDialog(m.id, 'prezzo'));
+            const del = admEl('button', 'adm-icon-action adm-action-danger'); del.type = 'button'; del.title = 'Elimina tipo'; del.setAttribute('aria-label', 'Elimina la calamita ' + m.nome);
+            del.append(admIcon('delete')); del.addEventListener('click', () => admDeleteMagnet(m.id));
+            actions.append(plus, fix, price, del);
+            row.append(who, bar, nums, actions);
+            return row;
+        }) : [admEl('p', 'adm-muted', 'Nessuna calamita: crea i tipi che usi con «Nuovo tipo».')]));
     }
     async function admSaveCartonSettings() {
         petBoxSettings.cartone = document.getElementById('adm-box-cartone').value;
@@ -2620,6 +2743,185 @@
         if (mode === 'rettifica' && !qty) { error.textContent = 'Il conteggio è già questo: niente da correggere.'; return; }
         document.getElementById('adm-box-dialog').close();
         await admAddBoxMove(id, qty, mode, note || (mode === 'carico' ? value + ' scatole acquistate' : 'Conteggio verificato: ' + value));
+    }
+
+    // === MAGAZZINO CALAMITE (quante per urna dal catalogo; scarico automatico quando l'ordine è evaso) ===
+    let petMagnetMoves = [];
+    let petMagnetSettings = { lista: [] };
+    const admPieceMoney = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2, maximumFractionDigits: 4 });
+    function admMagnets() { return Array.isArray(petMagnetSettings.lista) ? petMagnetSettings.lista : []; }
+    function admMagnet(id) { return admMagnets().find(m => m.id === id) || null; }
+    function admMagnetName(id) { return admMagnet(id)?.nome || id; }
+    function admMagnetStock() {
+        const stock = new Map();
+        for (const m of petMagnetMoves) stock.set(m.magnet_id, (stock.get(m.magnet_id) || 0) + Number(m.qty));
+        return stock;
+    }
+    function admOrderMagnetNeed(order) {
+        const magnets = new Map();
+        for (const a of order.articoli || []) {
+            const q = admQty(a);
+            for (const x of admVariantMagnets(catalogoPrezzi[a.modello]?.[a.dimensione])) magnets.set(x.tipo, (magnets.get(x.tipo) || 0) + q * Number(x.qty));
+        }
+        return magnets;
+    }
+    function admMagnetUsers(id) {
+        const users = [];
+        for (const [model, sizes] of Object.entries(catalogoPrezzi)) for (const [size, v] of Object.entries(sizes)) {
+            const x = admVariantMagnets(v).find(m => m.tipo === id);
+            if (x) users.push(model + ' ' + size + ' (' + x.qty + ')');
+        }
+        return users;
+    }
+    function admMagnetLabel(id) {
+        const box = admEl('span', 'adm-stock-name');
+        const icon = admIcon('join_inner');
+        icon.classList.add('adm-box-icon');
+        const text = admEl('span', '');
+        text.append(admEl('strong', '', admMagnetName(id)), admEl('small', '', 'Calamita'));
+        box.append(icon, text);
+        return box;
+    }
+    async function admSaveMagnetSettings() {
+        try { await window.petCloud.saveSetting('calamite', petMagnetSettings); return true; }
+        catch { M.toast({ html: 'Non salvato: riprova', classes: 'rounded' }); return false; }
+    }
+    async function admNewMagnet() {
+        const text = (prompt('Tipo di calamita (es. Ø15×3 mm oppure 4×2 mm):') || '').trim();
+        if (!text) return;
+        const id = 'm-' + text.toLowerCase().replace(/×/g, 'x').replace(/ø/g, 'd').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 36);
+        if (id === 'm-') return;
+        if (admMagnet(id)) { M.toast({ html: 'Questa calamita esiste già', classes: 'rounded' }); return; }
+        petMagnetSettings.lista = [...admMagnets(), { id, nome: text.replace(/(\d)\s*[x×]\s*(\d)/gi, '$1×$2') }];
+        if (await admSaveMagnetSettings()) { renderMagazzino(); renderCatalogo(); admOpenMagnetDialog(id, 'carico'); }
+    }
+    function admDeleteMagnet(id) {
+        const stock = admMagnetStock().get(id) || 0;
+        const used = admMagnetUsers(id).length > 0;
+        if (stock || used) { M.toast({ html: used ? 'Prima togli questa calamita dai prodotti del catalogo' : 'Prima porta a zero le scorte di questa calamita', classes: 'rounded' }); return; }
+        petConfirmDelete('Eliminare la calamita ' + admMagnetName(id) + '?', 'Sparisce dall’elenco delle calamite. Gli ordini già fatti non cambiano.').then(async ok => {
+            if (!ok) return;
+            petMagnetSettings.lista = admMagnets().filter(m => m.id !== id);
+            if (await admSaveMagnetSettings()) { renderMagazzino(); renderCatalogo(); }
+        });
+    }
+    async function admAddMagnetMove(id, qty, kind, note) {
+        if (!qty) return;
+        try {
+            await window.petCloud.addMagnetMove({ magnet_id: id, qty: Math.round(qty), kind, note: note || null });
+            await petLoadFilaments();
+            M.toast({ html: (qty > 0 ? 'Aggiunte ' : 'Tolte ') + Math.abs(Math.round(qty)) + ' calamite ' + admMagnetName(id), classes: 'rounded' });
+        } catch { M.toast({ html: 'Movimento non salvato: riprova', classes: 'rounded' }); }
+    }
+    function admOpenMagnetDialog(id, mode) {
+        if (!admMagnets().length) { admNewMagnet(); return; }
+        const select = document.getElementById('adm-magnet-id');
+        select.replaceChildren(...admMagnets().map(m => new Option(m.nome, m.id)));
+        select.value = id || admMagnets()[0].id;
+        document.getElementById('adm-magnet-mode').value = mode || 'carico';
+        document.getElementById('adm-magnet-note').value = '';
+        document.getElementById('adm-magnet-error').textContent = '';
+        admMagnetDialogMode();
+        document.getElementById('adm-magnet-dialog').showModal();
+        document.getElementById(mode === 'prezzo' ? 'adm-magnet-price' : 'adm-magnet-qty').focus();
+    }
+    function admMagnetDialogMode() {
+        const mode = document.getElementById('adm-magnet-mode').value;
+        const id = document.getElementById('adm-magnet-id').value;
+        const m = admMagnet(id) || {};
+        document.getElementById('adm-magnet-qty-label').hidden = mode === 'prezzo';
+        document.getElementById('adm-magnet-note-label').hidden = mode === 'prezzo';
+        document.getElementById('adm-magnet-pieces-label').hidden = mode === 'carico';
+        document.getElementById('adm-magnet-qty-label').firstChild.textContent = mode === 'rettifica' ? 'Quante ne hai davvero adesso ' : 'Quante ne hai comprate ';
+        document.getElementById('adm-magnet-qty').value = mode === 'rettifica' ? Math.max(0, admMagnetStock().get(id) || 0) : '';
+        document.getElementById('adm-magnet-price-label').firstChild.textContent = mode === 'carico' ? 'Quanto le hai pagate in tutto (€, spedizione compresa) ' : 'Prezzo (€, spedizione compresa) ';
+        document.getElementById('adm-magnet-price').value = mode === 'carico' ? '' : (Number(m.prezzo) ? String(m.prezzo).replace('.', ',') : '');
+        document.getElementById('adm-magnet-pieces').value = Number(m.pezzi) ? String(m.pezzi) : '';
+        const piece = admMagnetPiece(m);
+        document.getElementById('adm-magnet-hint').textContent = mode === 'carico'
+            ? 'Scrivi quante calamite ci sono nel pacchetto e quanto l’hai pagato: il prezzo a calamita lo calcola la dashboard.' + (piece ? ' Prezzo attuale: ' + admPieceMoney.format(piece) + ' a calamita (se lasci vuoto il prezzo resta questo).' : '')
+            : mode === 'prezzo' ? 'Prezzo del pacchetto e quante calamite contiene; se hai già il prezzo a pezzo lascia vuoto «Pezzi nel prezzo».'
+            : 'Contale e scrivi il totale: la dashboard corregge la differenza.';
+    }
+    async function admSaveMagnetDialog(event) {
+        event.preventDefault();
+        const id = document.getElementById('adm-magnet-id').value;
+        const mode = document.getElementById('adm-magnet-mode').value;
+        const value = parseInt(document.getElementById('adm-magnet-qty').value, 10);
+        const note = document.getElementById('adm-magnet-note').value.trim();
+        const error = document.getElementById('adm-magnet-error');
+        const price = admParsePrice(document.getElementById('adm-magnet-price').value);
+        if (Number.isNaN(price)) { error.textContent = 'Scrivi il prezzo in euro, es. 11,00.'; return; }
+        const piecesRaw = document.getElementById('adm-magnet-pieces').value.trim();
+        const pieces = piecesRaw ? parseInt(piecesRaw, 10) : 0;
+        if (piecesRaw && !(pieces > 0 && pieces <= 1000000)) { error.textContent = 'Scrivi quante calamite ci sono nel prezzo, es. 100.'; return; }
+        if (mode !== 'prezzo' && (!Number.isFinite(value) || value < 0 || (mode === 'carico' && (value <= 0 || value > 1000000)))) {
+            error.textContent = mode === 'carico' ? 'Scrivi quante calamite hai comprato.' : 'Scrivi quante ne hai (0 o più).'; return;
+        }
+        // Prezzo: con il carico vale «pagato in tutto ÷ calamite comprate»; con «Cambia prezzo» prezzo e pezzi come scritti
+        const cur = admMagnet(id) || {};
+        let next = null;
+        if (mode === 'carico' && price) next = { prezzo: price, pezzi: value };
+        if (mode === 'prezzo') next = { prezzo: price || 0, pezzi: pieces || 0 };
+        if (next && (next.prezzo !== (Number(cur.prezzo) || 0) || next.pezzi !== (Number(cur.pezzi) || 0))) {
+            const prev = petMagnetSettings.lista;
+            petMagnetSettings.lista = admMagnets().map(m => {
+                if (m.id !== id) return m;
+                const n = Object.assign({}, m);
+                if (next.prezzo) n.prezzo = next.prezzo; else delete n.prezzo;
+                if (next.pezzi > 1) n.pezzi = next.pezzi; else delete n.pezzi;
+                return n;
+            });
+            if (!(await admSaveMagnetSettings())) { petMagnetSettings.lista = prev; error.textContent = 'Non salvato: riprova.'; return; }
+            renderCostSettings(); renderCatalogo();
+        }
+        if (mode === 'prezzo') {
+            document.getElementById('adm-magnet-dialog').close();
+            M.toast({ html: 'Prezzo aggiornato', classes: 'rounded' });
+            renderMagazzino();
+            return;
+        }
+        const qty = mode === 'carico' ? value : value - (admMagnetStock().get(id) || 0);
+        if (mode === 'rettifica' && !qty) { error.textContent = 'Il conteggio è già questo: niente da correggere.'; return; }
+        document.getElementById('adm-magnet-dialog').close();
+        await admAddMagnetMove(id, qty, mode, note || (mode === 'carico' ? value + ' calamite acquistate' + (price ? ' a ' + admMoney.format(price) : '') : 'Conteggio verificato: ' + value));
+    }
+
+    // === SCORTE BASSE (in giallo, da ricomprare) ===
+    // Bobine: gialle da 1 kg in giù. Scatole e calamite: gialle al 20% o meno di quante ne avevi dopo l'ultimo acquisto.
+    const ADM_LOW_SHARE = 0.2;
+    function admRestockRef(moves, key, id) {
+        let level = 0, ref = 0, max = 0, bought = false;
+        const list = moves.filter(m => m[key] === id).sort((a, b) => new Date(a.created_at) - new Date(b.created_at) || a.id - b.id);
+        for (const m of list) {
+            level += Number(m.qty);
+            max = Math.max(max, level);
+            if (m.kind === 'carico') { ref = level; bought = true; }
+        }
+        return bought ? ref : max;
+    }
+    function admRestockState(stock, ref, used) {
+        if (ref > 0) return stock <= ref * ADM_LOW_SHARE ? 'low' : 'ok';
+        return used && stock <= 0 ? 'low' : 'ok';
+    }
+    function admFilamentLow(code) { return (admStock().get(code) || 0) <= 1000; }
+    function admRestockList() {
+        const out = [];
+        const used = new Set([...Object.values(petColorBambu || {}), admWhiteCode()]);
+        const stock = admStock();
+        for (const code of used) if (code && (stock.get(code) || 0) <= 1000) out.push({ kind: 'f', id: code, text: (stock.get(code) || 0) > 0 ? 'resta ' + admGrams(stock.get(code)) + ' · ricompra (tienine almeno 2)' : 'finito · ricompra' });
+        const boxStock = admBoxStock();
+        for (const b of admBoxes()) {
+            const st = boxStock.get(b.id) || 0, ref = admRestockRef(petBoxMoves, 'box_id', b.id);
+            const usedBox = petBoxSettings.cartone === b.id || Object.values(catalogoPrezzi).some(sz => Object.values(sz).some(v => v.scatola === b.id));
+            if (admRestockState(st, ref, usedBox) === 'low') out.push({ kind: 'b', id: b.id, text: ref ? 'restano ' + Math.max(st, 0) + ' su ' + ref + ' · ricompra' : 'nessuna in magazzino · ricompra' });
+        }
+        const mgStock = admMagnetStock();
+        for (const m of admMagnets()) {
+            const st = mgStock.get(m.id) || 0, ref = admRestockRef(petMagnetMoves, 'magnet_id', m.id);
+            if (admRestockState(st, ref, admMagnetUsers(m.id).length > 0) === 'low') out.push({ kind: 'm', id: m.id, text: ref ? 'restano ' + Math.max(st, 0) + ' su ' + ref + ' · ricompra' : 'nessuna in magazzino · ricompra' });
+        }
+        return out;
     }
 
     // Scatole di spedizione nel modulo ordine
@@ -3405,66 +3707,9 @@
         add.type = 'button'; add.addEventListener('click', admAddPrinter);
         box.replaceChildren(...rows, add, sum, how);
     }
-    // Calamite: tipi con prezzo (della confezione, diviso per i pezzi); ogni misura ne usa fino a due tipi
-    let admMagnetDraft = null;
-    function admMagnets() { return admMagnetDraft || (petCostSettings.calamite || []); }
-    function admMagnet(id) { return (petCostSettings.calamite || []).find(m => m.id === id); }
+    // Calamite: i tipi, le scorte e i prezzi stanno nel Magazzino (impostazione 'calamite'); ogni misura ne usa fino a due tipi
     function admMagnetPiece(m) { return m ? admCostNum(m.prezzo) / Math.max(1, admCostNum(m.pezzi) || 1) : 0; }
     function admVariantMagnets(v) { return (Array.isArray(v?.calamite) ? v.calamite : []).filter(x => x && x.tipo && Number(x.qty) > 0); }
-    function admReadMagnetDraft() {
-        if (!admMagnetDraft) return;
-        admMagnetDraft = admMagnetDraft.map(m => ({
-            id: m.id,
-            nome: document.getElementById('adm-mg-nome-' + m.id)?.value.trim() ?? m.nome,
-            prezzo: document.getElementById('adm-mg-prezzo-' + m.id)?.value.trim() ?? m.prezzo,
-            pezzi: document.getElementById('adm-mg-pezzi-' + m.id)?.value.trim() ?? m.pezzi
-        }));
-    }
-    function admAddMagnet() {
-        admReadMagnetDraft();
-        if (!admMagnetDraft) admMagnetDraft = admMagnets().map(m => Object.assign({}, m));
-        admMagnetDraft.push({ id: 'm-' + Date.now().toString(36), nome: '', prezzo: '', pezzi: '' });
-        renderMagnets();
-        document.getElementById('adm-mg-nome-' + admMagnetDraft[admMagnetDraft.length - 1].id)?.focus();
-    }
-    async function admRemoveMagnet(id) {
-        admReadMagnetDraft();
-        if (!admMagnetDraft) admMagnetDraft = admMagnets().map(m => Object.assign({}, m));
-        const mg = admMagnetDraft.find(m => m.id === id);
-        const used = Object.entries(catalogoPrezzi || {}).flatMap(([mod, vs]) => Object.entries(vs || {}).filter(([, v]) => admVariantMagnets(v).some(x => x.tipo === id)).map(([dim]) => mod + ' ' + dim));
-        if (!(await petConfirmDelete('Eliminare la calamita ' + (mg?.nome || '') + '?', used.length
-            ? 'È usata in ' + used.length + (used.length === 1 ? ' misura' : ' misure') + ' (' + used.slice(0, 4).join(', ') + (used.length > 4 ? '…' : '') + '): lì il costo risulterà incompleto finché non scegli un altro tipo.'
-            : 'Esce dalla lista quando premi «Salva i valori».'))) return;
-        admMagnetDraft = admMagnetDraft.filter(m => m.id !== id);
-        renderMagnets();
-    }
-    function renderMagnets() {
-        const box = document.getElementById('adm-cost-magnets');
-        if (!box) return;
-        const rows = admMagnets().map(m => {
-            const row = admEl('div', 'adm-printer-row adm-magnet-row');
-            const mk = (pre, label, value, ph, mode) => {
-                const f = admEl('label', 'adm-field'); f.append(document.createTextNode(label));
-                const i = document.createElement('input');
-                i.type = 'text'; i.className = 'browser-default adm-cost-input'; i.id = pre + m.id; i.placeholder = ph; i.autocomplete = 'off';
-                if (mode) i.inputMode = mode;
-                i.value = value === undefined || value === null ? '' : (mode ? String(value).replace('.', ',') : String(value));
-                f.append(i); return f;
-            };
-            const del = admEl('button', 'adm-icon-button adm-printer-del');
-            del.type = 'button'; del.title = 'Elimina ' + (m.nome || 'calamita'); del.setAttribute('aria-label', del.title);
-            del.append(admIcon('delete'));
-            del.addEventListener('click', () => admRemoveMagnet(m.id));
-            const piece = admMagnetPiece(m);
-            const est = admEl('small', 'adm-printer-est', piece ? admMoney.format(piece) + ' a calamita' : '');
-            row.append(mk('adm-mg-nome-', 'Tipo', m.nome, 'es. Ø15×3 mm'), mk('adm-mg-prezzo-', 'Prezzo (€)', m.prezzo, 'es. 12,90', 'decimal'), mk('adm-mg-pezzi-', 'Pezzi nel prezzo', m.pezzi, 'vuoto = 1', 'decimal'), del, est);
-            return row;
-        });
-        const add = admEl('button', 'pet-link-button', '+ Aggiungi calamita');
-        add.type = 'button'; add.addEventListener('click', admAddMagnet);
-        const how = admEl('p', 'adm-note', 'Se compri una confezione, scrivi il prezzo della confezione e quante calamite contiene: il prezzo a calamita lo calcola la dashboard. Se hai già il prezzo a pezzo, lascia vuoto «Pezzi nel prezzo».');
-        box.replaceChildren(...rows, add, ...(rows.length ? [how] : [admEl('p', 'adm-note', 'Nessuna calamita: aggiungi i tipi che usi.')]));
-    }
     // Prezzi dal Magazzino: bianco = bobina impostata come bianco; colorato = media dei colori del catalogo con prezzo
     function admColorKgPrice() {
         const white = admWhiteCode();
@@ -3531,8 +3776,6 @@
         box.replaceChildren(...COST_FIELDS.map(([k, label, hint, ph]) => mk('adm-cost-' + k, label, hint, ph, c[k])));
         admPrinterDraft = null;
         renderPrinters();
-        admMagnetDraft = null;
-        renderMagnets();
         const paper = document.getElementById('adm-cost-paper');
         if (paper) {
             const eurCm = admPaperPerCm();
@@ -3582,26 +3825,10 @@
             printers.push(pr);
         }
         if (printers.length) next.stampanti = printers;
-        admReadMagnetDraft();
-        const magnets = [];
-        for (const m of admMagnets()) {
-            const nome = String(m.nome || '').trim() || 'Calamita ' + (magnets.length + 1);
-            const mg = { id: m.id, nome };
-            for (const [key, label] of [['prezzo', 'prezzo'], ['pezzi', 'pezzi nel prezzo']]) {
-                const raw = String(m[key] ?? '').trim();
-                if (!raw) continue;
-                const n = parseFloat(raw.replace(',', '.'));
-                if (!Number.isFinite(n) || n < 0) { status.textContent = 'Controlla «' + label + '» della calamita ' + nome + '.'; return; }
-                mg[key] = n;
-            }
-            magnets.push(mg);
-        }
-        if (magnets.length) next.calamite = magnets;
         try {
             await window.petCloud.saveSetting('costi', next);
             petCostSettings = next;
             admPrinterDraft = null;
-            admMagnetDraft = null;
             renderCostSettings();
             status.textContent = 'Salvato ✓';
             setTimeout(() => { if (status.textContent === 'Salvato ✓') status.textContent = ''; }, 2500);
@@ -3708,7 +3935,7 @@
                         if (field === 'extra') {
                             // Calamite: due coppie «quante + tipo» prima della colonna Extra
                             const mgTd = admEl('td', 'adm-magnet-cell');
-                            const types = petCostSettings.calamite || [];
+                            const types = admMagnets();
                             const current = Array.isArray(v.calamite) ? v.calamite : [];
                             for (const slot of [0, 1]) {
                                 const pair = admEl('div', 'adm-magnet-pair');
@@ -3722,7 +3949,7 @@
                                 sel.className = 'browser-default adm-box-select';
                                 sel.id = 'edit_mgt' + slot + '_' + modello + '_' + dim;
                                 sel.setAttribute('aria-label', 'Tipo di calamita ' + (slot + 1) + ' ' + modello + ' ' + dim);
-                                sel.append(new Option(types.length ? '— tipo —' : 'Crea i tipi nei costi', ''), ...types.map(m => new Option(m.nome, m.id)));
+                                sel.append(new Option(types.length ? '— tipo —' : 'Crea i tipi nel Magazzino', ''), ...types.map(m => new Option(m.nome, m.id)));
                                 if (current[slot]?.tipo && !types.some(m => m.id === current[slot].tipo)) sel.append(new Option('Tipo eliminato', current[slot].tipo));
                                 sel.value = current[slot]?.tipo || '';
                                 pair.append(qty, sel);
@@ -4508,7 +4735,8 @@
         if (cart && r.need.minutes) line.append(admEl('span', '', 'Stampa ' + admHours(r.need.minutes)));
         for (const [code, g] of r.need.grams) { const item = admEl('span', ''); item.append(admFilamentLabel(code), document.createTextNode(' ' + admGrams(g))); line.append(item); }
         for (const [id, q] of r.boxNeed.boxes) { const item = admEl('span', ''); item.append(admBoxLabel(id), document.createTextNode(' ' + q + ' pz')); line.append(item); }
-        const shorts = [...r.short.map(x => admGrams(x.grams) + ' di ' + (admFilament(x.code)?.nome || x.code)), ...r.boxShort.map(x => x.qty + ' scatole ' + admBoxName(x.id))];
+        for (const [id, q] of r.magnetNeed || []) { const item = admEl('span', ''); item.append(admMagnetLabel(id), document.createTextNode(' ' + q + ' pz')); line.append(item); }
+        const shorts = [...r.short.map(x => admGrams(x.grams) + ' di ' + (admFilament(x.code)?.nome || x.code)), ...r.boxShort.map(x => x.qty + ' scatole ' + admBoxName(x.id)), ...(r.magnetShort || []).map(x => x.qty + ' calamite ' + admMagnetName(x.id))];
         if (shorts.length) line.append(admEl('span', 'adm-stock-neg', 'Mancano: ' + shorts.join(', ')));
         if (r.missing.size) line.append(admEl('span', 'adm-muted', [...r.missing].join(' · ')));
         return line;
@@ -4810,7 +5038,7 @@
             body.append(etaLine);
         }
         if (stockPlan || (o.evaso && petStockLoaded)) {
-            const r = stockPlan || (() => { const need = admOrderNeed(o), boxNeed = admOrderBoxNeed(o); return { need, boxNeed, short: [], boxShort: [], missing: new Set([...need.missing, ...boxNeed.missing]), anyShort: false }; })();
+            const r = stockPlan || (() => { const need = admOrderNeed(o), boxNeed = admOrderBoxNeed(o); return { need, boxNeed, magnetNeed: admOrderMagnetNeed(o), short: [], boxShort: [], magnetShort: [], missing: new Set([...need.missing, ...boxNeed.missing]), anyShort: false }; })();
             body.append(admNeedLine(r, false));
         }
 
@@ -6117,10 +6345,11 @@
         const recent = list => Array.isArray(list) ? list.filter(d => Date.now() - new Date(d).getTime() < 30 * 86400000).length : null;
         const plural = (n, one, many) => n + ' ' + (n === 1 ? one : many);
         const activity = window.petAdminActivity;
+        const restock = petStockLoaded ? admRestockList() : [];
         const items = [
             { icon: 'precision_manufacturing', title: open.length ? open.length + (open.length === 1 ? ' ordine da evadere' : ' ordini da evadere') : 'Nessun ordine da evadere',
-              note: open.length ? openPieces + ' urne da produrre' + (admOrderPlanCache && admOrderPlanCache.minutes ? ' · ' + admHours(admOrderPlanCache.minutes) + ' di stampa' : '') + (admOrderPlanCache && (admOrderPlanCache.shortages.size || admOrderPlanCache.boxShortages.size) ? ' · manca materiale (' + [admOrderPlanCache.shortages.size ? admOrderPlanCache.shortages.size + (admOrderPlanCache.shortages.size === 1 ? ' colore' : ' colori') : '', admOrderPlanCache.boxShortages.size ? admOrderPlanCache.boxShortages.size + (admOrderPlanCache.boxShortages.size === 1 ? ' misura di scatola' : ' misure di scatole') : ''].filter(Boolean).join(', ') + ')' : '') : 'Produzione in pari',
-              warn: open.length > 0, action: admOrderPlanCache && (admOrderPlanCache.shortages.size || admOrderPlanCache.boxShortages.size) ? ['Magazzino', () => { admOpen('magazzino-colori'); renderMagazzino(); }] : ['Elenco ordini', () => admOpen('lista-ordini')] },
+              note: open.length ? openPieces + ' urne da produrre' + (admOrderPlanCache && admOrderPlanCache.minutes ? ' · ' + admHours(admOrderPlanCache.minutes) + ' di stampa' : '') + (admOrderPlanCache && (admOrderPlanCache.shortages.size || admOrderPlanCache.boxShortages.size || admOrderPlanCache.magnetShortages?.size) ? ' · manca materiale (' + [admOrderPlanCache.shortages.size ? admOrderPlanCache.shortages.size + (admOrderPlanCache.shortages.size === 1 ? ' colore' : ' colori') : '', admOrderPlanCache.boxShortages.size ? admOrderPlanCache.boxShortages.size + (admOrderPlanCache.boxShortages.size === 1 ? ' misura di scatola' : ' misure di scatole') : '', admOrderPlanCache.magnetShortages?.size ? admOrderPlanCache.magnetShortages.size + (admOrderPlanCache.magnetShortages.size === 1 ? ' tipo di calamita' : ' tipi di calamite') : ''].filter(Boolean).join(', ') + ')' : '') + (restock.length ? ' · ' + restock.length + ' da ricomprare' : '') : 'Produzione in pari' + (restock.length ? ' · ' + restock.length + ' da ricomprare' : ''),
+              warn: open.length > 0 || restock.length > 0, action: (admOrderPlanCache && (admOrderPlanCache.shortages.size || admOrderPlanCache.boxShortages.size || admOrderPlanCache.magnetShortages?.size)) || restock.length ? ['Magazzino', () => { admOpen('magazzino-colori'); renderMagazzino(); }] : ['Elenco ordini', () => admOpen('lista-ordini')] },
             { icon: 'payments', title: unpaid.length ? admMoney.format(unpaidTotal) + ' da incassare' : 'Tutto incassato',
               note: unpaid.length ? unpaid.length + (unpaid.length === 1 ? ' ordine' : ' ordini') + ' · il più vecchio da ' + oldestUnpaid + ' giorni' : 'Nessun pagamento in sospeso', warn: unpaid.length > 0 },
             ...(dueRates.length ? [{ icon: 'event', title: plural(dueRates.length, 'rata', 'rate') + ' in scadenza' + (overdueRates.length ? ' · ' + overdueRates.length + ' scadut' + (overdueRates.length === 1 ? 'a' : 'e') : ''),
@@ -6756,6 +6985,23 @@
                     rows.push(...(data || []));
                     if (!data || data.length < 1000) return rows;
                 }
+            },
+            async magnetMoves() {
+                const rows = [];
+                for (let from = 0; ; from += 1000) {
+                    const { data, error } = await api.from('admin_magnet_moves').select('id,magnet_id,qty,kind,order_id,note,created_at').order('id', { ascending: true }).range(from, from + 999);
+                    if (error) throw error;
+                    rows.push(...(data || []));
+                    if (!data || data.length < 1000) return rows;
+                }
+            },
+            async addMagnetMove(row) {
+                const { error } = await api.from('admin_magnet_moves').insert(row);
+                if (error) throw error;
+            },
+            async deleteMagnetMove(id) {
+                const { error } = await api.from('admin_magnet_moves').delete().eq('id', id);
+                if (error) throw error;
             },
             async addBoxMove(row) {
                 const { error } = await api.from('admin_box_moves').insert(row);
