@@ -277,7 +277,7 @@
         .pet-home-actions .btn { text-transform:none; }
         .pet-home-empty { color:var(--muted); }
         .adm-source { margin: -8px 0 14px; color: var(--muted); font-size: .86rem; }
-        .adm-todo { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: 16px; }
+        .adm-todo { display: grid; grid-template-columns: repeat(var(--todo-cols, 4), minmax(0, 1fr)); gap: 10px; margin-bottom: 16px; }
         .adm-printq { margin: 0 0 16px; }
         .adm-printq h2 { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; font-size: 1.1rem; font-weight: 800; color: var(--plum); }
         .adm-printq-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
@@ -292,7 +292,8 @@
         .adm-todo-item > .material-icons { color: var(--accent); font-size: 22px; }
         .adm-todo-item strong { display: block; color: var(--plum); }
         .adm-todo-item span { display: block; color: var(--muted); font-size: .86rem; }
-        .adm-todo-item .pet-link-button { grid-column: 2; justify-self: start; padding: 2px 0; font-size: .9rem; }
+        .adm-todo-actions { grid-column: 2; display: flex; flex-wrap: wrap; gap: 4px 18px; }
+        .adm-todo-item .pet-link-button { justify-self: start; padding: 2px 0; font-size: .9rem; }
         .adm-todo-warn { background: #fffaf2; border-color: #f3dcb8; }
         .adm-todo-warn > .material-icons { color: #9a5500; }
         .adm-kpis { margin-bottom: 18px; }
@@ -848,6 +849,7 @@
             .adm-client-row > .adm-client-tags, .adm-client-row > .adm-client-contact, .adm-client-row > .adm-client-numbers { grid-column: 1; }
             .adm-client-row > .adm-client-row-actions { grid-column: 2; grid-row: 1; }
             .adm-todo { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .adm-todo-item:last-child:nth-child(odd) { grid-column: 1 / -1; }
         }
         @media(max-width:900px) {
             .pet-home-grid { grid-template-columns: minmax(0, 1fr); }
@@ -5996,21 +5998,33 @@
             ...(dueRates.length ? [{ icon: 'event', title: plural(dueRates.length, 'rata', 'rate') + ' in scadenza' + (overdueRates.length ? ' · ' + overdueRates.length + ' scadut' + (overdueRates.length === 1 ? 'a' : 'e') : ''),
               note: dueRates.slice(0, 2).map(x => (x.o.cliente || 'Senza nome') + ' · ' + x.p.tipo + ' ' + admMoney.format(Number(x.p.importo) || 0) + ' · ' + admDate.format(new Date(x.p.scadenza + 'T00:00:00Z'))).join(' — '),
               warn: overdueRates.length > 0, action: ['Apri la prima', () => admOpenPayments(dueRates[0].o.id)] }] : []),
-            { icon: 'receipt_long', title: recent(activity.orderRequests) == null ? 'Richieste d’ordine' : plural(recent(activity.orderRequests), 'richiesta d’ordine', 'richieste d’ordine'),
-              note: recent(activity.orderRequests) == null ? 'Caricamento…' : 'negli ultimi 30 giorni', action: ['Apri', () => document.querySelector('[aria-controls="pet-admin-order-dialog"]').click()] },
-            { icon: 'how_to_reg', title: recent(activity.partnerRequests) == null ? 'Richieste di accesso' : plural(recent(activity.partnerRequests), 'richiesta di accesso', 'richieste di accesso'),
-              note: recent(activity.partnerRequests) == null ? 'Caricamento…' : 'negli ultimi 30 giorni', action: ['Apri', () => document.querySelector('[aria-controls="partner-inbox-dialog"]').click()] }
+            (() => {
+                // Una sola scheda per le due caselle di posta: richieste d'ordine (da gestire) e di accesso (ultimi 30 giorni).
+                const openOrders = activity.orderRequestsOpen, access = recent(activity.partnerRequests);
+                const loading = openOrders == null || access == null;
+                const orderText = openOrders == null ? 'ordini…' : plural(openOrders, 'ordine da gestire', 'ordini da gestire');
+                const accessText = access == null ? 'accessi…' : plural(access, 'richiesta di accesso', 'richieste di accesso') + ' (30 giorni)';
+                return { icon: 'inbox', title: loading ? 'Richieste' : (openOrders + access ? 'Richieste da vedere' : 'Nessuna richiesta nuova'),
+                  note: orderText + ' · ' + accessText, warn: openOrders > 0,
+                  actions: [['Ordini', () => document.querySelector('[aria-controls="pet-admin-order-dialog"]').click()], ['Accessi', () => document.querySelector('[aria-controls="partner-inbox-dialog"]').click()]] };
+            })()
         ];
+        todo.style.setProperty('--todo-cols', Math.min(items.length, 4));
         for (const item of items) {
             const box = admEl('div', 'adm-todo-item' + (item.warn ? ' adm-todo-warn' : ''));
             const text = admEl('div', '');
             text.append(admEl('strong', '', item.title), admEl('span', '', item.note));
             box.append(admIcon(item.icon), text);
-            if (item.action) {
-                const button = admEl('button', 'pet-link-button', item.action[0]);
-                button.type = 'button';
-                button.addEventListener('click', item.action[1]);
-                box.append(button);
+            const actions = item.actions || (item.action ? [item.action] : []);
+            if (actions.length) {
+                const row = admEl('div', 'adm-todo-actions');
+                for (const [label, run] of actions) {
+                    const button = admEl('button', 'pet-link-button', label);
+                    button.type = 'button';
+                    button.addEventListener('click', run);
+                    row.append(button);
+                }
+                box.append(row);
             }
             todo.append(box);
         }
@@ -7632,6 +7646,7 @@
                 return;
             }
             window.petAdminActivity.orderRequests = requests.map(request => request.submitted_at);
+            window.petAdminActivity.orderRequestsOpen = requests.filter(request => (request.status || 'nuova') === 'nuova').length;
             if (typeof aggiornaStatistiche === 'function') aggiornaStatistiche();
             inboxTimes.orders = requests.map(request => new Date(request.submitted_at).toISOString());
             inboxRenderSeen.orders = inboxSeen('orders');
