@@ -1422,7 +1422,7 @@
                         <label class="adm-field">Telefono pubblico<input id="sitoTelefono" type="tel" maxlength="40" autocomplete="off"></label>
                         <label class="adm-field">Cellulare pubblico<input id="sitoCellulare" type="tel" maxlength="40" autocomplete="off"></label>
                         <label class="adm-field adm-span-2">Email pubblica<input id="sitoEmail" type="email" maxlength="254" autocomplete="off"></label>
-                        <label class="adm-field">Sito web<input id="sitoWeb" type="url" maxlength="200" placeholder="https://" autocomplete="off"></label>
+                        <label class="adm-field">Sito web pubblico<input id="sitoWebPubblico" type="url" maxlength="200" placeholder="https://" autocomplete="off"></label>
                         <p class="adm-note adm-span-3">Questi dati sono visibili a chiunque visita 24pet.it, nella sezione «Dove trovarle». Indirizzo, email e sito solo se il cliente lo chiede.</p>
                     </div>
                 </fieldset>
@@ -1475,6 +1475,7 @@
                     <a href="#gestione-clienti" class="collection-item" onclick="showPage('gestione-clienti', this); return false;"><i class="material-icons left">people</i> Clienti</a>
                     <a href="#nuovo-ordine" class="collection-item" onclick="showPage('nuovo-ordine', this); return false;"><i class="material-icons left">add_shopping_cart</i> Nuovo Ordine</a>
                     <a href="#lista-ordini" class="collection-item" onclick="showPage('lista-ordini', this); return false;"><i class="material-icons left">list</i> Elenco Ordini</a>
+                    <a href="#impostazioni" class="collection-item" onclick="showPage('impostazioni', this); return false;"><i class="material-icons left">settings</i> Impostazioni</a>
                 </div>
             </div>
 
@@ -1567,29 +1568,64 @@
                     </div>
                     <div id="catalogo-container" class="adm-catalog"></div>
                     <section class="pet-home-card adm-filament-card adm-cost-card" aria-labelledby="adm-cost-title">
-                        <h2 id="adm-cost-title">Calcolo dei costi</h2>
-                        <p class="adm-note">Con questi valori e con tempi, grammi, lavoro, calamite ed extra di ogni misura (in «Modifica»; tipi e prezzi delle calamite nel Magazzino) la dashboard calcola il costo di ogni urna. Ogni nuovo ordine salva il costo calcolato in quel momento: gli ordini già fatti non cambiano.</p>
-                        <div id="adm-cost-fields" class="adm-cost-grid"></div>
-                        <h3 class="adm-cost-sub">Carta di riempimento e nastro</h3>
-                        <p class="adm-note" id="adm-cost-paper-note"></p>
-                        <div id="adm-cost-paper" class="adm-cost-grid"></div>
-                        <h3 class="adm-cost-sub">Stampanti</h3>
-                        <div id="adm-cost-printers" class="adm-cost-printers"></div>
+                        <h2 id="adm-cost-title">Come si calcola il costo</h2>
+                        <p class="adm-note">Il costo di ogni urna nasce dai tempi, grammi, lavoro, calamite ed extra di ogni misura (in «Modifica») e dai valori in <a href="#" onclick="admOpen('impostazioni'); return false;">Impostazioni › Produzione</a> (energia, usura, manodopera, scarto, stampanti). Ogni nuovo ordine salva il costo calcolato in quel momento: gli ordini già fatti non cambiano.</p>
                         <h3 class="adm-cost-sub">Prezzi dal Magazzino</h3>
                         <ul id="adm-cost-stockinfo" class="adm-cost-stockinfo"></ul>
                         <p class="adm-note">I prezzi delle bobine e delle scatole si inseriscono nel <a href="#" onclick="admOpen('magazzino-colori'); renderMagazzino(); return false;">Magazzino</a>, con il pulsante <i class="material-icons adm-inline-icon" aria-hidden="true">euro</i> di ogni riga.</p>
+                    </section>
+                </div>
+
+                <!-- PAGINA: IMPOSTAZIONI -->
+                <div id="impostazioni" class="page-content">
+                    <div class="adm-list-head">
+                        <div>
+                            <h4 class="text-prugna">Impostazioni</h4>
+                            <p class="adm-note">Valori che usa la dashboard per costi, consegne, imballo, spedizioni e colori. Si cambiano di rado.</p>
+                        </div>
+                    </div>
+                    <div class="adm-stock-tabs" role="tablist" aria-label="Impostazioni" onkeydown="admSettingsTabKey(event)">
+                        <button type="button" role="tab" id="adm-set-tab-prod" aria-controls="adm-set-panel-prod" aria-selected="true" onclick="admShowSettingsTab('prod')"><i class="material-icons" aria-hidden="true">precision_manufacturing</i>Produzione</button>
+                        <button type="button" role="tab" id="adm-set-tab-pack" aria-controls="adm-set-panel-pack" aria-selected="false" tabindex="-1" onclick="admShowSettingsTab('pack')"><i class="material-icons" aria-hidden="true">inventory</i>Imballo</button>
+                        <button type="button" role="tab" id="adm-set-tab-ship" aria-controls="adm-set-panel-ship" aria-selected="false" tabindex="-1" onclick="admShowSettingsTab('ship')"><i class="material-icons" aria-hidden="true">local_shipping</i>Spedizione</button>
+                        <button type="button" role="tab" id="adm-set-tab-col" aria-controls="adm-set-panel-col" aria-selected="false" tabindex="-1" onclick="admShowSettingsTab('col')"><i class="material-icons" aria-hidden="true">palette</i>Colori</button>
+                    </div>
+                    <div id="adm-set-panel-prod" role="tabpanel" aria-labelledby="adm-set-tab-prod" class="adm-stock-panel">
+                        <section class="pet-home-card adm-stock-card" aria-labelledby="adm-set-prod-title">
+                            <h2 id="adm-set-prod-title">Produzione e consegne</h2>
+                            <p class="adm-note">Servono al costo di ogni urna (energia, usura, manodopera, scarto) e alla consegna prevista (ore al giorno, tempi morti, giorni di lavoro, corriere, ordini piccoli).</p>
+                            <div id="adm-cost-fields" class="adm-cost-grid"></div>
+                            <h3 class="adm-cost-sub">Stampanti</h3>
+                            <div id="adm-cost-printers" class="adm-cost-printers"></div>
+                            <div class="adm-cost-actions">
+                                <button type="button" class="adm-action adm-action-primary" onclick="admSaveCostSettings()"><i class="material-icons" aria-hidden="true">save</i><span>Salva i valori</span></button>
+                                <span id="adm-cost-status" class="adm-filament-status" role="status"></span>
+                            </div>
+                        </section>
+                    </div>
+                    <div id="adm-set-panel-pack" role="tabpanel" aria-labelledby="adm-set-tab-pack" class="adm-stock-panel" hidden>
+                        <section class="pet-home-card adm-stock-card" aria-labelledby="adm-set-pack-title">
+                            <h2 id="adm-set-pack-title">Imballo</h2>
+                        <p class="adm-note"><strong>Carta di riempimento e nastro</strong></p>
+                        <p class="adm-note" id="adm-cost-paper-note"></p>
+                        <div id="adm-cost-paper" class="adm-cost-grid"></div>
                         <div class="adm-cost-actions">
                             <button type="button" class="adm-action adm-action-primary" onclick="admSaveCostSettings()"><i class="material-icons" aria-hidden="true">save</i><span>Salva i valori</span></button>
-                            <span id="adm-cost-status" class="adm-filament-status" role="status"></span>
+                            <span id="adm-cost-status-2" class="adm-filament-status" role="status"></span>
                         </div>
-                    </section>
-                    <section class="pet-home-card adm-filament-card adm-cost-card" aria-labelledby="adm-ship-title">
+                        </section>
+                    </div>
+                    <div id="adm-set-panel-ship" role="tabpanel" aria-labelledby="adm-set-tab-ship" class="adm-stock-panel" hidden>
+                    <section class="pet-home-card adm-stock-card" aria-labelledby="adm-ship-title">
                         <h2 id="adm-ship-title">Spese di spedizione per i clienti</h2>
-                        <p class="adm-note">I clienti vedono la spedizione mentre compongono l’ordine. I cartoni si contano con «Urne per cartone» (Magazzino › Scatole e cartoni).</p>
+                        <p class="adm-note">I clienti vedono la spedizione mentre compongono l’ordine. Il numero di cartoni dipende da «Urne per cartone» qui sotto.</p>
                         <div class="adm-cost-grid">
                             <label class="adm-field">Primo cartone (€)<input id="adm-ship-primo" type="text" inputmode="decimal" class="browser-default adm-cost-input" placeholder="15" autocomplete="off"><small>IVA esclusa</small></label>
                             <label class="adm-field">Ogni cartone in più (€)<input id="adm-ship-extra" type="text" inputmode="decimal" class="browser-default adm-cost-input" placeholder="5" autocomplete="off"><small>IVA esclusa</small></label>
                             <label class="adm-field">Spedizione inclusa da (€)<input id="adm-ship-soglia" type="text" inputmode="decimal" class="browser-default adm-cost-input" placeholder="300" autocomplete="off"><small>IVA esclusa; rivenditori dopo lo sconto</small></label>
+                        </div>
+                        <div class="adm-cost-grid">
+                            <label class="adm-field">Urne per cartone<input id="adm-box-per" type="number" min="1" max="100" step="1" class="browser-default adm-cost-input" onchange="admSaveCartonSettings()"><small>serve anche per suggerire i cartoni negli ordini · si salva da solo</small></label>
                         </div>
                         <p id="adm-ship-example" class="adm-note"></p>
                         <div class="adm-cost-actions">
@@ -1597,15 +1633,20 @@
                             <span id="adm-ship-status" class="adm-filament-status" role="status"></span>
                         </div>
                     </section>
-                    <section class="pet-home-card adm-filament-card" aria-labelledby="adm-filament-title">
+                    </div>
+                    <div id="adm-set-panel-col" role="tabpanel" aria-labelledby="adm-set-tab-col" class="adm-stock-panel" hidden>
+                    <section class="pet-home-card adm-stock-card" aria-labelledby="adm-filament-title">
                         <div class="adm-filament-head">
                             <div>
                                 <h2 id="adm-filament-title">Colori urne e filamenti Bambu Lab</h2>
                                 <p class="adm-note">Solo per la produzione: codice e nome Bambu compaiono nelle schede di produzione e negli ordini, mai ai clienti. <span id="adm-filament-count"></span> <span id="adm-filament-status" class="adm-filament-status" role="status"></span></p>
                             </div>
                         </div>
+                        <label class="adm-field adm-stock-white">Bianco delle urne (parte bianca di tutte le urne)
+                            <select id="adm-stock-white" class="browser-default adm-filament-select" aria-label="Filamento del bianco"></select></label>
                         <div id="adm-filaments" class="adm-filaments"></div>
                     </section>
+                    </div>
                 </div>
 
                 <!-- PAGINA: MAGAZZINO COLORI -->
@@ -1636,8 +1677,6 @@
                                 <summary>Altri filamenti Bambu Lab <span id="adm-stock-others-count" class="adm-muted"></span></summary>
                                 <div id="adm-stock-others" class="adm-stock-list"></div>
                             </details>
-                            <label class="adm-field adm-stock-white">Bianco delle urne
-                                <select id="adm-stock-white" class="browser-default adm-filament-select" aria-label="Filamento del bianco"></select></label>
                         </section>
                         <section class="pet-home-card adm-stock-card" aria-labelledby="adm-stock-moves-f-title">
                             <h2 id="adm-stock-moves-f-title">Ultimi movimenti delle bobine</h2>
@@ -1659,7 +1698,6 @@
                             <div id="adm-box-list" class="adm-stock-list"></div>
                             <div class="adm-box-settings">
                                 <label class="adm-field">Cartone di spedizione predefinito<select id="adm-box-cartone" class="browser-default adm-filament-select" onchange="admSaveCartonSettings()"></select></label>
-                                <label class="adm-field">Urne per cartone<input id="adm-box-per" type="number" min="1" max="100" step="1" class="browser-default adm-ship-qty" onchange="admSaveCartonSettings()"></label>
                             </div>
                         </section>
                         <section class="pet-home-card adm-stock-card" aria-labelledby="adm-stock-moves-b-title">
@@ -2424,6 +2462,28 @@
                 return li;
             }) : [admEl('li', 'adm-muted', emptyText[k])]));
         }
+    }
+    // Sottoschede delle Impostazioni
+    const ADM_SET_TABS = ['prod', 'pack', 'ship', 'col'];
+    let admSettingsTab = 'prod';
+    function admShowSettingsTab(k) {
+        if (!ADM_SET_TABS.includes(k)) k = 'prod';
+        admSettingsTab = k;
+        for (const t of ADM_SET_TABS) {
+            const tab = document.getElementById('adm-set-tab-' + t), panel = document.getElementById('adm-set-panel-' + t);
+            if (!tab || !panel) continue;
+            tab.setAttribute('aria-selected', String(t === k));
+            tab.tabIndex = t === k ? 0 : -1;
+            panel.hidden = t !== k;
+        }
+    }
+    function admSettingsTabKey(event) {
+        const i = ADM_SET_TABS.indexOf(admSettingsTab);
+        const next = event.key === 'ArrowRight' ? ADM_SET_TABS[(i + 1) % ADM_SET_TABS.length] : event.key === 'ArrowLeft' ? ADM_SET_TABS[(i + ADM_SET_TABS.length - 1) % ADM_SET_TABS.length] : null;
+        if (!next) return;
+        event.preventDefault();
+        admShowSettingsTab(next);
+        document.getElementById('adm-set-tab-' + next).focus();
     }
     // Sottoschede del Magazzino (la scelta resta in questo browser)
     let admStockTab = (() => { try { return localStorage.getItem('adm-stock-tab') || 'f'; } catch { return 'f'; } })();
@@ -3918,7 +3978,11 @@
     }
     async function admSaveCostSettings() {
         const next = {};
-        const status = document.getElementById('adm-cost-status');
+        // Lo stesso esito sotto i due pulsanti «Salva i valori» (Produzione e Imballo)
+        const status = {
+            get textContent() { return document.getElementById('adm-cost-status')?.textContent || ''; },
+            set textContent(v) { for (const id of ['adm-cost-status', 'adm-cost-status-2']) { const el = document.getElementById(id); if (el) el.textContent = v; } }
+        };
         const ALL_FIELDS = [...COST_FIELDS, ...PAPER_FIELDS];
         for (const [k] of ALL_FIELDS) {
             const raw = document.getElementById('adm-cost-' + k).value.trim();
@@ -4300,7 +4364,7 @@
             ? 'Il cliente ha autorizzato la pubblicazione dall’area riservata il ' + new Date(site.consensoCliente).toLocaleDateString('it-IT') + '.'
             : 'Il cliente ha scelto dall’area riservata di non comparire sul sito.';
         admSetForm('sitoEmail', site.email ?? (client?.email || ''));
-        admSetForm('sitoWeb', site.web ?? (client?.sitoWeb || ''));
+        admSetForm('sitoWebPubblico', site.web ?? (client?.sitoWeb || ''));
         admToggleSite();
     }
     function admToggleShipping() {
@@ -4428,7 +4492,7 @@
     document.getElementById('sitoVisibile').addEventListener('change', () => {
         admToggleSite();
         if (document.getElementById('sitoVisibile').checked) {
-            for (const [site, source] of [['sitoNome', 'ragioneSociale'], ['sitoComune', 'fattComune'], ['sitoProvincia', 'fattProvincia'], ['sitoIndirizzo', 'fattVia'], ['sitoTelefono', 'telefono'], ['sitoEmail', 'email'], ['sitoWeb', 'sitoWeb']]) {
+            for (const [site, source] of [['sitoNome', 'ragioneSociale'], ['sitoComune', 'fattComune'], ['sitoProvincia', 'fattProvincia'], ['sitoIndirizzo', 'fattVia'], ['sitoTelefono', 'telefono'], ['sitoEmail', 'email'], ['sitoWebPubblico', 'sitoWeb']]) {
                 if (!admFormValue(site)) admSetForm(site, admFormValue(source) || (site === 'sitoNome' ? admFormValue('nuovoNomeCliente') : ''));
             }
         }
@@ -4481,7 +4545,7 @@
             if (value && !/^[A-Za-z]{2}$/.test(value)) return fail('La provincia va indicata con la sigla di 2 lettere, per esempio MI.', field);
         }
         const siteOn = document.getElementById('sitoVisibile').checked;
-        let siteWeb = admFormValue('sitoWeb');
+        let siteWeb = admFormValue('sitoWebPubblico');
         if (siteWeb && !/^https?:\/\//i.test(siteWeb)) siteWeb = 'https://' + siteWeb;
         if (siteOn) {
             if (!admFormValue('sitoNome')) return fail('Per il sito serve il nome da mostrare.', 'sitoNome');
