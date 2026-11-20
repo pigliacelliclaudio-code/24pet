@@ -3756,7 +3756,8 @@
         return ok.length && kwh ? ok.reduce((s, p) => s + admCostNum(p.watt) / 1000 * kwh, 0) / ok.length : 0;
     }
     function admReadPrinterDraft() {
-        if (!admPrinterDraft) return;
+        // Legge sempre quello che è scritto nei campi, anche se non hai aggiunto o tolto stampanti
+        if (!admPrinterDraft) admPrinterDraft = (petCostSettings.stampanti || []).map(p => Object.assign({}, p));
         admPrinterDraft = admPrinterDraft.map(p => ({
             id: p.id,
             nome: document.getElementById('adm-pr-nome-' + p.id)?.value.trim() ?? p.nome,
