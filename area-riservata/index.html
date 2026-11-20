@@ -223,6 +223,14 @@
         .pet-access-card { width: min(100%, 440px); background: #fff; padding: clamp(24px, 6vw, 42px); border: 1px solid #e8e0eb; border-radius: 20px; }
         .pet-access-card h1 { font-size: clamp(25px, 7vw, 32px); font-weight: 800; margin: 22px 0; }
         .pet-access-card label { color: #685e72; font-size: .95rem; }
+        .pet-mfa-text { color: #685e72; line-height: 1.5; margin: -8px 0 16px; }
+        .pet-mfa-steps { margin: 0 0 12px; padding-left: 1.3em; color: #3d3346; line-height: 1.5; }
+        .pet-mfa-steps li { margin-bottom: 4px; }
+        .pet-mfa-qr { display: block; margin: 8px auto 12px; width: 184px; height: 184px; padding: 8px; background: #fff; border: 1px solid #e8e0eb; border-radius: 12px; }
+        .pet-mfa-manual { margin: 0 0 16px; color: #685e72; font-size: .92rem; }
+        .pet-mfa-manual summary { cursor: pointer; font-weight: 700; color: var(--accent); }
+        .pet-mfa-secret { display: block; margin-top: 6px; padding: 8px 10px; background: #f6f1f8; border-radius: 8px; font-size: .95rem; letter-spacing: .06em; overflow-wrap: anywhere; user-select: all; }
+        .pet-access-card input.pet-mfa-code { font-size: 1.6rem; letter-spacing: .35em; text-align: center; font-variant-numeric: tabular-nums; }
         .pet-access-card .btn { min-height: 44px; margin-top: 8px; }
         #pet-role-view .pet-access-card { width: min(100%, 700px); }
         .pet-client-order { padding: 12px 16px; margin: 10px 0; border: 1px solid #e8e0eb; border-radius: 12px; }
@@ -993,6 +1001,28 @@
         <button id="pet-forgot" type="button" class="pet-link-button pet-forgot">Password dimenticata?</button>
         <p id="pet-login-status" role="status">Verifica dell’accesso in corso…</p>
         <p class="pet-login-legal"><a href="https://24pet.it/privacy/" target="_blank" rel="noopener">Informativa privacy</a> · <a href="https://24pet.it/condizioni-v1/" target="_blank" rel="noopener">Condizioni di vendita</a></p>
+    </form>
+    <form id="pet-mfa-form" class="pet-access-card" hidden novalidate>
+        <div class="app-brand"><img class="app-brand-logo" src="/assets/logo-24pet.png" width="38" height="38" alt=""><span>24Pet</span></div>
+        <h1 id="pet-mfa-title">Codice di verifica</h1>
+        <p id="pet-mfa-text" class="pet-mfa-text"></p>
+        <div id="pet-mfa-setup" class="pet-mfa-setup" hidden>
+            <ol class="pet-mfa-steps">
+                <li>Apri <strong>Google Authenticator</strong> sul telefono e tocca <strong>+</strong>, poi «Scansiona un codice QR».</li>
+                <li>Inquadra questo codice: nell’app comparirà <strong>24Pet</strong>.</li>
+                <li>Scrivi qui sotto le 6 cifre che vedi.</li>
+            </ol>
+            <img id="pet-mfa-qr" class="pet-mfa-qr" width="184" height="184" alt="Codice QR da inquadrare con Google Authenticator">
+            <details class="pet-mfa-manual"><summary>Stai usando il telefono o non riesci a inquadrarlo?</summary>
+                <p>Nell’app tocca <strong>+</strong> › «Inserisci una chiave di configurazione», come nome scrivi 24Pet e come chiave:</p>
+                <code id="pet-mfa-secret" class="pet-mfa-secret"></code>
+            </details>
+        </div>
+        <label for="pet-mfa-code">Codice di 6 cifre</label>
+        <input id="pet-mfa-code" class="pet-mfa-code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9 ]*" maxlength="7" required>
+        <button id="pet-mfa-submit" type="submit" class="btn btn-custom">Verifica</button>
+        <button id="pet-mfa-cancel" type="button" class="pet-link-button pet-forgot">Esci</button>
+        <p id="pet-mfa-status" role="status"></p>
     </form>
 </section>
 <section id="pet-role-view" class="pet-access no-print" hidden>
@@ -7201,8 +7231,34 @@
             return;
         }
 
+        // Dove resta la sessione. Clienti: solo finché la scheda è aperta. Amministratori che hanno
+        // inserito il codice dell'app: su questo dispositivo, finché non premono «Esci»
+        // (il codice si richiede di nuovo dopo 48 ore senza usare la dashboard).
+        const REMEMBER_KEY = '24pet_admin_device';
+        const authStore = {
+            remembered() { try { return localStorage.getItem(REMEMBER_KEY) === '1'; } catch { return false; } },
+            area() { return authStore.remembered() ? localStorage : sessionStorage; },
+            getItem(key) { try { return authStore.area().getItem(key); } catch { return null; } },
+            setItem(key, value) { try { authStore.area().setItem(key, value); } catch {} },
+            removeItem(key) {
+                try {
+                    localStorage.removeItem(key);
+                    sessionStorage.removeItem(key);
+                    if (/^sb-.*-auth-token$/.test(key)) localStorage.removeItem(REMEMBER_KEY);
+                } catch {}
+            },
+            remember(on) {
+                try {
+                    if (on === authStore.remembered()) return;
+                    const from = on ? sessionStorage : localStorage, to = on ? localStorage : sessionStorage;
+                    const keys = Object.keys(from).filter(key => key.startsWith('sb-'));
+                    if (on) localStorage.setItem(REMEMBER_KEY, '1'); else localStorage.removeItem(REMEMBER_KEY);
+                    for (const key of keys) { to.setItem(key, from.getItem(key)); from.removeItem(key); }
+                } catch {}
+            }
+        };
         const api = window.supabase.createClient("https://vacxudtbzpfygkkxmhyz.supabase.co", "sb_publishable_Pxz4_0wKSdVx4_sHoyhJlw_jfMSJid8", {
-            auth: { storage: window.sessionStorage, detectSessionInUrl: false }
+            auth: { storage: authStore, detectSessionInUrl: false }
         });
         let accessCheck = 0;
         let adminStarted = false;
@@ -7221,9 +7277,137 @@
             if (modelDrawer.open) modelDrawer.close();
             if (colorDrawer.open) colorDrawer.close();
             login.hidden = false;
+            form.hidden = false;
+            mfaForm.hidden = true;
+            mfaPending = null;
             submit.disabled = false;
             status.textContent = message;
         }
+
+        // === Verifica in due passaggi (amministratori) ===
+        const mfaForm = document.getElementById('pet-mfa-form');
+        const mfaCode = document.getElementById('pet-mfa-code');
+        const mfaStatus = document.getElementById('pet-mfa-status');
+        const mfaSubmit = document.getElementById('pet-mfa-submit');
+        let mfaPending = null;
+
+        // Mostra la richiesta del codice e si risolve quando il codice è giusto.
+        // mode: 'setup' (prima attivazione, con QR), 'login', 'expired' (48 ore senza usare la dashboard), 'recovery'
+        function askMfaCode(factorId, userId, mode, setup) {
+            const copy = {
+                setup: ['Attiva la verifica in due passaggi', 'Per entrare come amministratore, oltre alla password serve un codice di 6 cifre dall’app Google Authenticator. Si fa una volta sola: poi il codice si chiede su un dispositivo nuovo o se non usi la dashboard per 48 ore.'],
+                login: ['Codice di verifica', 'Apri Google Authenticator e scrivi il codice di 6 cifre di «24Pet».'],
+                expired: ['Codice di verifica', 'Non usi la dashboard da più di 48 ore: per sicurezza serve di nuovo il codice di «24Pet» da Google Authenticator.'],
+                recovery: ['Codice di verifica', 'Prima di scegliere la nuova password scrivi il codice di «24Pet» da Google Authenticator.']
+            }[mode];
+            document.getElementById('pet-mfa-title').textContent = copy[0];
+            document.getElementById('pet-mfa-text').textContent = copy[1];
+            document.getElementById('pet-mfa-setup').hidden = !setup;
+            if (setup) {
+                document.getElementById('pet-mfa-qr').src = setup.qr_code;
+                document.getElementById('pet-mfa-secret').textContent = (setup.secret || '').replace(/(.{4})/g, '$1 ').trim();
+            }
+            document.body.classList.remove('pet-admin');
+            admin.hidden = true;
+            roleView.hidden = true;
+            login.hidden = false;
+            form.hidden = true;
+            mfaForm.hidden = false;
+            mfaCode.value = '';
+            mfaStatus.textContent = '';
+            mfaSubmit.disabled = false;
+            if (!setup) setTimeout(() => mfaCode.focus(), 50);
+            return new Promise(resolve => { mfaPending = { factorId, userId, resolve }; });
+        }
+
+        // Risolve true quando l'amministratore è verificato (sessione aal2 e attività nelle ultime 48 ore).
+        async function petAdminMfa(check, session) {
+            const markActive = async () => {
+                const { data, error } = await api.rpc('admin_mark_active');
+                if (error) throw error;
+                return data === true;
+            };
+            const { data: level, error: levelError } = await api.auth.mfa.getAuthenticatorAssuranceLevel();
+            if (levelError) throw levelError;
+            if (level?.currentLevel === 'aal2' && await markActive()) {
+                authStore.remember(true);
+                return true;
+            }
+            if (check !== accessCheck) return false;
+            const { data: factors, error } = await api.auth.mfa.listFactors();
+            if (error) throw error;
+            let factorId = factors.totp[0]?.id, setup = null;
+            if (!factorId) {
+                // Tentativi di attivazione lasciati a metà: si rifà da capo con un QR nuovo
+                for (const factor of factors.all) {
+                    if (factor.factor_type === 'totp' && factor.status !== 'verified') await api.auth.mfa.unenroll({ factorId: factor.id });
+                }
+                const { data: enrolled, error: enrollError } = await api.auth.mfa.enroll({ factorType: 'totp', friendlyName: 'Dashboard 24Pet', issuer: '24Pet' });
+                if (enrollError) throw enrollError;
+                factorId = enrolled.id;
+                setup = enrolled.totp;
+            }
+            if (check !== accessCheck) return false;
+            await askMfaCode(factorId, session.user.id, setup ? 'setup' : level?.currentLevel === 'aal2' ? 'expired' : 'login', setup);
+            if (check !== accessCheck) return false;
+            authStore.remember(true);
+            if (!(await markActive())) throw new Error('mfa_not_active');
+            return true;
+        }
+
+        mfaForm.addEventListener('submit', async event => {
+            event.preventDefault();
+            const pending = mfaPending;
+            if (!pending) return;
+            const code = mfaCode.value.replace(/\D/g, '');
+            if (code.length !== 6) {
+                mfaStatus.textContent = 'Scrivi le 6 cifre che vedi nell’app.';
+                mfaCode.focus();
+                return;
+            }
+            mfaSubmit.disabled = true;
+            mfaStatus.textContent = 'Verifica in corso…';
+            try {
+                const { error } = await api.auth.mfa.challengeAndVerify({ factorId: pending.factorId, code });
+                if (error) {
+                    mfaStatus.textContent = error.status === 422 || /invalid|expired|verification/i.test(error.code || error.message || '')
+                        ? 'Codice non valido o scaduto. Scrivi quello che vedi ora sotto «24Pet» (cambia ogni 30 secondi).'
+                        : 'Verifica non riuscita. Controlla la connessione e riprova.';
+                    mfaCode.select();
+                    return;
+                }
+                if (mfaPending !== pending) return;
+                mfaPending = null;
+                mfaStatus.textContent = 'Codice corretto ✓';
+                mfaForm.hidden = true;
+                form.hidden = false;
+                status.textContent = 'Caricamento del gestionale…';
+                pending.resolve(true);
+            } catch {
+                mfaStatus.textContent = 'Verifica non riuscita. Controlla la connessione e riprova.';
+            } finally {
+                mfaSubmit.disabled = false;
+            }
+        });
+        mfaCode.addEventListener('input', () => {
+            if (mfaCode.value.replace(/\D/g, '').length === 6 && mfaPending && !mfaSubmit.disabled) mfaForm.requestSubmit();
+        });
+        document.getElementById('pet-mfa-cancel').addEventListener('click', async () => {
+            mfaPending = null;
+            await api.auth.signOut({ scope: 'local' }).catch(() => {});
+            location.reload();
+        });
+
+        // Ogni uso della dashboard (al massimo ogni 10 minuti) rinnova le 48 ore.
+        // Se nel frattempo sono scadute, la pagina si ricarica e chiede il codice.
+        let adminTouchedAt = Date.now();
+        function adminActivity() {
+            if (!adminStarted || Date.now() - adminTouchedAt < 10 * 60 * 1000) return;
+            adminTouchedAt = Date.now();
+            api.rpc('admin_mark_active').then(({ data, error }) => { if (!error && data === false) location.reload(); }, () => {});
+        }
+        for (const type of ['pointerdown', 'keydown']) document.addEventListener(type, adminActivity, { capture: true, passive: true });
+        document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') adminActivity(); });
 
         const importId = 'legacy-2026-11-16';
         const importMarker = '24pet_imported_' + importId;
@@ -8629,6 +8813,14 @@
                 return;
             }
             if (data.role === 'admin' && !adminStarted) {
+                let verified = false;
+                try {
+                    verified = await petAdminMfa(check, session);
+                } catch {
+                    if (check === accessCheck) showLogin('Verifica in due passaggi non riuscita. Ricarica la pagina per riprovare.');
+                    return;
+                }
+                if (!verified || check !== accessCheck) return;
                 status.textContent = 'Caricamento del gestionale…';
                 let cloudData;
                 try {
@@ -8664,6 +8856,7 @@
                 return;
             }
 
+            authStore.remember(false); // la sessione dei clienti resta legata alla scheda
             const copy = roleCopy[data.role];
             if (!copy) {
                 showLogin('Accesso in attesa di abilitazione.');
@@ -8902,14 +9095,24 @@
                         showLogin('Il link per la nuova password è scaduto o è già stato usato. Scrivi la tua email e premi di nuovo «Password dimenticata?».');
                         return;
                     }
-                    showLogin(linkType === 'invite' ? 'Scegli la tua password per entrare.' : 'Scegli la nuova password per entrare.');
-                    openPasswordDialog(true, linkType === 'invite');
+                    return (async () => {
+                        const { data: level } = await api.auth.mfa.getAuthenticatorAssuranceLevel();
+                        if (level?.nextLevel === 'aal2' && level.currentLevel !== 'aal2') {
+                            const { data: factors } = await api.auth.mfa.listFactors();
+                            const { data: current } = await api.auth.getSession();
+                            if (factors?.totp[0] && current?.session) await askMfaCode(factors.totp[0].id, current.session.user.id, 'recovery', null);
+                        }
+                        showLogin(linkType === 'invite' ? 'Scegli la tua password per entrare.' : 'Scegli la nuova password per entrare.');
+                        openPasswordDialog(true, linkType === 'invite');
+                    })();
                 })
                 .catch(() => { recoveryPending = false; showLogin('Link non valido. Riprova.'); });
         }
 
         api.auth.onAuthStateChange((event, session) => {
-            if (event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') return;
+            if (event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED' || event === 'MFA_CHALLENGE_VERIFIED') return;
+            // Mentre si scrive il codice (per esempio tornando dall'app Authenticator) non si riparte da capo
+            if (mfaPending && session?.user?.id === mfaPending.userId) return;
             if (recoveryPending) return; // durante il recupero si entra solo dopo aver salvato la nuova password
             setTimeout(() => authorize(session).catch(reportAccessError), 0);
         });

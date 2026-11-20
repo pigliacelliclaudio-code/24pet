@@ -34,8 +34,14 @@ Deno.serve(async (req) => {
   if (!jwt) return reply({ error: "auth" }, 401);
   const { data: caller, error: callerError } = await db.auth.getUser(jwt);
   if (callerError || !caller?.user) return reply({ error: "auth" }, 401);
-  const { data: callerRole } = await db.from("user_roles").select("role").eq("user_id", caller.user.id).maybeSingle();
-  if (callerRole?.role !== "admin") return reply({ error: "forbidden" }, 403);
+  // Administrator with the authenticator code (aal2) and dashboard use in the last 48 hours:
+  // the same check the database rules use, run with the caller's own token.
+  const asCaller = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, {
+    auth: { persistSession: false, autoRefreshToken: false },
+    global: { headers: { Authorization: `Bearer ${jwt}` } },
+  });
+  const { data: adminOk, error: adminError } = await asCaller.rpc("admin_mfa_ok");
+  if (adminError || adminOk !== true) return reply({ error: "forbidden" }, 403);
 
   let input: { client_code?: unknown; business_name?: unknown; email?: unknown };
   try { input = await req.json(); } catch { return reply({ error: "body" }, 400); }
