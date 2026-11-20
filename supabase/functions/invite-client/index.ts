@@ -70,7 +70,8 @@ Deno.serve(async (req) => {
       const { error: moveError } = await db.auth.admin.updateUserById(access.user_id, { email });
       if (moveError) return reply({ error: "email_exists" }, 409);
     }
-    resent = true;
+    // A fresh invitation for an unused old login reads as «inviato», a pending one as «rimandato».
+    resent = !user?.email_confirmed_at;
   }
 
   const { error: upsertError } = await db.from("client_access")
