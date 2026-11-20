@@ -3741,7 +3741,7 @@
     const COST_FIELDS = [
         ['scarto', 'Scarto di stampa', '% in più di filamento', 'es. 10'],
         ['oreGiorno', 'Ore di stampa al giorno', 'per ogni stampante · serve alla consegna prevista (vuoto = 24)', 'es. 24'],
-        ['sogliaPiccoli', 'Ordini piccoli che passano avanti', 'sotto queste urne l’ordine si infila prima degli altri (vuoto = 5 con 2 stampanti, 10 da 3 stampanti in su)', 'es. 5'],
+        ['sogliaPiccoli', 'Ordini piccoli che passano avanti', 'fino a quante urne (compreso) un ordine si infila prima degli altri · 0 = nessuno passa avanti (vuoto = 5)', 'es. 5'],
         ['tempoMorto', 'Tempi morti tra una stampa e l’altra', '% in più sul tempo di stampa di ogni urna: stampe finite di notte o quando non ci sei (vuoto = 50)', 'es. 50'],
         ['giorniSpedizione', 'Giorni del corriere', 'da aggiungere alla consegna prevista (vuoto = 2)', 'es. 2'],
         ['kwh', 'Prezzo energia', '€ al kWh, IVA esclusa (bolletta: imponibile ÷ kWh)', 'es. 0,25'],
@@ -5131,8 +5131,8 @@
         if (partialPay) { const r = admEl('span', 'adm-order-ring'); r.append(admRing(payI.paid, payI.total, 22, 'Pagato'), document.createTextNode('pagato ' + Math.round(payI.paid / (payI.total || 1) * 100) + '%')); r.title = 'Pagati ' + admMoney.format(payI.paid) + ' di ' + admMoney.format(payI.total); state.append(r); }
         if (!o.evaso) {
             const pos = admQueuePosition(o);
-            const q = admBadge('In coda: ' + pos + '°' + (admOrderPieces(o) < admSmallThreshold() ? ' · piccolo, passa avanti' : ''), 'info');
-            q.title = 'Posizione nella coda di stampa: ordini in ordine di arrivo, quelli sotto ' + admSmallThreshold() + ' urne passano avanti';
+            const q = admBadge('In coda: ' + pos + '°' + (admIsSmallOrder(o) ? ' · piccolo, passa avanti' : ''), 'info');
+            q.title = 'Posizione nella coda di stampa: ordini in ordine di arrivo, quelli fino a ' + admSmallThreshold() + ' urne passano avanti';
             state.append(q);
         }
         if (!o.evaso && o.consegnaPrevista) {
@@ -5697,16 +5697,15 @@
         for (const sizes of Object.values(catalogoPrezzi || {})) for (const v of Object.values(sizes || {})) if (Number(v.tempoStampa) > 0) known.push(Number(v.tempoStampa));
         return known.length ? known.reduce((a, b) => a + b, 0) / known.length : 0;
     }
-    // Coda di stampa: in ordine di arrivo; gli ordini piccoli si infilano prima degli altri
-    // (sotto 5 urne con 2 stampanti, sotto 10 da 3 stampanti in su, oppure la soglia impostata nei costi)
+    // Coda di stampa: in ordine di arrivo; gli ordini fino a N urne (compreso, N scelto nei costi) si infilano prima
     function admSmallThreshold() {
         const c = petCostSettings || {};
-        if (c.sogliaPiccoli !== undefined && c.sogliaPiccoli !== null && c.sogliaPiccoli !== '') return admCostNum(c.sogliaPiccoli);
-        return (c.stampanti || []).length >= 3 ? 10 : 5;
+        return c.sogliaPiccoli !== undefined && c.sogliaPiccoli !== null && c.sogliaPiccoli !== '' ? admCostNum(c.sogliaPiccoli) : 5;
     }
+    function admIsSmallOrder(o) { const n = admOrderPieces(o); return n > 0 && n <= admSmallThreshold(); }
     function admOrderPieces(o) { return (o.articoli || []).reduce((t, a) => t + admQty(a), 0); }
     function admQueueKey(o) {
-        return (admOrderPieces(o) < admSmallThreshold() ? '0|' : '1|') + String(o.data || '') + '|' + String(o.id).padStart(16, '0');
+        return (admIsSmallOrder(o) ? '0|' : '1|') + String(o.data || '') + '|' + String(o.id).padStart(16, '0');
     }
     function admQueuePosition(o) {
         if (o.evaso) return 0;
@@ -5733,7 +5732,7 @@
         const pcs = o => (o.articoli || []).reduce((t, a) => t + admQty(a), 0);
         const key = admQueueKey;
         const open = orders.filter(o => !o.evaso && o.id !== target.id).concat([target]);
-        const small = pcs(target) < admSmallThreshold();
+        const small = admIsSmallOrder(target);
         // Tutte le stampanti lavorano la stessa coda (arrivo, con gli ordini piccoli che passano avanti)
         const split = false;
         const printers = total;
