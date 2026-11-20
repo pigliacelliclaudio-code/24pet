@@ -3731,7 +3731,7 @@
     const COST_FIELDS = [
         ['scarto', 'Scarto di stampa', '% in più di filamento', 'es. 10'],
         ['oreGiorno', 'Ore di stampa al giorno', 'per ogni stampante · serve alla consegna prevista (vuoto = 24)', 'es. 24'],
-        ['tempoMorto', 'Tempi morti tra una stampa e l’altra', '% in più sul tempo di stampa di ogni urna: stampe finite di notte o quando non ci sei (vuoto = 30)', 'es. 30'],
+        ['tempoMorto', 'Tempi morti tra una stampa e l’altra', '% in più sul tempo di stampa di ogni urna: stampe finite di notte o quando non ci sei (vuoto = 50)', 'es. 50'],
         ['giorniSpedizione', 'Giorni del corriere', 'da aggiungere alla consegna prevista (vuoto = 2)', 'es. 2'],
         ['kwh', 'Prezzo energia', '€ al kWh, IVA esclusa (bolletta: imponibile ÷ kWh)', 'es. 0,25'],
         ['usura', 'Usura e manutenzione', '€ per ora di stampa', 'es. 0,20'],
@@ -5652,7 +5652,7 @@
         return dot;
     }
     // === CONSEGNA PREVISTA: due code di stampa in ordine di arrivo — 1 stampante dedicata agli ordini piccoli (<20 urne),
-    // le altre sempre sugli ordini grandi — tempo di stampa + tempi morti (30%) e i giorni del corriere ===
+    // le altre sempre sugli ordini grandi — tempo di stampa + tempi morti (50%) e i giorni del corriere ===
     const ADM_SMALL_ORDER = 20;
     function admPrintMinutesPerUrn() {
         const known = [];
@@ -5675,7 +5675,7 @@
         const total = Math.max(1, (c.stampanti || []).length || 2);
         const hours = admCostNum(c.oreGiorno) || 24;
         // Tempi morti: una stampa che finisce alle 3 di notte riparte alle 8, ecc.
-        const idle = c.tempoMorto === undefined || c.tempoMorto === null || c.tempoMorto === '' ? 30 : admCostNum(c.tempoMorto);
+        const idle = c.tempoMorto === undefined || c.tempoMorto === null || c.tempoMorto === '' ? 50 : admCostNum(c.tempoMorto);
         const shipDays = c.giorniSpedizione === undefined || c.giorniSpedizione === null || c.giorniSpedizione === '' ? 2 : admCostNum(c.giorniSpedizione);
         const pcs = o => (o.articoli || []).reduce((t, a) => t + admQty(a), 0);
         const key = o => String(o.data || '') + '|' + String(o.id).padStart(16, '0');
