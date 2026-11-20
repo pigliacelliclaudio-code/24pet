@@ -468,6 +468,10 @@
         .adm-cost-printers { display: grid; gap: 10px; margin-top: 10px; justify-items: start; }
         .adm-printer-row { display: grid; grid-template-columns: minmax(160px, 1.4fr) minmax(130px, 1fr) minmax(130px, 1fr) auto; gap: 10px 14px; align-items: end; width: 100%; }
         .adm-printer-del { margin-bottom: 2px; }
+        .adm-magnet-row { grid-template-columns: minmax(160px, 1.4fr) minmax(120px, 1fr) minmax(120px, 1fr) auto; }
+        .adm-magnet-cell { display: grid; gap: 6px; min-width: 190px; }
+        .adm-magnet-pair { display: grid; grid-template-columns: 70px minmax(120px, 1fr); gap: 6px; }
+        .adm-magnet-pair .adm-box-select { min-width: 0; }
         .adm-printer-sum { margin: 0; }
         .adm-printer-est { grid-column: 1 / -1; margin-top: -4px; color: var(--muted); }
         .adm-printer-est:empty { display: none; }
@@ -476,7 +480,8 @@
         .adm-cost-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 14px; }
         .adm-cost-calc strong { color: var(--plum); }
         .adm-cost-calc small { display: block; }
-        .adm-cost-detail { color: var(--muted); white-space: normal; max-width: 260px; }
+        .adm-cost-detail { display: grid; gap: 1px; color: var(--muted); max-width: 200px; margin-top: 2px; }
+        .adm-cost-line { display: flex; justify-content: space-between; gap: 12px; white-space: nowrap; }
         .adm-logo-field { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; margin-top: 8px; }
         .adm-logo-preview { display: grid; place-items: center; width: 220px; min-height: 80px; padding: 8px; border: 1px dashed #d9cfdc; border-radius: 10px; background: #fff; text-align: center; font-size: .85rem; }
         .adm-logo-preview img { max-width: 100%; max-height: 90px; object-fit: contain; }
@@ -1490,13 +1495,16 @@
                     <div id="catalogo-container" class="adm-catalog"></div>
                     <section class="pet-home-card adm-filament-card adm-cost-card" aria-labelledby="adm-cost-title">
                         <h2 id="adm-cost-title">Calcolo dei costi</h2>
-                        <p class="adm-note">Con questi valori e con tempi, grammi, lavoro ed extra di ogni misura (in «Modifica») la dashboard calcola il costo di ogni urna. Ogni nuovo ordine salva il costo calcolato in quel momento: gli ordini già fatti non cambiano.</p>
+                        <p class="adm-note">Con questi valori e con tempi, grammi, lavoro, calamite ed extra di ogni misura (in «Modifica») la dashboard calcola il costo di ogni urna. Ogni nuovo ordine salva il costo calcolato in quel momento: gli ordini già fatti non cambiano.</p>
                         <div id="adm-cost-fields" class="adm-cost-grid"></div>
                         <h3 class="adm-cost-sub">Carta di riempimento e nastro</h3>
                         <p class="adm-note" id="adm-cost-paper-note"></p>
                         <div id="adm-cost-paper" class="adm-cost-grid"></div>
                         <h3 class="adm-cost-sub">Stampanti</h3>
                         <div id="adm-cost-printers" class="adm-cost-printers"></div>
+                        <h3 class="adm-cost-sub">Calamite</h3>
+                        <p class="adm-note">Crea qui i tipi di calamite che usi, con il prezzo. In «Modifica» di ogni misura scegli il tipo e quante ne vanno (fino a due tipi per urna): il costo lo calcola la dashboard.</p>
+                        <div id="adm-cost-magnets" class="adm-cost-printers"></div>
                         <h3 class="adm-cost-sub">Prezzi dal Magazzino</h3>
                         <ul id="adm-cost-stockinfo" class="adm-cost-stockinfo"></ul>
                         <p class="adm-note">I prezzi delle bobine e delle scatole si inseriscono nel <a href="#" onclick="admOpen('magazzino-colori'); renderMagazzino(); return false;">Magazzino</a>, con il pulsante <i class="material-icons adm-inline-icon" aria-hidden="true">euro</i> di ogni riga.</p>
@@ -3397,6 +3405,66 @@
         add.type = 'button'; add.addEventListener('click', admAddPrinter);
         box.replaceChildren(...rows, add, sum, how);
     }
+    // Calamite: tipi con prezzo (della confezione, diviso per i pezzi); ogni misura ne usa fino a due tipi
+    let admMagnetDraft = null;
+    function admMagnets() { return admMagnetDraft || (petCostSettings.calamite || []); }
+    function admMagnet(id) { return (petCostSettings.calamite || []).find(m => m.id === id); }
+    function admMagnetPiece(m) { return m ? admCostNum(m.prezzo) / Math.max(1, admCostNum(m.pezzi) || 1) : 0; }
+    function admVariantMagnets(v) { return (Array.isArray(v?.calamite) ? v.calamite : []).filter(x => x && x.tipo && Number(x.qty) > 0); }
+    function admReadMagnetDraft() {
+        if (!admMagnetDraft) return;
+        admMagnetDraft = admMagnetDraft.map(m => ({
+            id: m.id,
+            nome: document.getElementById('adm-mg-nome-' + m.id)?.value.trim() ?? m.nome,
+            prezzo: document.getElementById('adm-mg-prezzo-' + m.id)?.value.trim() ?? m.prezzo,
+            pezzi: document.getElementById('adm-mg-pezzi-' + m.id)?.value.trim() ?? m.pezzi
+        }));
+    }
+    function admAddMagnet() {
+        admReadMagnetDraft();
+        if (!admMagnetDraft) admMagnetDraft = admMagnets().map(m => Object.assign({}, m));
+        admMagnetDraft.push({ id: 'm-' + Date.now().toString(36), nome: '', prezzo: '', pezzi: '' });
+        renderMagnets();
+        document.getElementById('adm-mg-nome-' + admMagnetDraft[admMagnetDraft.length - 1].id)?.focus();
+    }
+    async function admRemoveMagnet(id) {
+        admReadMagnetDraft();
+        if (!admMagnetDraft) admMagnetDraft = admMagnets().map(m => Object.assign({}, m));
+        const mg = admMagnetDraft.find(m => m.id === id);
+        const used = Object.entries(catalogoPrezzi || {}).flatMap(([mod, vs]) => Object.entries(vs || {}).filter(([, v]) => admVariantMagnets(v).some(x => x.tipo === id)).map(([dim]) => mod + ' ' + dim));
+        if (!(await petConfirmDelete('Eliminare la calamita ' + (mg?.nome || '') + '?', used.length
+            ? 'È usata in ' + used.length + (used.length === 1 ? ' misura' : ' misure') + ' (' + used.slice(0, 4).join(', ') + (used.length > 4 ? '…' : '') + '): lì il costo risulterà incompleto finché non scegli un altro tipo.'
+            : 'Esce dalla lista quando premi «Salva i valori».'))) return;
+        admMagnetDraft = admMagnetDraft.filter(m => m.id !== id);
+        renderMagnets();
+    }
+    function renderMagnets() {
+        const box = document.getElementById('adm-cost-magnets');
+        if (!box) return;
+        const rows = admMagnets().map(m => {
+            const row = admEl('div', 'adm-printer-row adm-magnet-row');
+            const mk = (pre, label, value, ph, mode) => {
+                const f = admEl('label', 'adm-field'); f.append(document.createTextNode(label));
+                const i = document.createElement('input');
+                i.type = 'text'; i.className = 'browser-default adm-cost-input'; i.id = pre + m.id; i.placeholder = ph; i.autocomplete = 'off';
+                if (mode) i.inputMode = mode;
+                i.value = value === undefined || value === null ? '' : (mode ? String(value).replace('.', ',') : String(value));
+                f.append(i); return f;
+            };
+            const del = admEl('button', 'adm-icon-button adm-printer-del');
+            del.type = 'button'; del.title = 'Elimina ' + (m.nome || 'calamita'); del.setAttribute('aria-label', del.title);
+            del.append(admIcon('delete'));
+            del.addEventListener('click', () => admRemoveMagnet(m.id));
+            const piece = admMagnetPiece(m);
+            const est = admEl('small', 'adm-printer-est', piece ? admMoney.format(piece) + ' a calamita' : '');
+            row.append(mk('adm-mg-nome-', 'Tipo', m.nome, 'es. Ø15×3 mm'), mk('adm-mg-prezzo-', 'Prezzo (€)', m.prezzo, 'es. 12,90', 'decimal'), mk('adm-mg-pezzi-', 'Pezzi nel prezzo', m.pezzi, 'vuoto = 1', 'decimal'), del, est);
+            return row;
+        });
+        const add = admEl('button', 'pet-link-button', '+ Aggiungi calamita');
+        add.type = 'button'; add.addEventListener('click', admAddMagnet);
+        const how = admEl('p', 'adm-note', 'Se compri una confezione, scrivi il prezzo della confezione e quante calamite contiene: il prezzo a calamita lo calcola la dashboard. Se hai già il prezzo a pezzo, lascia vuoto «Pezzi nel prezzo».');
+        box.replaceChildren(...rows, add, ...(rows.length ? [how] : [admEl('p', 'adm-note', 'Nessuna calamita: aggiungi i tipi che usi.')]));
+    }
     // Prezzi dal Magazzino: bianco = bobina impostata come bianco; colorato = media dei colori del catalogo con prezzo
     function admColorKgPrice() {
         const white = admWhiteCode();
@@ -3429,10 +3497,12 @@
             usura: min / 60 * admCostNum(c.usura),
             lavoro: (Number(v?.minutiLavoro) || 0) / 60 * admCostNum(c.oraLavoro),
             scatola: v?.scatola ? admCostNum(admBox(v.scatola)?.prezzo) : 0,
+            calamite: admVariantMagnets(v).reduce((sum, x) => sum + Number(x.qty) * admMagnetPiece(admMagnet(x.tipo)), 0),
             extra: admCostNum(v?.costoExtra),
             imballo: admPackingPerUrn(v)
         };
         const missing = [];
+        if (admVariantMagnets(v).some(x => !admMagnetPiece(admMagnet(x.tipo)))) missing.push('prezzo calamite');
         if (!min) missing.push('tempo di stampa');
         if (!gc && !gb) missing.push('grammi');
         if ((gc && !kgColore) || (gb && !kgBianco)) missing.push('prezzo filamento nel Magazzino');
@@ -3440,7 +3510,7 @@
         return { parts, total, missing, ready: !missing.length };
     }
     function admCostTitle(b) {
-        const L = { filamento: 'Filamento', energia: 'Energia', usura: 'Usura', lavoro: 'Manodopera', scatola: 'Scatola', imballo: 'Imballo', extra: 'Extra' };
+        const L = { filamento: 'Filamento', energia: 'Energia', usura: 'Usura', lavoro: 'Manodopera', scatola: 'Scatola', imballo: 'Imballo', calamite: 'Calamite', extra: 'Extra' };
         return Object.entries(b.parts).filter(([, x]) => x > 0).map(([k, x]) => L[k] + ' ' + admMoney.format(x)).join(' · ');
     }
     function renderCostSettings() {
@@ -3461,6 +3531,8 @@
         box.replaceChildren(...COST_FIELDS.map(([k, label, hint, ph]) => mk('adm-cost-' + k, label, hint, ph, c[k])));
         admPrinterDraft = null;
         renderPrinters();
+        admMagnetDraft = null;
+        renderMagnets();
         const paper = document.getElementById('adm-cost-paper');
         if (paper) {
             const eurCm = admPaperPerCm();
@@ -3510,10 +3582,26 @@
             printers.push(pr);
         }
         if (printers.length) next.stampanti = printers;
+        admReadMagnetDraft();
+        const magnets = [];
+        for (const m of admMagnets()) {
+            const nome = String(m.nome || '').trim() || 'Calamita ' + (magnets.length + 1);
+            const mg = { id: m.id, nome };
+            for (const [key, label] of [['prezzo', 'prezzo'], ['pezzi', 'pezzi nel prezzo']]) {
+                const raw = String(m[key] ?? '').trim();
+                if (!raw) continue;
+                const n = parseFloat(raw.replace(',', '.'));
+                if (!Number.isFinite(n) || n < 0) { status.textContent = 'Controlla «' + label + '» della calamita ' + nome + '.'; return; }
+                mg[key] = n;
+            }
+            magnets.push(mg);
+        }
+        if (magnets.length) next.calamite = magnets;
         try {
             await window.petCloud.saveSetting('costi', next);
             petCostSettings = next;
             admPrinterDraft = null;
+            admMagnetDraft = null;
             renderCostSettings();
             status.textContent = 'Salvato ✓';
             setTimeout(() => { if (status.textContent === 'Salvato ✓') status.textContent = ''; }, 2500);
@@ -3585,7 +3673,7 @@
             const table = admEl('table', 'adm-product-table');
             const thead = admEl('thead', '');
             thead.innerHTML = editing
-                ? '<tr><th scope="col">Misura</th><th scope="col">Listino</th><th scope="col">Stampa (min)</th><th scope="col">Colore (g)</th><th scope="col">Bianco (g)</th><th scope="col">Lavoro (min)</th><th scope="col">Extra (€)</th><th scope="col">Scatola</th></tr>'
+                ? '<tr><th scope="col">Misura</th><th scope="col">Listino</th><th scope="col">Stampa (min)</th><th scope="col">Colore (g)</th><th scope="col">Bianco (g)</th><th scope="col">Lavoro (min)</th><th scope="col">Calamite</th><th scope="col">Extra (€)</th><th scope="col">Scatola</th></tr>'
                 : '<tr><th scope="col">Misura</th><th scope="col">Costo</th><th scope="col">Listino</th><th scope="col">Margine</th><th scope="col">Produzione</th></tr>';
             const tbody = admEl('tbody', '');
             const dims = Object.keys(variants).sort((a, b) => (sizeOrder.indexOf(a) + 1 || 99) - (sizeOrder.indexOf(b) + 1 || 99));
@@ -3616,7 +3704,32 @@
                         td.append(input);
                         tr.append(td);
                     }
-                    for (const [field, value, label] of [['tempo', v.tempoStampa, 'Minuti di stampa'], ['gcol', v.grammiColore, 'Grammi di colore'], ['gbia', v.grammiBianco, 'Grammi di bianco'], ['lav', v.minutiLavoro, 'Minuti di lavoro a mano'], ['extra', v.costoExtra, 'Costi extra in euro (magneti, viti, cornice)']]) {
+                    for (const [field, value, label] of [['tempo', v.tempoStampa, 'Minuti di stampa'], ['gcol', v.grammiColore, 'Grammi di colore'], ['gbia', v.grammiBianco, 'Grammi di bianco'], ['lav', v.minutiLavoro, 'Minuti di lavoro a mano'], ['extra', v.costoExtra, 'Costi extra in euro per urna (NFC, viti, inserti)']]) {
+                        if (field === 'extra') {
+                            // Calamite: due coppie «quante + tipo» prima della colonna Extra
+                            const mgTd = admEl('td', 'adm-magnet-cell');
+                            const types = petCostSettings.calamite || [];
+                            const current = Array.isArray(v.calamite) ? v.calamite : [];
+                            for (const slot of [0, 1]) {
+                                const pair = admEl('div', 'adm-magnet-pair');
+                                const qty = document.createElement('input');
+                                qty.type = 'number'; qty.step = '1'; qty.min = '0'; qty.placeholder = '—';
+                                qty.id = 'edit_mgq' + slot + '_' + modello + '_' + dim;
+                                qty.value = current[slot]?.qty ?? '';
+                                qty.className = 'input-catalogo adm-input-prod';
+                                qty.setAttribute('aria-label', 'Quante calamite (tipo ' + (slot + 1) + ') ' + modello + ' ' + dim);
+                                const sel = document.createElement('select');
+                                sel.className = 'browser-default adm-box-select';
+                                sel.id = 'edit_mgt' + slot + '_' + modello + '_' + dim;
+                                sel.setAttribute('aria-label', 'Tipo di calamita ' + (slot + 1) + ' ' + modello + ' ' + dim);
+                                sel.append(new Option(types.length ? '— tipo —' : 'Crea i tipi nei costi', ''), ...types.map(m => new Option(m.nome, m.id)));
+                                if (current[slot]?.tipo && !types.some(m => m.id === current[slot].tipo)) sel.append(new Option('Tipo eliminato', current[slot].tipo));
+                                sel.value = current[slot]?.tipo || '';
+                                pair.append(qty, sel);
+                                mgTd.append(pair);
+                            }
+                            tr.append(mgTd);
+                        }
                         const td = admEl('td', '');
                         const input = document.createElement('input');
                         input.type = 'number'; input.step = field === 'extra' ? '0.01' : '1'; input.min = '0';
@@ -3645,14 +3758,22 @@
                     if (cb.ready) {
                         calcTd.append(admEl('strong', '', admMoney.format(cb.total)));
                         calcTd.title = admCostTitle(cb);
-                        const det = admEl('small', 'adm-cost-detail', admCostTitle(cb));
+                        // Una voce per riga: la colonna resta stretta e si legge scorrendo in verticale
+                        const det = admEl('small', 'adm-cost-detail');
+                        const L = { filamento: 'Filamento', energia: 'Energia', usura: 'Usura', lavoro: 'Manodopera', scatola: 'Scatola', imballo: 'Imballo', calamite: 'Calamite', extra: 'Extra' };
+                        for (const [k, x] of Object.entries(cb.parts)) if (x > 0) {
+                            const line = admEl('span', 'adm-cost-line');
+                            line.append(admEl('span', '', L[k]), admEl('span', '', admMoney.format(x)));
+                            det.append(line);
+                        }
                         calcTd.append(det);
                     } else calcTd.append(admEl('span', 'adm-muted', 'Mancano: ' + cb.missing.join(', ')));
                     tr.append(calcTd, admEl('td', 'adm-price', admMoney.format(price)),
                         cb.ready ? admEl('td', margin >= 0 ? 'adm-margin' : 'adm-margin-negative', admMoney.format(margin) + (price ? ' · ' + Math.round(margin / price * 100) + '%' : '')) : admEl('td', 'adm-muted', '—'));
                     const gc = Number(v.grammiColore) || 0, gb = Number(v.grammiBianco) || 0, tm = Number(v.tempoStampa) || 0;
                     const lav = Number(v.minutiLavoro) || 0, ex = Number(v.costoExtra) || 0;
-                    tr.append(admEl('td', 'adm-product-prod', (gc || gb || tm || v.scatola || lav || ex) ? [tm ? admHours(tm) : '', gc ? gc + ' g colore' : '', gb ? gb + ' g bianco' : '', lav ? lav + ' min lavoro' : '', ex ? admMoney.format(ex) + ' extra' : '', v.scatola ? 'scatola ' + admBoxName(v.scatola) : ''].filter(Boolean).join(' · ') : 'Da inserire'));
+                    const mgText = admVariantMagnets(v).map(x => x.qty + (Number(x.qty) === 1 ? ' calamita ' : ' calamite ') + (admMagnet(x.tipo)?.nome || '(tipo eliminato)')).join(' · ');
+                    tr.append(admEl('td', 'adm-product-prod', (gc || gb || tm || v.scatola || lav || ex || mgText) ? [tm ? admHours(tm) : '', gc ? gc + ' g colore' : '', gb ? gb + ' g bianco' : '', lav ? lav + ' min lavoro' : '', mgText, ex ? admMoney.format(ex) + ' extra' : '', v.scatola ? 'scatola ' + admBoxName(v.scatola) : ''].filter(Boolean).join(' · ') : 'Da inserire'));
                 }
                 tbody.append(tr);
             }
@@ -3698,6 +3819,13 @@
                 if (!input) continue;
                 const n = Math.round(parseFloat(String(input.value).replace(',', '.')));
                 if (Number.isFinite(n) && n > 0) varianti[dim][key] = n; else delete varianti[dim][key];
+            }
+            if (document.getElementById(`edit_mgq0_${modello}_${dim}`)) {
+                const list = [0, 1].map(slot => ({
+                    qty: Math.round(parseFloat(String(document.getElementById(`edit_mgq${slot}_${modello}_${dim}`).value).replace(',', '.'))),
+                    tipo: document.getElementById(`edit_mgt${slot}_${modello}_${dim}`).value
+                })).filter(x => x.tipo && Number.isFinite(x.qty) && x.qty > 0);
+                if (list.length) varianti[dim].calamite = list; else delete varianti[dim].calamite;
             }
             const extraInput = document.getElementById(`edit_extra_${modello}_${dim}`);
             if (extraInput) {
