@@ -1,6 +1,6 @@
 {
-  "rewrites": [
-    { "source": "/", "has": [{ "type": "host", "value": "dashboard.24pet.it" }], "destination": "/area-riservata/index.html" }
+  "redirects": [
+    { "source": "/", "has": [{ "type": "host", "value": "dashboard.24pet.it" }], "destination": "/area-riservata/", "permanent": false }
   ],
   "headers": [
     {

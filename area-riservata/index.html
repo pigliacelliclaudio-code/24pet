@@ -770,6 +770,8 @@
         .pet-fiscal-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-top: 12px; }
         #pet-fiscal-feedback { margin: 0; }
         .pet-profile-intro { margin: 0 0 6px; color: #685e72; }
+        .pet-welcome { display: grid; gap: 4px; margin: 0 0 14px; padding: 12px 14px; border: 1px solid #cfe6d6; border-radius: 12px; background: #f1faf4; color: #1b4d2c; }
+        .pet-welcome strong { font-size: 1.02rem; }
         .pet-profile-block { margin: 16px 0 0; padding: 14px 16px 16px; border: 1px solid var(--line); border-radius: 10px; }
         .pet-profile-block legend { padding: 0 6px; color: var(--plum); font-weight: 800; }
         .pet-fiscal-fields small { display: block; margin-top: -4px; color: #685e72; font-size: .8rem; }
@@ -1064,6 +1066,10 @@
                 <section id="pet-fiscal-profile" hidden aria-label="Dati di fatturazione">
                     <p id="pet-fiscal-status" role="status"></p>
                     <form id="pet-fiscal-form" hidden novalidate>
+                        <div id="pet-welcome" class="pet-welcome" role="status" hidden>
+                            <strong>Benvenuto nell’area clienti 24Pet!</strong>
+                            <span>La password è pronta. Ora completa la tua scheda: ragione sociale, partita IVA, codice SDI, persona di riferimento e cellulare servono per inviare gli ordini. Il logo è facoltativo ma lo stampiamo sulle etichette.</span>
+                        </div>
                         <p class="pet-profile-intro">Tieni aggiornati i tuoi dati: li usiamo per fatture, spedizioni ed etichette. I campi con * sono obbligatori per ordinare.</p>
                         <fieldset class="pet-profile-block">
                             <legend>Azienda e fatturazione</legend>
@@ -4223,6 +4229,17 @@
     // === RUBRICA CLIENTI ===
     let admClientFilter = 'all';
     let admClientAccounts = null;
+    // Stato dell'area clienti: «attiva» se il cliente ha creato la password (o usa un accesso di prima degli inviti);
+    // altrimenti si può (ri)mandare l'invito, che arriva come per le aziende nuove.
+    function admAccessState(account) {
+        const day = d => d ? admDate.format(new Date(d)) : '';
+        if (!account) return { key: 'none', label: 'Senza area clienti', canInvite: true };
+        const active = !!account.password_set_at || (!!account.last_sign_in_at && !account.invited_at);
+        if (active) return { key: 'active', label: account.password_set_at ? 'Password creata il ' + day(account.password_set_at) : 'Area clienti attiva', canInvite: false };
+        if (account.invited_at) return { key: 'wait', label: 'Invito inviato il ' + day(account.invited_at) + ' · aspetta la password', canInvite: true };
+        if (account.has_account) return { key: 'old', label: 'Accesso mai usato', canInvite: true };
+        return { key: 'none', label: 'Senza area clienti', canInvite: true };
+    }
     let admClientAccountsLoading = false;
     const admAddressPattern = /^(.*?)\s*[-–,]?\s*(\d{5})\s+(.+?)\s*\(([A-Za-z]{2})\)\s*$/;
 
@@ -4338,11 +4355,12 @@
         document.getElementById('titoloFormCliente').textContent = client ? 'Modifica ' + (client.nome || client.codice) + ' · ' + client.codice : 'Nuovo cliente';
         document.querySelector('#btnSalvaCliente span').textContent = client ? 'Salva modifiche' : 'Salva cliente';
         // «Salva e invia invito»: solo se il cliente non ha ancora un accesso attivo.
-        const account = client && Array.isArray(admClientAccounts) ? admClientAccounts.find(a => a.client_code === client.codice) : null;
-        const canInvite = typeof window.petAdminInvite === 'function' && !account?.has_account;
+        const account = client && admClientAccounts instanceof Map ? (admClientAccounts.get(client.codice) || null) : null;
+        const accessState = admAccessState(account);
+        const canInvite = typeof window.petAdminInvite === 'function' && accessState.canInvite;
         const inviteButton = document.getElementById('btnSalvaInvita');
         inviteButton.hidden = !canInvite;
-        inviteButton.querySelector('span').textContent = account?.invite_pending ? 'Salva e rimanda invito' : 'Salva e invia invito';
+        inviteButton.querySelector('span').textContent = accessState.key === 'wait' ? 'Salva e rimanda invito' : 'Salva e invia invito';
         document.getElementById('btnSalvaCliente').classList.toggle('adm-action-primary', !canInvite);
         const dialog = document.getElementById('adm-client-dialog');
         if (!dialog.open) dialog.showModal();
@@ -4592,10 +4610,8 @@
         if (c.sito?.visibile) tags.append(admBadge('Sul sito', 'ok'));
         const account = admClientAccounts ? (admClientAccounts.get(c.codice) || null) : undefined;
         if (account !== undefined) {
-            const state = account?.has_account ? admEl('span', 'adm-access is-on', 'Area clienti attiva')
-                : account?.invite_pending ? admEl('span', 'adm-access is-wait', 'Invito inviato')
-                : admEl('span', 'adm-access is-off', 'Senza area clienti');
-            tags.append(state);
+            const st = admAccessState(account);
+            tags.append(admEl('span', 'adm-access ' + (st.key === 'active' ? 'is-on' : st.key === 'wait' ? 'is-wait' : 'is-off'), st.key === 'wait' ? 'Invito inviato · aspetta la password' : st.label));
         }
 
         const contact = admEl('div', 'adm-client-contact');
@@ -4660,7 +4676,7 @@
             company: sorted.filter(c => c.tipo !== 'Rivenditore').length,
             reseller: sorted.filter(c => c.tipo === 'Rivenditore').length,
             unpaid: sorted.filter(c => (stats.get(c.codice) || empty).unpaid > 0.004).length,
-            noaccess: admClientAccounts ? sorted.filter(c => !admClientAccounts.get(c.codice)?.has_account).length : null
+            noaccess: admClientAccounts ? sorted.filter(c => admAccessState(admClientAccounts.get(c.codice)).key !== 'active').length : null
         };
         const labels = { all: 'Tutti', company: 'Aziende', reseller: 'Rivenditori', unpaid: 'Con saldo aperto', noaccess: 'Senza area clienti' };
         const filters = document.getElementById('adm-client-filters');
@@ -4682,7 +4698,7 @@
             if (admClientFilter === 'company' && c.tipo === 'Rivenditore') return false;
             if (admClientFilter === 'reseller' && c.tipo !== 'Rivenditore') return false;
             if (admClientFilter === 'unpaid' && !(s.unpaid > 0.004)) return false;
-            if (admClientFilter === 'noaccess' && admClientAccounts?.get(c.codice)?.has_account) return false;
+            if (admClientFilter === 'noaccess' && admAccessState(admClientAccounts?.get(c.codice)).key === 'active') return false;
             if (!query) return true;
             return [c.nome, c.ragioneSociale, c.codice, c.indirizzoSede, c.indirizzoSpedizione, c.partitaIva, c.email, c.referente, c.referenteSpedizione]
                 .some(value => String(value || '').toLowerCase().includes(query));
@@ -6849,19 +6865,27 @@
         const box = document.getElementById('adm-client-invite');
         if (!box) return;
         box.replaceChildren();
-        if (account?.has_account && account.login_email && typeof window.petAdminSendPassword === 'function') { admRenderPasswordMail(box, client, account); return; }
-        if (account?.has_account || typeof window.petAdminInvite !== 'function') { box.hidden = true; return; }
+        const accessState = admAccessState(account);
+        if (accessState.key === 'active') {
+            if (account.login_email && typeof window.petAdminSendPassword === 'function') admRenderPasswordMail(box, client, account);
+            else box.hidden = true;
+            return;
+        }
+        if (typeof window.petAdminInvite !== 'function') { box.hidden = true; return; }
         box.hidden = false;
         const label = admEl('label', '', 'Email a cui mandare l’invito');
         const input = document.createElement('input');
         input.type = 'email'; input.autocomplete = 'off'; input.maxLength = 200;
         input.value = account?.login_email || client.email || '';
         label.append(input);
-        const button = admEl('button', 'btn btn-custom', account?.invite_pending ? 'Rimanda l’invito' : 'Invia invito all’area clienti');
+        const idleLabel = accessState.key === 'wait' ? 'Rimanda l’invito' : 'Invia invito all’area clienti';
+        const button = admEl('button', 'btn btn-custom', idleLabel);
         button.type = 'button';
-        const status = admEl('p', 'adm-invite-status', account?.invite_pending
-            ? 'Il cliente non ha ancora scelto la password. Il link vale 24 ore: se è scaduto, rimandalo.'
-            : 'Il cliente riceve un’email da info@24pet.it con il link per scegliere la password. Il link vale 24 ore.');
+        const status = admEl('p', 'adm-invite-status', accessState.key === 'wait'
+            ? 'Il cliente non ha ancora creato la password. Il link vale 24 ore: se è scaduto, rimandalo.'
+            : accessState.key === 'old'
+            ? 'Ha un accesso creato prima degli inviti ma non l’ha mai usato. Con l’invito riceve la stessa email delle aziende nuove: la sua email è già pronta, deve solo creare la password.'
+            : 'Il cliente riceve un’email da info@24pet.it con il link per creare la password. Il link vale 24 ore.');
         status.setAttribute('role', 'status');
         button.addEventListener('click', async () => {
             const email = input.value.trim().toLowerCase();
@@ -6873,12 +6897,12 @@
                 status.className = 'adm-invite-status';
                 status.textContent = 'Tocca di nuovo per inviare l’invito a ' + (client.nome || client.codice) + '.';
                 clearTimeout(button._reset);
-                button._reset = setTimeout(() => { delete button.dataset.confirmFor; button.textContent = account?.invite_pending ? 'Rimanda l’invito' : 'Invia invito all’area clienti'; }, 8000);
+                button._reset = setTimeout(() => { delete button.dataset.confirmFor; button.textContent = idleLabel; }, 8000);
                 return;
             }
             clearTimeout(button._reset);
             delete button.dataset.confirmFor;
-            button.textContent = account?.invite_pending ? 'Rimanda l’invito' : 'Invia invito all’area clienti';
+            button.textContent = idleLabel;
             button.disabled = true;
             status.className = 'adm-invite-status';
             status.textContent = 'Invio in corso…';
@@ -6971,9 +6995,9 @@
         const lastLogin = account?.last_sign_in_at ? new Date(account.last_sign_in_at) : null;
         admRenderInvite(client, account);
         admFacts(access, account ? [
-            ['Stato', account.has_account ? 'Account attivo' : account.invite_pending ? 'Invito inviato il ' + (account.invited_at ? admDate.format(new Date(account.invited_at)) : '—') + ', non ancora accettato' : 'Invito non ancora inviato'],
+            ['Stato', admAccessState(account).label],
             ['Email di accesso', account.login_email, account.login_email ? 'mailto:' : ''],
-            ['Ultimo accesso', lastLogin ? admDate.format(lastLogin) + ' · ' + (admDays(lastLogin.toISOString().slice(0, 10)) === 0 ? 'oggi' : admDays(lastLogin.toISOString().slice(0, 10)) + ' giorni fa') : (account.has_account ? 'Mai entrato' : '')],
+            ['Ultimo accesso', lastLogin ? admDate.format(lastLogin) + ' · ' + (admDays(lastLogin.toISOString().slice(0, 10)) === 0 ? 'oggi' : admDays(lastLogin.toISOString().slice(0, 10)) + ' giorni fa') : (account.has_account ? 'Mai entrato' : 'Non ancora entrato')],
             ['Profilo fiscale', cloud.billing ? 'Completo' : 'Da compilare: non può ancora inviare ordini']
         ] : [['Stato', 'Nessun accesso all’area clienti']]);
 
@@ -8498,7 +8522,10 @@
             roleView.hidden = false;
             if (data.role === 'client') {
                 resetClientHome();
-                showCustomerPage('home');
+                // Primo accesso dall'invito: si parte dalla scheda anagrafica da completare
+                document.getElementById('pet-welcome').hidden = !welcomeClient;
+                showCustomerPage(welcomeClient ? 'profile' : 'home');
+                welcomeClient = false;
                 loadCustomerProfile(check);
                 loadClientHistory(check);
             }
@@ -8617,8 +8644,11 @@
         const passwordError = document.getElementById('pet-password-error');
         let passwordRecovery = false;
         let recoverySaved = false;
+        let passwordFirstAccess = false;
+        let welcomeClient = false;
         async function openPasswordDialog(recovery, firstAccess) {
             passwordRecovery = recovery;
+            passwordFirstAccess = !!firstAccess;
             document.getElementById('pet-password-title').textContent = firstAccess ? 'Benvenuto: scegli la tua password' : recovery ? 'Scegli una nuova password' : 'Cambia password';
             passwordForm.reset();
             passwordError.textContent = '';
@@ -8652,6 +8682,8 @@
                 passwordForm.reset();
                 passwordError.textContent = '';
                 if (passwordRecovery) recoverySaved = true;
+                if (passwordFirstAccess) welcomeClient = true;
+                api.rpc('client_mark_password_set').then(() => {}, () => {});
                 document.getElementById('pet-password-title').textContent = 'Password aggiornata ✓';
                 setTimeout(() => passwordDialog.close(), 1400);
                 if (passwordRecovery && history.replaceState) history.replaceState(null, '', location.pathname);

@@ -48,22 +48,33 @@ Deno.serve(async (req) => {
   const { data: other } = await db.from("client_access").select("client_code").eq("invite_email", email).neq("client_code", code).maybeSingle();
   if (other) return reply({ error: "email_used", client_code: other.client_code }, 409);
 
-  const { data: access, error: accessError } = await db.from("client_access").select("user_id,invite_email").eq("client_code", code).maybeSingle();
+  const { data: access, error: accessError } = await db.from("client_access").select("user_id,invite_email,password_set_at").eq("client_code", code).maybeSingle();
   if (accessError) return reply({ error: "read" }, 500);
   let resent = false;
   if (access?.user_id) {
     const { data: linked } = await db.auth.admin.getUserById(access.user_id);
-    if (linked?.user?.email_confirmed_at) return reply({ error: "already_active" }, 409);
-    resent = true;
-    // Invitation never accepted and the email was corrected: move the pending account to the new address.
-    if (linked?.user && linked.user.email?.toLowerCase() !== email) {
+    const user = linked?.user;
+    // Active = the client chose a password, or an account created before invitations that was already used.
+    const active = !!access.password_set_at || (!!user?.last_sign_in_at && !user?.invited_at);
+    if (active) return reply({ error: "already_active" }, 409);
+    if (user?.email_confirmed_at) {
+      // Login never really used (created before invitations, or invitation opened without choosing a
+      // password): remove it and send a fresh invitation, exactly like for a new company. Orders and
+      // profile stay, they belong to the client code. Staff accounts are never touched.
+      const { data: role } = await db.from("user_roles").select("role").eq("user_id", access.user_id).maybeSingle();
+      if (role && role.role !== "client") return reply({ error: "is_staff" }, 409);
+      const { error: deleteError } = await db.auth.admin.deleteUser(access.user_id);
+      if (deleteError) return reply({ error: "link" }, 500);
+    } else if (user && user.email?.toLowerCase() !== email) {
+      // Invitation never accepted and the email was corrected: move the pending account to the new address.
       const { error: moveError } = await db.auth.admin.updateUserById(access.user_id, { email });
       if (moveError) return reply({ error: "email_exists" }, 409);
     }
+    resent = true;
   }
 
   const { error: upsertError } = await db.from("client_access")
-    .upsert({ client_code: code, business_name: name, invite_email: email }, { onConflict: "client_code" });
+    .upsert({ client_code: code, business_name: name, invite_email: email, password_set_at: null }, { onConflict: "client_code" });
   if (upsertError) return reply({ error: "save" }, 500);
 
   const { data: invited, error: inviteError } = await db.auth.admin.inviteUserByEmail(email, { redirectTo: DASHBOARD });
