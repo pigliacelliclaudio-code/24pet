@@ -342,6 +342,18 @@
         .adm-stock-row.is-low .adm-stock-bar > span { background: #c62828; }
         .adm-stock-row.is-low { border-color: #f3c3ca; background: #fff6f7; }
         .adm-stock-row.is-short .adm-stock-bar > span { background: #c62828; }
+        .adm-stock-tabs { display: flex; gap: 6px; margin: 4px 0 14px; overflow-x: auto; border-bottom: 1px solid var(--line); scrollbar-width: thin; }
+        .adm-stock-tabs [role="tab"] { display: inline-flex; align-items: center; justify-content: center; gap: 6px; flex: 1 1 0; min-width: 0; padding: 10px 8px; white-space: nowrap; border: 0; border-bottom: 3px solid transparent; background: none; color: var(--muted); font: inherit; font-weight: 700; cursor: pointer; }
+        .adm-stock-tabs [role="tab"] .material-icons { font-size: 20px; }
+        .adm-stock-tabs [role="tab"][aria-selected="true"] { color: var(--plum); border-bottom-color: var(--accent); }
+        .adm-stock-tabs [role="tab"]:focus { background: none; }
+        .adm-stock-tabs [role="tab"]:focus-visible { outline: 2px solid var(--plum); outline-offset: -2px; }
+        .adm-stock-badge { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 99px; background: #c62828; color: #fff; font-size: .75rem; line-height: 20px; text-align: center; }
+        .adm-stock-head-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+        @media (max-width: 520px) { .adm-stock-tabs [role="tab"] .material-icons { display: none; } .adm-stock-tabs [role="tab"] { padding: 10px 4px; font-size: .92rem; } }
+        .adm-stock-white { max-width: 360px; margin-top: 14px; }
+        .adm-stock-missing summary { cursor: pointer; font-weight: 700; color: var(--plum); }
+        .adm-stock-missing ul { margin-top: 8px; }
         .adm-stock-alert.adm-stock-restock { border-color: #f3c3ca; background: #fff6f7; }
         .adm-stock-restock .adm-note { margin: 0 0 8px; }
         .adm-stock-bar > i { position: absolute; top: -4px; width: 2px; height: 16px; margin-left: -1px; background: var(--ink); }
@@ -406,10 +418,10 @@
         .adm-ring.is-low .fg { stroke: #c62828; }
         .adm-ring.is-low b { color: #c62828; }
         .adm-ring.is-empty b { color: var(--muted); }
-        .adm-home-stock-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
-        .adm-stockhome-card small { white-space: normal; }
-        .adm-stockhome-card .adm-stockhome-alert { color: #b00020; font-weight: 600; }
-        @media (max-width: 900px) { .adm-home-stock-list { grid-template-columns: minmax(0, 1fr); } }
+        .adm-todo-stock > .adm-ring { grid-row: span 2; align-self: start; display: inline-grid; color: inherit; font-size: inherit; }
+        .adm-todo-stock > .adm-ring b { display: block; }
+        .adm-todo-alert { background: #fff6f7; border-color: #f3c3ca; }
+        .adm-todo-alert span { color: #8a1020; }
         .adm-print-progress strong { font-size: 1.05rem; }
         .adm-print-group h3 { display: flex; align-items: center; gap: 10px; }
         .adm-order-ring { display: inline-flex; align-items: center; gap: 6px; font-size: .82rem; font-weight: 700; color: var(--muted); }
@@ -1480,10 +1492,6 @@
                         <div id="adm-printq-list" class="adm-printq-list"></div>
                     </section>
                     <div id="adm-todo" class="adm-todo" aria-label="Da fare"></div>
-                    <section id="adm-home-stock" class="adm-printq adm-home-stock" aria-labelledby="adm-home-stock-title" hidden>
-                        <h2 id="adm-home-stock-title"><i class="material-icons" aria-hidden="true">warehouse</i>Magazzino</h2>
-                        <div id="adm-home-stock-list" class="adm-home-stock-list"></div>
-                    </section>
                     <div id="adm-kpis" class="pet-kpis adm-kpis"></div>
                     <div class="pet-home-grid adm-grid">
                         <section class="pet-home-card pet-home-wide" aria-labelledby="adm-months-title">
@@ -1557,6 +1565,20 @@
                             <span id="adm-cost-status" class="adm-filament-status" role="status"></span>
                         </div>
                     </section>
+                    <section class="pet-home-card adm-filament-card adm-cost-card" aria-labelledby="adm-ship-title">
+                        <h2 id="adm-ship-title">Spese di spedizione per i clienti</h2>
+                        <p class="adm-note">I clienti vedono la spedizione mentre compongono l’ordine. I cartoni si contano con «Urne per cartone» (Magazzino › Scatole e cartoni).</p>
+                        <div class="adm-cost-grid">
+                            <label class="adm-field">Primo cartone (€)<input id="adm-ship-primo" type="text" inputmode="decimal" class="browser-default adm-cost-input" placeholder="15" autocomplete="off"><small>IVA esclusa</small></label>
+                            <label class="adm-field">Ogni cartone in più (€)<input id="adm-ship-extra" type="text" inputmode="decimal" class="browser-default adm-cost-input" placeholder="5" autocomplete="off"><small>IVA esclusa</small></label>
+                            <label class="adm-field">Spedizione inclusa da (€)<input id="adm-ship-soglia" type="text" inputmode="decimal" class="browser-default adm-cost-input" placeholder="300" autocomplete="off"><small>IVA esclusa; rivenditori dopo lo sconto</small></label>
+                        </div>
+                        <p id="adm-ship-example" class="adm-note"></p>
+                        <div class="adm-cost-actions">
+                            <button type="button" class="adm-action adm-action-primary" onclick="admSaveShipSettings()"><i class="material-icons" aria-hidden="true">save</i><span>Salva</span></button>
+                            <span id="adm-ship-status" class="adm-filament-status" role="status"></span>
+                        </div>
+                    </section>
                     <section class="pet-home-card adm-filament-card" aria-labelledby="adm-filament-title">
                         <div class="adm-filament-head">
                             <div>
@@ -1573,67 +1595,77 @@
                     <div class="adm-list-head">
                         <div>
                             <h4 class="text-prugna">Magazzino</h4>
-                            <p class="adm-note">Filamento (bobine da 1 kg) e scatole. Quando segni un ordine come evaso, colore, bianco e scatole usati si scalano da soli. <span id="adm-stock-state" role="status"></span></p>
-                        </div>
-                        <div class="adm-catalog-tools">
-                            <button type="button" class="btn btn-custom" onclick="admOpenStockDialog(null, 'carico')"><i class="material-icons left" aria-hidden="true">add_shopping_cart</i>Carica bobine</button>
-                            <button type="button" class="btn btn-custom" onclick="admOpenBoxDialog(null, 'carico')"><i class="material-icons left" aria-hidden="true">inventory_2</i>Carica scatole</button>
-                            <button type="button" class="btn btn-custom" onclick="admOpenMagnetDialog(null, 'carico')"><i class="material-icons left" aria-hidden="true">join_inner</i>Carica calamite</button>
+                            <p class="adm-note">Bobine e calamite si scalano da sole quando spunti un’urna come stampata; le scatole quando l’ordine è evaso. <span id="adm-stock-state" role="status"></span></p>
                         </div>
                     </div>
                     <div id="adm-stock-kpis" class="pet-kpis adm-kpis"></div>
                     <div id="adm-stock-alerts"></div>
-                    <section class="pet-home-card adm-stock-card" aria-labelledby="adm-stock-title">
-                        <h2 id="adm-stock-title">Filamento delle vostre urne</h2>
-                        <div id="adm-stock-list" class="adm-stock-list"></div>
-                        <details class="adm-stock-more">
-                            <summary>Altri filamenti Bambu Lab <span id="adm-stock-others-count" class="adm-muted"></span></summary>
-                            <div id="adm-stock-others" class="adm-stock-list"></div>
-                        </details>
-                    </section>
-                    <section class="pet-home-card adm-stock-card" aria-labelledby="adm-box-title">
-                        <div class="adm-filament-head adm-box-head">
-                            <h2 id="adm-box-title">Scatole</h2>
-                            <button type="button" class="adm-action" onclick="admNewBox()"><i class="material-icons" aria-hidden="true">add</i><span>Nuova misura</span></button>
-                        </div>
-                        <p class="adm-note">Ogni urna usa la scatola indicata nel Catalogo; in più ogni ordine indica le scatole di spedizione.</p>
-                        <div id="adm-box-list" class="adm-stock-list"></div>
-                        <div class="adm-box-settings">
-                            <label class="adm-field">Cartone di spedizione predefinito<select id="adm-box-cartone" class="browser-default adm-filament-select" onchange="admSaveCartonSettings()"></select></label>
-                            <label class="adm-field">Urne per cartone<input id="adm-box-per" type="number" min="1" max="100" step="1" class="browser-default adm-ship-qty" onchange="admSaveCartonSettings()"></label>
-                        </div>
-                    </section>
-                    <section class="pet-home-card adm-stock-card" aria-labelledby="adm-magnet-title">
-                        <div class="adm-filament-head adm-box-head">
-                            <h2 id="adm-magnet-title">Calamite</h2>
-                            <button type="button" class="adm-action" onclick="admNewMagnet()"><i class="material-icons" aria-hidden="true">add</i><span>Nuovo tipo</span></button>
-                        </div>
-                        <p class="adm-note">Quante calamite di ogni tipo vanno in ogni urna si sceglie nel Catalogo («Modifica»). Ogni volta che spunti un’urna come stampata nella lista di stampa, le sue calamite si tolgono da sole.</p>
-                        <div id="adm-magnet-list" class="adm-stock-list"></div>
-                    </section>
-                    <section class="pet-home-card adm-stock-card" aria-labelledby="adm-ship-title">
-                        <h2 id="adm-ship-title">Spese di spedizione per i clienti</h2>
-                        <p class="adm-note">I clienti vedono la spedizione mentre compongono l’ordine. I cartoni si contano con «Urne per cartone» qui sopra.</p>
-                        <div class="adm-cost-grid">
-                            <label class="adm-field">Primo cartone (€)<input id="adm-ship-primo" type="text" inputmode="decimal" class="browser-default adm-cost-input" placeholder="15" autocomplete="off"><small>IVA esclusa</small></label>
-                            <label class="adm-field">Ogni cartone in più (€)<input id="adm-ship-extra" type="text" inputmode="decimal" class="browser-default adm-cost-input" placeholder="5" autocomplete="off"><small>IVA esclusa</small></label>
-                            <label class="adm-field">Spedizione inclusa da (€)<input id="adm-ship-soglia" type="text" inputmode="decimal" class="browser-default adm-cost-input" placeholder="300" autocomplete="off"><small>IVA esclusa; rivenditori dopo lo sconto</small></label>
-                        </div>
-                        <p id="adm-ship-example" class="adm-note"></p>
-                        <div class="adm-cost-actions">
-                            <button type="button" class="adm-action adm-action-primary" onclick="admSaveShipSettings()"><i class="material-icons" aria-hidden="true">save</i><span>Salva</span></button>
-                            <span id="adm-ship-status" class="adm-filament-status" role="status"></span>
-                        </div>
-                    </section>
-                    <div class="pet-home-grid adm-grid">
-                        <section class="pet-home-card" aria-labelledby="adm-stock-moves-title">
-                            <h2 id="adm-stock-moves-title">Ultimi movimenti</h2>
-                            <ul id="adm-stock-moves" class="adm-stock-moves"></ul>
+                    <div class="adm-stock-tabs" role="tablist" aria-label="Materiali" onkeydown="admStockTabKey(event)">
+                        <button type="button" role="tab" id="adm-stock-tab-f" aria-controls="adm-stock-panel-f" aria-selected="true" onclick="admShowStockTab('f')"><i class="material-icons" aria-hidden="true">blur_circular</i>Bobine<span class="adm-stock-badge" id="adm-stock-badge-f" hidden></span></button>
+                        <button type="button" role="tab" id="adm-stock-tab-b" aria-controls="adm-stock-panel-b" aria-selected="false" tabindex="-1" onclick="admShowStockTab('b')"><i class="material-icons" aria-hidden="true">inventory_2</i>Scatole<span class="adm-stock-badge" id="adm-stock-badge-b" hidden></span></button>
+                        <button type="button" role="tab" id="adm-stock-tab-m" aria-controls="adm-stock-panel-m" aria-selected="false" tabindex="-1" onclick="admShowStockTab('m')"><i class="material-icons" aria-hidden="true">join_inner</i>Calamite<span class="adm-stock-badge" id="adm-stock-badge-m" hidden></span></button>
+                    </div>
+
+                    <div id="adm-stock-panel-f" role="tabpanel" aria-labelledby="adm-stock-tab-f" class="adm-stock-panel">
+                        <div id="adm-stock-alerts-f"></div>
+                        <section class="pet-home-card adm-stock-card" aria-labelledby="adm-stock-title">
+                            <div class="adm-filament-head adm-box-head">
+                                <h2 id="adm-stock-title">Filamento delle vostre urne</h2>
+                                <button type="button" class="adm-action adm-action-primary" onclick="admOpenStockDialog(null, 'carico')"><i class="material-icons" aria-hidden="true">add_shopping_cart</i><span>Carica bobine</span></button>
+                            </div>
+                            <div id="adm-stock-list" class="adm-stock-list"></div>
+                            <details class="adm-stock-more">
+                                <summary>Altri filamenti Bambu Lab <span id="adm-stock-others-count" class="adm-muted"></span></summary>
+                                <div id="adm-stock-others" class="adm-stock-list"></div>
+                            </details>
+                            <label class="adm-field adm-stock-white">Bianco delle urne
+                                <select id="adm-stock-white" class="browser-default adm-filament-select" aria-label="Filamento del bianco"></select></label>
                         </section>
-                        <section class="pet-home-card" aria-labelledby="adm-stock-white-title">
-                            <h2 id="adm-stock-white-title">Bianco delle urne</h2>
-                            <p class="adm-note">Il filamento usato per la parte bianca di tutte le urne. Si scala insieme al colore ogni volta che spunti un’urna come stampata.</p>
-                            <select id="adm-stock-white" class="browser-default adm-filament-select" aria-label="Filamento del bianco"></select>
+                        <section class="pet-home-card adm-stock-card" aria-labelledby="adm-stock-moves-f-title">
+                            <h2 id="adm-stock-moves-f-title">Ultimi movimenti delle bobine</h2>
+                            <ul id="adm-stock-moves-f" class="adm-stock-moves"></ul>
+                        </section>
+                    </div>
+
+                    <div id="adm-stock-panel-b" role="tabpanel" aria-labelledby="adm-stock-tab-b" class="adm-stock-panel" hidden>
+                        <div id="adm-stock-alerts-b"></div>
+                        <section class="pet-home-card adm-stock-card" aria-labelledby="adm-box-title">
+                            <div class="adm-filament-head adm-box-head">
+                                <h2 id="adm-box-title">Scatole e cartoni</h2>
+                                <div class="adm-stock-head-actions">
+                                    <button type="button" class="adm-action" onclick="admNewBox()"><i class="material-icons" aria-hidden="true">add</i><span>Nuova misura</span></button>
+                                    <button type="button" class="adm-action adm-action-primary" onclick="admOpenBoxDialog(null, 'carico')"><i class="material-icons" aria-hidden="true">add_shopping_cart</i><span>Carica scatole</span></button>
+                                </div>
+                            </div>
+                            <p class="adm-note">Ogni urna usa la scatola indicata nel Catalogo; in più ogni ordine indica le scatole di spedizione.</p>
+                            <div id="adm-box-list" class="adm-stock-list"></div>
+                            <div class="adm-box-settings">
+                                <label class="adm-field">Cartone di spedizione predefinito<select id="adm-box-cartone" class="browser-default adm-filament-select" onchange="admSaveCartonSettings()"></select></label>
+                                <label class="adm-field">Urne per cartone<input id="adm-box-per" type="number" min="1" max="100" step="1" class="browser-default adm-ship-qty" onchange="admSaveCartonSettings()"></label>
+                            </div>
+                        </section>
+                        <section class="pet-home-card adm-stock-card" aria-labelledby="adm-stock-moves-b-title">
+                            <h2 id="adm-stock-moves-b-title">Ultimi movimenti di scatole e cartoni</h2>
+                            <ul id="adm-stock-moves-b" class="adm-stock-moves"></ul>
+                        </section>
+                    </div>
+
+                    <div id="adm-stock-panel-m" role="tabpanel" aria-labelledby="adm-stock-tab-m" class="adm-stock-panel" hidden>
+                        <div id="adm-stock-alerts-m"></div>
+                        <section class="pet-home-card adm-stock-card" aria-labelledby="adm-magnet-title">
+                            <div class="adm-filament-head adm-box-head">
+                                <h2 id="adm-magnet-title">Calamite</h2>
+                                <div class="adm-stock-head-actions">
+                                    <button type="button" class="adm-action" onclick="admNewMagnet()"><i class="material-icons" aria-hidden="true">add</i><span>Nuovo tipo</span></button>
+                                    <button type="button" class="adm-action adm-action-primary" onclick="admOpenMagnetDialog(null, 'carico')"><i class="material-icons" aria-hidden="true">add_shopping_cart</i><span>Carica calamite</span></button>
+                                </div>
+                            </div>
+                            <p class="adm-note">Quante calamite di ogni tipo vanno in ogni urna si sceglie nel Catalogo («Modifica»). Ogni volta che spunti un’urna come stampata, le sue calamite si tolgono da sole.</p>
+                            <div id="adm-magnet-list" class="adm-stock-list"></div>
+                        </section>
+                        <section class="pet-home-card adm-stock-card" aria-labelledby="adm-stock-moves-m-title">
+                            <h2 id="adm-stock-moves-m-title">Ultimi movimenti delle calamite</h2>
+                            <ul id="adm-stock-moves-m" class="adm-stock-moves"></ul>
                         </section>
                     </div>
                 </div>
@@ -2236,67 +2268,45 @@
             admKpi('schedule', 'Stampa da fare', admHours(plan.minutes), 'somma dei tempi delle urne da evadere')
         );
 
-        // Avvisi
+        // Avvisi: ogni sottoscheda ha i suoi; i dati mancanti del catalogo restano sopra le schede
+        const restock = admRestockList();
+        const alertBox = (title, rows, cls, note) => {
+            const box = admEl('section', 'adm-stock-alert' + (cls ? ' ' + cls : ''));
+            box.append(admEl('h2', '', title));
+            if (note) box.append(admEl('p', 'adm-note', note));
+            const ul = admEl('ul', '');
+            for (const [label, text] of rows) { const li = admEl('li', ''); li.append(label, admEl('span', '', text)); ul.append(li); }
+            box.append(ul);
+            return box;
+        };
+        const tabAlerts = { f: [], b: [], m: [] };
+        if (plan.shortages.size) tabAlerts.f.push(alertBox('Da comprare per gli ordini aperti', [...plan.shortages.entries()].sort((a, b) => b[1] - a[1])
+            .map(([code, g]) => [admFilamentLabel(code), 'mancano ' + admGrams(g) + ' · ' + Math.ceil(g / 1000) + (Math.ceil(g / 1000) === 1 ? ' bobina' : ' bobine')])));
+        if (plan.boxShortages.size) tabAlerts.b.push(alertBox('Da comprare per gli ordini aperti', [...plan.boxShortages.entries()].sort((a, b) => b[1] - a[1])
+            .map(([id, q]) => [admBoxLabel(id), 'mancano ' + q + (q === 1 ? ' scatola' : ' scatole')])));
+        if (plan.magnetShortages.size) tabAlerts.m.push(alertBox('Da comprare per gli ordini aperti', [...plan.magnetShortages.entries()].sort((a, b) => b[1] - a[1])
+            .map(([id, q]) => [admMagnetLabel(id), 'mancano ' + q + (q === 1 ? ' calamita' : ' calamite')])));
+        const restockNotes = { f: 'In rosso quando ne resta una sola bobina (1 kg o meno).', b: 'In rosso al 20% o meno di quante ne avevi dopo l’ultimo acquisto.', m: 'In rosso al 20% o meno di quante ne avevi dopo l’ultimo acquisto.' };
+        for (const k of ['f', 'b', 'm']) {
+            const rows = restock.filter(r => r.kind === k);
+            if (rows.length) tabAlerts[k].push(alertBox('Scorte basse: da ricomprare', rows.map(r => [k === 'f' ? admFilamentLabel(r.id) : k === 'b' ? admBoxLabel(r.id) : admMagnetLabel(r.id), r.text]), 'adm-stock-restock', restockNotes[k]));
+            document.getElementById('adm-stock-alerts-' + k).replaceChildren(...tabAlerts[k]);
+            const badge = document.getElementById('adm-stock-badge-' + k);
+            const n = rows.length + (k === 'f' ? plan.shortages.size : k === 'b' ? plan.boxShortages.size : plan.magnetShortages.size);
+            badge.textContent = n ? String(n) : '';
+            badge.hidden = !n;
+        }
         const alerts = document.getElementById('adm-stock-alerts');
         alerts.replaceChildren();
-        if (plan.shortages.size) {
-            const box = admEl('section', 'adm-stock-alert');
-            box.append(admEl('h2', '', 'Da comprare per gli ordini aperti'));
-            const ul = admEl('ul', '');
-            for (const [code, g] of [...plan.shortages.entries()].sort((a, b) => b[1] - a[1])) {
-                const li = admEl('li', '');
-                li.append(admFilamentLabel(code), admEl('span', '', 'mancano ' + admGrams(g) + ' · ' + Math.ceil(g / 1000) + (Math.ceil(g / 1000) === 1 ? ' bobina' : ' bobine')));
-                ul.append(li);
-            }
-            box.append(ul);
-            alerts.append(box);
-        }
-        if (plan.boxShortages.size) {
-            const box = admEl('section', 'adm-stock-alert');
-            box.append(admEl('h2', '', 'Scatole da comprare per gli ordini aperti'));
-            const ul = admEl('ul', '');
-            for (const [id, q] of [...plan.boxShortages.entries()].sort((a, b) => b[1] - a[1])) {
-                const li = admEl('li', '');
-                li.append(admBoxLabel(id), admEl('span', '', 'mancano ' + q + (q === 1 ? ' scatola' : ' scatole')));
-                ul.append(li);
-            }
-            box.append(ul);
-            alerts.append(box);
-        }
-        if (plan.magnetShortages.size) {
-            const box = admEl('section', 'adm-stock-alert');
-            box.append(admEl('h2', '', 'Calamite da comprare per gli ordini aperti'));
-            const ul = admEl('ul', '');
-            for (const [id, q] of [...plan.magnetShortages.entries()].sort((a, b) => b[1] - a[1])) {
-                const li = admEl('li', '');
-                li.append(admMagnetLabel(id), admEl('span', '', 'mancano ' + q + (q === 1 ? ' calamita' : ' calamite')));
-                ul.append(li);
-            }
-            box.append(ul);
-            alerts.append(box);
-        }
-        const restock = admRestockList();
-        if (restock.length) {
-            const box = admEl('section', 'adm-stock-alert adm-stock-restock');
-            box.append(admEl('h2', '', 'Scorte basse: da ricomprare'));
-            box.append(admEl('p', 'adm-note', 'Bobine: in rosso quando ne resta una sola (1 kg o meno). Scatole e calamite: in rosso al 20% o meno di quante ne avevi dopo l’ultimo acquisto.'));
-            const ul = admEl('ul', '');
-            for (const r of restock) {
-                const li = admEl('li', '');
-                li.append(r.kind === 'f' ? admFilamentLabel(r.id) : r.kind === 'b' ? admBoxLabel(r.id) : admMagnetLabel(r.id), admEl('span', '', r.text));
-                ul.append(li);
-            }
-            box.append(ul);
-            alerts.append(box);
-        }
         if (missingData.size) {
-            const box = admEl('section', 'adm-stock-alert adm-stock-info');
-            box.append(admEl('h2', '', 'Dati mancanti: il calcolo non è completo'));
+            const box = admEl('details', 'adm-stock-alert adm-stock-info adm-stock-missing');
+            box.append(admEl('summary', '', 'Dati mancanti nel Catalogo: il calcolo non è completo (' + missingData.size + ')'));
             const ul = admEl('ul', '');
-            [...missingData].slice(0, 12).forEach(m => ul.append(admEl('li', '', m)));
+            [...missingData].slice(0, 20).forEach(m => ul.append(admEl('li', '', m)));
             box.append(ul);
             alerts.append(box);
         }
+        admShowStockTab(admStockTab);
 
         // Righe
         const row = (code, users, tracked) => {
@@ -2364,32 +2374,57 @@
         renderMagazzinoScatole(plan);
         renderMagazzinoCalamite(plan);
 
-        // Movimenti
-        const movesBox = document.getElementById('adm-stock-moves');
+        // Ultimi movimenti: uno storico per ogni sottoscheda
         const fmt = new Intl.DateTimeFormat('it-IT', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Rome' });
         const kindLabel = { carico: 'Carico', rettifica: 'Correzione', scarico: 'Usato negli ordini' };
-        const recent = [...petFilamentMoves.map(m => ({ ...m, kindOf: 'f' })), ...petBoxMoves.map(m => ({ ...m, kindOf: 'b' })), ...petMagnetMoves.map(m => ({ ...m, kindOf: 'm' }))]
-            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at) || b.id - a.id).slice(0, 60);
-        movesBox.replaceChildren(...(recent.length ? recent.map(m => {
-            const li = admEl('li', 'adm-stock-move');
-            const isBox = m.kindOf === 'b', isMagnet = m.kindOf === 'm';
-            const amount = isBox || isMagnet ? Number(m.qty) : Number(m.grams);
-            const amountText = isBox || isMagnet ? Math.abs(amount) + ' pz' : admGrams(Math.abs(amount));
-            li.append(admEl('span', 'adm-muted', fmt.format(new Date(m.created_at))), isMagnet ? admMagnetLabel(m.magnet_id) : isBox ? admBoxLabel(m.box_id) : admFilamentLabel(m.code),
-                admEl('span', '', kindLabel[m.kind] + (m.note ? ' · ' + m.note : '')),
-                admEl('strong', amount < 0 ? 'adm-stock-neg' : 'adm-stock-pos', (amount > 0 ? '+' : '−') + amountText));
-            if (m.kind !== 'scarico') {
-                const del = admEl('button', 'adm-icon-action adm-action-danger');
-                del.type = 'button'; del.title = 'Elimina movimento'; del.setAttribute('aria-label', 'Elimina movimento');
-                del.append(admIcon('delete'));
-                del.addEventListener('click', () => petConfirmDelete('Eliminare questo movimento?', (kindLabel[m.kind]) + ' di ' + amountText + ' · ' + (isMagnet ? admMagnetName(m.magnet_id) : isBox ? admBoxName(m.box_id) : (admFilament(m.code)?.nome || m.code)) + '. Le scorte vengono ricalcolate.').then(async ok => {
-                    if (!ok) return;
-                    try { if (isMagnet) await window.petCloud.deleteMagnetMove(m.id); else if (isBox) await window.petCloud.deleteBoxMove(m.id); else await window.petCloud.deleteMove(m.id); await petLoadFilaments(); } catch { M.toast({ html: 'Non eliminato: riprova', classes: 'rounded' }); }
-                }));
-                li.append(del);
-            } else li.append(admEl('span', ''));
-            return li;
-        }) : [admEl('li', 'adm-muted', 'Nessun movimento: inizia caricando le bobine che hai.')]));
+        const moveSets = { f: petFilamentMoves, b: petBoxMoves, m: petMagnetMoves };
+        const emptyText = { f: 'Nessun movimento: carica le bobine che hai.', b: 'Nessun movimento: carica le scatole che hai.', m: 'Nessun movimento: carica le calamite che hai.' };
+        for (const k of ['f', 'b', 'm']) {
+            const recent = [...moveSets[k]].sort((a, b) => new Date(b.created_at) - new Date(a.created_at) || b.id - a.id).slice(0, 20);
+            document.getElementById('adm-stock-moves-' + k).replaceChildren(...(recent.length ? recent.map(m => {
+                const li = admEl('li', 'adm-stock-move');
+                const amount = k === 'f' ? Number(m.grams) : Number(m.qty);
+                const amountText = k === 'f' ? admGrams(Math.abs(amount)) : Math.abs(amount) + ' pz';
+                const name = k === 'm' ? admMagnetName(m.magnet_id) : k === 'b' ? admBoxName(m.box_id) : (admFilament(m.code)?.nome || m.code);
+                li.append(admEl('span', 'adm-muted', fmt.format(new Date(m.created_at))), k === 'm' ? admMagnetLabel(m.magnet_id) : k === 'b' ? admBoxLabel(m.box_id) : admFilamentLabel(m.code),
+                    admEl('span', '', kindLabel[m.kind] + (m.note ? ' · ' + m.note : '')),
+                    admEl('strong', amount < 0 ? 'adm-stock-neg' : 'adm-stock-pos', (amount > 0 ? '+' : '−') + amountText));
+                if (m.kind !== 'scarico') {
+                    const del = admEl('button', 'adm-icon-action adm-action-danger');
+                    del.type = 'button'; del.title = 'Elimina movimento'; del.setAttribute('aria-label', 'Elimina movimento');
+                    del.append(admIcon('delete'));
+                    del.addEventListener('click', () => petConfirmDelete('Eliminare questo movimento?', kindLabel[m.kind] + ' di ' + amountText + ' · ' + name + '. Le scorte vengono ricalcolate.').then(async ok => {
+                        if (!ok) return;
+                        try { if (k === 'm') await window.petCloud.deleteMagnetMove(m.id); else if (k === 'b') await window.petCloud.deleteBoxMove(m.id); else await window.petCloud.deleteMove(m.id); await petLoadFilaments(); } catch { M.toast({ html: 'Non eliminato: riprova', classes: 'rounded' }); }
+                    }));
+                    li.append(del);
+                } else li.append(admEl('span', ''));
+                return li;
+            }) : [admEl('li', 'adm-muted', emptyText[k])]));
+        }
+    }
+    // Sottoschede del Magazzino (la scelta resta in questo browser)
+    let admStockTab = (() => { try { return localStorage.getItem('adm-stock-tab') || 'f'; } catch { return 'f'; } })();
+    function admShowStockTab(k) {
+        if (!['f', 'b', 'm'].includes(k)) k = 'f';
+        admStockTab = k;
+        try { localStorage.setItem('adm-stock-tab', k); } catch {}
+        for (const t of ['f', 'b', 'm']) {
+            const tab = document.getElementById('adm-stock-tab-' + t), panel = document.getElementById('adm-stock-panel-' + t);
+            if (!tab || !panel) continue;
+            tab.setAttribute('aria-selected', String(t === k));
+            tab.tabIndex = t === k ? 0 : -1;
+            panel.hidden = t !== k;
+        }
+    }
+    function admStockTabKey(event) {
+        const order = ['f', 'b', 'm'];
+        const i = order.indexOf(admStockTab);
+        const next = event.key === 'ArrowRight' ? order[(i + 1) % 3] : event.key === 'ArrowLeft' ? order[(i + 2) % 3] : null;
+        if (!next) return;
+        event.preventDefault();
+        admShowStockTab(next);
+        document.getElementById('adm-stock-tab-' + next).focus();
     }
 
     function renderMagazzinoScatole(plan) {
@@ -6408,11 +6443,13 @@
             { icon: 'precision_manufacturing', title: open.length ? open.length + (open.length === 1 ? ' ordine da evadere' : ' ordini da evadere') : 'Nessun ordine da evadere',
               note: open.length ? openPieces + ' urne da produrre' + (admOrderPlanCache && admOrderPlanCache.minutes ? ' · ' + admHours(admOrderPlanCache.minutes) + ' di stampa' : '') + (shortParts.length ? ' · manca materiale (' + shortParts.join(', ') + ')' : '') : 'Produzione in pari',
               warn: open.length > 0, action: shortParts.length ? ['Magazzino', () => { admOpen('magazzino-colori'); renderMagazzino(); }] : ['Elenco ordini', () => admOpen('lista-ordini')] },
-            // La rata in scadenza sta nella scheda dei pagamenti: così la fila resta di 4 schede
             { icon: 'payments', title: unpaid.length ? admMoney.format(unpaidTotal) + ' da incassare' : 'Tutto incassato',
-              note: (unpaid.length ? unpaid.length + (unpaid.length === 1 ? ' ordine' : ' ordini') + ' · il più vecchio da ' + oldestUnpaid + ' giorni' : 'Nessun pagamento in sospeso')
-                + (dueRates.length ? ' · ' + plural(dueRates.length, 'rata', 'rate') + ' in scadenza' + (overdueRates.length ? ' (' + overdueRates.length + ' scadut' + (overdueRates.length === 1 ? 'a' : 'e') + ')' : '') + ': ' + (dueRates[0].o.cliente || 'Senza nome') + ' ' + admMoney.format(Number(dueRates[0].p.importo) || 0) + ' il ' + admDate.format(new Date(dueRates[0].p.scadenza + 'T00:00:00Z')) : ''),
-              warn: unpaid.length > 0 || overdueRates.length > 0, action: dueRates.length ? ['Apri la rata', () => admOpenPayments(dueRates[0].o.id)] : null },
+              note: unpaid.length ? unpaid.length + (unpaid.length === 1 ? ' ordine' : ' ordini') + ' · il più vecchio da ' + oldestUnpaid + ' giorni' : 'Nessun pagamento in sospeso', warn: unpaid.length > 0 },
+            // La scheda delle rate c'è sempre: le 8 schede riempiono due file da 4
+            dueRates.length ? { icon: 'event', title: plural(dueRates.length, 'rata', 'rate') + ' in scadenza' + (overdueRates.length ? ' · ' + overdueRates.length + ' scadut' + (overdueRates.length === 1 ? 'a' : 'e') : ''),
+              note: dueRates.slice(0, 2).map(x => (x.o.cliente || 'Senza nome') + ' · ' + x.p.tipo + ' ' + admMoney.format(Number(x.p.importo) || 0) + ' · ' + admDate.format(new Date(x.p.scadenza + 'T00:00:00Z'))).join(' — '),
+              warn: overdueRates.length > 0, action: ['Apri la prima', () => admOpenPayments(dueRates[0].o.id)] }
+              : { icon: 'event', title: 'Nessuna rata in scadenza', note: 'nei prossimi 14 giorni' },
             { icon: 'receipt_long', title: openOrders == null ? 'Richieste d’ordine' : openOrders ? plural(openOrders, 'richiesta d’ordine', 'richieste d’ordine') : 'Nessuna richiesta d’ordine',
               note: openOrders == null ? 'Caricamento…' : openOrders ? 'da trasformare in ordine o rifiutare' : 'da gestire', warn: openOrders > 0,
               action: ['Apri', () => document.querySelector('[aria-controls="pet-admin-order-dialog"]').click()] },
@@ -6420,12 +6457,33 @@
               note: access == null ? 'Caricamento…' : 'negli ultimi 30 giorni', warn: access > 0,
               action: ['Apri', () => document.querySelector('[aria-controls="partner-inbox-dialog"]').click()] }
         ];
+        // Magazzino: un cerchio per materiale, mostra quello più vicino a finire
+        const stockTab = { bobine: 'f', scatole: 'b', calamite: 'm' };
+        if (petStore.mode === 'cloud') for (const cat of (petStockLoaded ? admStockSummary() : [])) {
+            const lows = cat.items.filter(x => x.low);
+            const lowest = cat.items.slice().sort((x, y) => x.pct - y.pct)[0];
+            items.push({ ring: { level: lowest ? lowest.pct : 0, state: cat.items.length ? (lows.length ? 'is-low' : 'is-ok') : 'is-empty', label: cat.title },
+                title: cat.title, alert: lows.length > 0,
+                note: !cat.items.length ? cat.empty + ' in magazzino'
+                    : lows.length ? lows.length + ' da ricomprare: ' + lows.slice(0, 3).map(x => x.name).join(', ') + (lows.length > 3 ? '…' : '')
+                    : 'Tutto a posto · il più basso: ' + lowest.name + ' ' + lowest.pct + '%',
+                hint: 'Il cerchio mostra il materiale più vicino a finire (' + cat.rule + ')',
+                action: ['Magazzino', () => { admStockTab = stockTab[cat.key]; admOpen('magazzino-colori'); renderMagazzino(); }] });
+        }
         todo.style.setProperty('--todo-cols', Math.min(items.length, 4));
         for (const item of items) {
-            const box = admEl('div', 'adm-todo-item' + (item.warn ? ' adm-todo-warn' : ''));
+            const box = admEl('div', 'adm-todo-item' + (item.warn ? ' adm-todo-warn' : '') + (item.alert ? ' adm-todo-alert' : ''));
             const text = admEl('div', '');
             text.append(admEl('strong', '', item.title), admEl('span', '', item.note));
-            box.append(admIcon(item.icon), text);
+            if (item.ring) {
+                const ring = admRing(item.ring.level, 100, 40, item.ring.label);
+                ring.classList.remove('is-full');
+                ring.classList.add(item.ring.state);
+                const pct = ring.querySelector('b'); if (pct) pct.textContent = item.ring.state === 'is-empty' ? '—' : item.ring.level + '%';
+                ring.title = item.hint || '';
+                box.classList.add('adm-todo-stock');
+                box.append(ring, text);
+            } else box.append(admIcon(item.icon), text);
             const actions = item.actions || (item.action ? [item.action] : []);
             if (actions.length) {
                 const row = admEl('div', 'adm-todo-actions');
@@ -6438,34 +6496,6 @@
                 box.append(row);
             }
             todo.append(box);
-        }
-
-        // ---- Magazzino: un cerchio per materiale, mostra quello più vicino a finire ----
-        const stockBox = document.getElementById('adm-home-stock');
-        if (stockBox) {
-            stockBox.hidden = petStore.mode !== 'cloud';
-            const list = document.getElementById('adm-home-stock-list');
-            list.replaceChildren(...(petStockLoaded ? admStockSummary() : []).map(cat => {
-                const card = admEl('button', 'adm-printq-card adm-stockhome-card');
-                card.type = 'button';
-                const lows = cat.items.filter(x => x.low);
-                const lowest = cat.items.slice().sort((x, y) => x.pct - y.pct)[0];
-                const level = lowest ? lowest.pct : 0;
-                const ring = admRing(level, 100, 48, cat.title);
-                ring.classList.remove('is-full');
-                ring.classList.add(cat.items.length ? (lows.length ? 'is-low' : 'is-ok') : 'is-empty');
-                const b = ring.querySelector('b'); if (b) b.textContent = cat.items.length ? level + '%' : '—';
-                const text = admEl('span', '');
-                text.append(admEl('strong', '', cat.title),
-                    admEl('small', lows.length ? 'adm-stockhome-alert' : '', !cat.items.length ? cat.empty + ' in magazzino'
-                        : lows.length ? plural(lows.length, 'da ricomprare', 'da ricomprare') + ': ' + lows.slice(0, 3).map(x => x.name).join(', ') + (lows.length > 3 ? '…' : '')
-                        : 'Tutto a posto · il più basso: ' + lowest.name + ' ' + lowest.pct + '%'));
-                card.append(ring, text, admIcon('chevron_right'));
-                card.setAttribute('aria-label', cat.title + ': ' + (lows.length ? lows.length + ' da ricomprare' : 'scorte a posto') + ', il più basso al ' + level + '%');
-                card.title = 'Il cerchio mostra il materiale più vicino a finire (' + cat.rule + ')';
-                card.addEventListener('click', () => { admOpen('magazzino-colori'); renderMagazzino(); });
-                return card;
-            }));
         }
 
         // ---- Numeri del periodo ----
