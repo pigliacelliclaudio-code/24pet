@@ -2390,10 +2390,23 @@
         alerts.replaceChildren();
         if (missingData.size) {
             const box = admEl('details', 'adm-stock-alert adm-stock-info adm-stock-missing');
-            box.append(admEl('summary', '', 'Dati mancanti nel Catalogo: il calcolo non è completo (' + missingData.size + ')'));
+            box.append(admEl('summary', '', 'Dati mancanti: il calcolo non è completo (' + missingData.size + ')'));
             const ul = admEl('ul', '');
             [...missingData].slice(0, 20).forEach(m => ul.append(admEl('li', '', m)));
             box.append(ul);
+            alerts.append(box);
+        }
+        const estimated = open => open.filter(o => plan.plan.get(o.id)?.boxNeed.estimate);
+        const est = estimated(orders.filter(o => !o.evaso));
+        if (est.length) {
+            const box = admEl('details', 'adm-stock-alert adm-stock-info adm-stock-missing');
+            box.append(admEl('summary', '', 'Cartoni di spedizione stimati (' + est.length + (est.length === 1 ? ' ordine' : ' ordini') + ')'));
+            const ul = admEl('ul', '');
+            for (const o of est) {
+                const e = plan.plan.get(o.id).boxNeed.estimate;
+                ul.append(admEl('li', '', (o.cliente || 'Ordine') + ': ' + e.qty + ' × ' + admBoxName(e.id)));
+            }
+            box.append(ul, admEl('p', 'adm-note', 'Non indicati nell’ordine: li conto con ' + admSuggestedPerText() + ' (Impostazioni › Spedizione). Se sono diversi, cambiali con «Modifica» nell’ordine.'));
             alerts.append(box);
         }
         admShowStockTab(admStockTab);
@@ -2800,9 +2813,17 @@
         }
         const ship = Array.isArray(order.scatoleSpedizione) ? order.scatoleSpedizione : [];
         for (const s of ship) { const q = parseInt(s.qta, 10) || 0; if (s.id && q > 0) boxes.set(s.id, (boxes.get(s.id) || 0) + q); }
-        if (pieces && !ship.some(s => (parseInt(s.qta, 10) || 0) > 0)) missing.add('scatole di spedizione non indicate');
-        return { boxes, missing };
+        // Cartoni non indicati nell'ordine: stima con «Urne per cartone» e il cartone predefinito
+        let estimate = null;
+        if (pieces && !ship.some(s => (parseInt(s.qta, 10) || 0) > 0)) {
+            if (petBoxSettings.cartone && admBox(petBoxSettings.cartone)) {
+                estimate = { id: petBoxSettings.cartone, qty: admSuggestedCartons(pieces) };
+                boxes.set(estimate.id, (boxes.get(estimate.id) || 0) + estimate.qty);
+            } else missing.add('cartoni di spedizione: scegli il cartone predefinito in Magazzino › Scatole');
+        }
+        return { boxes, missing, estimate };
     }
+    function admSuggestedPerText() { return Math.max(1, parseInt(petBoxSettings.perCartone, 10) || 8) + ' urne per cartone'; }
     function admSuggestedCartons(pieces) {
         const per = Math.max(1, parseInt(petBoxSettings.perCartone, 10) || 8);
         return pieces ? Math.ceil(pieces / per) : 0;
@@ -4969,6 +4990,7 @@
         if (cart && r.need.minutes) line.append(admEl('span', '', 'Stampa ' + admHours(r.need.minutes)));
         for (const [code, g] of r.need.grams) { const item = admEl('span', ''); item.append(admFilamentLabel(code), document.createTextNode(' ' + admGrams(g))); line.append(item); }
         for (const [id, q] of r.boxNeed.boxes) { const item = admEl('span', ''); item.append(admBoxLabel(id), document.createTextNode(' ' + q + ' pz')); line.append(item); }
+        if (r.boxNeed.estimate) line.append(admEl('span', 'adm-muted', 'Cartoni stimati: ' + r.boxNeed.estimate.qty + ' (' + admSuggestedPerText() + ') · se sono diversi indicali con «Modifica»'));
         for (const [id, q] of r.magnetNeed || []) { const item = admEl('span', ''); item.append(admMagnetLabel(id), document.createTextNode(' ' + q + ' pz')); line.append(item); }
         const shorts = [...r.short.map(x => admGrams(x.grams) + ' di ' + (admFilament(x.code)?.nome || x.code)), ...r.boxShort.map(x => x.qty + ' scatole ' + admBoxName(x.id)), ...(r.magnetShort || []).map(x => x.qty + ' calamite ' + admMagnetName(x.id))];
         if (shorts.length) line.append(admEl('span', 'adm-stock-neg', 'Mancano: ' + shorts.join(', ')));
@@ -5459,7 +5481,7 @@
             });
             riepilogoPrint += '</div>';
             const boxNeed = admOrderBoxNeed(o);
-            if (boxNeed.boxes.size) riepilogoPrint += '<div style="margin-top: 6px; font-size: 0.8em; color: #4a004a;"><b>Imballo:</b> ' + [...boxNeed.boxes].map(([id, q]) => q + ' × ' + admBoxName(id)).join(' · ') + '</div>';
+            if (boxNeed.boxes.size) riepilogoPrint += '<div style="margin-top: 6px; font-size: 0.8em; color: #4a004a;"><b>Imballo:</b> ' + [...boxNeed.boxes].map(([id, q]) => q + ' × ' + admEsc(admBoxName(id))).join(' · ') + (boxNeed.estimate ? ' (cartoni stimati)' : '') + '</div>';
             riepilogoPrint += '</div>';
 
             let orderFooter = `
