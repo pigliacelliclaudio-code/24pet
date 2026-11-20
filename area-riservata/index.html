@@ -660,6 +660,10 @@
         .adm-search .material-icons { color: var(--muted); }
         .adm-search input[type=search] { height: 40px !important; margin: 0 !important; border: 0 !important; box-shadow: none !important; }
         .adm-visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+        /* Il campo file nascosto resta agganciato al suo pulsante: dopo la scelta del file il browser
+           ci porta il focus e, se fosse agganciato alla finestra, la farebbe scorrere fuori vista. */
+        #adm-logo-pick { position: relative; }
+        #adm-logo-pick input[type="file"] { top: 0; left: 0; }
         .adm-order-list { display: grid; gap: 0; }
         .adm-client-orders { margin-top: 12px; }
         .adm-order { background: #fff; }
@@ -733,7 +737,8 @@
         .pet-logo-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
         .pet-logo-upload { display: inline-flex; align-items: center; min-height: 44px; border: 1px solid var(--plum); border-radius: 8px; color: var(--plum); text-transform: none; cursor: pointer; }
         .pet-logo-upload:focus-within { outline: 2px solid var(--plum); outline-offset: 2px; }
-        .visually-hidden-file { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
+        .pet-logo-upload { position: relative; }
+        .visually-hidden-file { position: absolute; top: 0; left: 0; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
         #pet-logo-remove { min-height: 44px; color: #b00020; text-transform: none; }
         .pet-logo-error { margin: 8px 0 0; color: #b00020; font-weight: 600; }
         .pet-logo-error:empty { display: none; }
@@ -3914,6 +3919,8 @@
     document.getElementById('spedUguale').addEventListener('change', admToggleShipping);
     document.getElementById('adm-scan-dialog').addEventListener('close', () => { admStopCamera(); admScanState = null; });
     document.getElementById('adm-logo-file').addEventListener('change', event => { admReadLogo(event.target.files[0]); event.target.value = ''; });
+    // Le finestre hanno lo scorrimento solo nel corpo: se il browser sposta la finestra intera (focus su un campo), la riporto in posizione.
+    for (const dialog of document.querySelectorAll('dialog')) dialog.addEventListener('scroll', () => { if (dialog.scrollTop && getComputedStyle(dialog).overflowY === 'hidden') dialog.scrollTop = 0; });
     document.getElementById('adm-logo-remove').addEventListener('click', () => petConfirmDelete('Togliere il logo del cliente?', 'Sulle etichette comparirà il nome del cliente. La modifica vale quando salvi la scheda.').then(ok => { if (ok) { admClientLogoDraft = null; admRenderLogoField(); } }));
     document.getElementById('sitoVisibile').addEventListener('change', () => {
         admToggleSite();
