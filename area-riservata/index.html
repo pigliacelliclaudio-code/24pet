@@ -746,6 +746,7 @@
         .pet-badge-warn { background: #fdf0dc; color: #7a4300; }
         .pet-badge-ok { background: #e4f3e8; color: #1b6434; }
         .pet-badge-neutral { background: #efe9f1; color: #574860; }
+        .pet-badge-danger { background: #fde7ea; color: #a30018; }
         .pet-badge-info { background: #f7e6f1; color: #7d0459; }
         .pet-order-toggle { display: flex; align-items: center; justify-content: end; color: var(--plum); font-weight: 700; }
         .pet-history-order[open] .pet-order-toggle i { transform: rotate(180deg); }
@@ -5104,6 +5105,13 @@
         state.append(o.pagato ? admBadge('Pagato', 'ok') : partialPay ? admBadge('Pagato in parte', 'warn') : admBadge('Da pagare', 'warn'),
             o.evaso ? admBadge('Evaso', 'ok') : admBadge('Da evadere', 'neutral'));
         if (partialPay) { const r = admEl('span', 'adm-order-ring'); r.append(admRing(payI.paid, payI.total, 22, 'Pagato'), document.createTextNode('pagato ' + Math.round(payI.paid / (payI.total || 1) * 100) + '%')); r.title = 'Pagati ' + admMoney.format(payI.paid) + ' di ' + admMoney.format(payI.total); state.append(r); }
+        if (!o.evaso && o.consegnaPrevista) {
+            // La stessa data che vede il cliente: arancione a 3 giorni, rossa se è passata
+            const left = Math.round((new Date(o.consegnaPrevista + 'T00:00:00Z') - new Date(admTodayIso() + 'T00:00:00Z')) / 86400000);
+            const due = admBadge((left < 0 ? 'Consegna scaduta il ' : 'Consegna entro il ') + admDate.format(new Date(o.consegnaPrevista + 'T00:00:00Z')), left < 0 ? 'danger' : left <= 3 ? 'warn' : 'neutral');
+            due.title = left < 0 ? 'La data promessa al cliente è passata da ' + (-left) + (left === -1 ? ' giorno' : ' giorni') : left === 0 ? 'Da consegnare oggi' : 'Mancano ' + left + (left === 1 ? ' giorno' : ' giorni') + ' alla data che vede il cliente';
+            state.append(due);
+        }
         if (!o.evaso) {
             const pr = admPrintProgress(o);
             if (pr.done) { const ring = admEl('span', 'adm-order-ring'); ring.append(admRing(pr.done, pr.tot, 22), document.createTextNode(pr.done >= pr.tot ? 'stampate ✓' : Math.round(pr.done / pr.tot * 100) + '% · ' + pr.done + '/' + pr.tot)); ring.title = 'Urne stampate: ' + pr.done + ' di ' + pr.tot; state.append(ring); }
